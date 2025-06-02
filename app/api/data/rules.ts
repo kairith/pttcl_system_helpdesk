@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import { RowDataPacket } from 'mysql2';
-import { tbl_users } from '../../types/user';
+import { tbl_users_rules } from '../../types/rules';
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
       database: process.env.DB_DATABASE || 'pttcl_helpdesk_nextjs',
     });
 
-    const [rows] = await connection.execute<(RowDataPacket & tbl_users)[]>('SELECT * FROM tbl_users');
+    const [rows] = await connection.execute<(RowDataPacket & tbl_users_rules)[]>('SELECT * FROM tbl_users_rules');
     console.log('Database rows:', rows); // Debug: Log the rows
     await connection.end();
 
