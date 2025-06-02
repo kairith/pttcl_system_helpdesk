@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+body {
+  @apply bg-gray-100;
+}
+
+.login-box {
+  @apply w-full max-w-sm mx-auto my-14;
+}
+
+.card {
+  @apply bg-white rounded-2xl shadow-lg;
+}
+
+.card-header {
+  @apply bg-gray-500 text-white text-center flex flex-col items-center py-4 rounded-t-2xl;
+}
+
+.card-header img {
+  @apply max-w-[120px] mb-2;
+}
+
+.card-body {
+  @apply p-8;
+}
+
+.btn-primary {
+  @apply bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 w-full;
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce {
+  animation: iconBounce 1.5s infinite;
+}
