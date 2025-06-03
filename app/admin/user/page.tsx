@@ -9,9 +9,15 @@ export default function Users() {
   const [users, setUsers] = useState<(User & { rules_name: string })[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState('October');
 
   const handleSidebarToggle = (isOpen: boolean) => {
     setIsSidebarOpen(isOpen);
+  };
+
+  const handlePeriodChange = (value: string) => {
+    setSelectedPeriod(value);
+    // Optionally, add logic to filter users based on selected period
   };
 
   useEffect(() => {
@@ -79,34 +85,47 @@ export default function Users() {
           }`}
         >
           <div className="container mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Users Table</h1>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="py-2 px-4 border-b">User ID</th>
-                    <th className="py-2 px-4 border-b">Name</th>
-                    <th className="py-2 px-4 border-b">Email</th>
-                    <th className="py-2 px-4 border-b">Verified</th>
-                    <th className="py-2 px-4 border-b">Status</th>
-                    <th className="py-2 px-4 border-b">Rules</th>
-                    <th className="py-2 px-4 border-b">Company</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.users_id} className="hover:bg-gray-50">
-                      <td className="py-2 px-4 border-b">{user.users_id}</td>
-                      <td className="py-2 px-4 border-b">{user.users_name}</td>
-                      <td className="py-2 px-4 border-b">{user.email}</td>
-                      <td className="py-2 px-4 border-b">{user.code === 0 ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{user.status ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{user.rules_name || 'None'}</td>
-                      <td className="py-2 px-4 border-b">{user.company}</td>
+            <div className="mt-8 p-6 bg-white rounded-lg shadow-md">
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">Users Table</h1>
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => handlePeriodChange(e.target.value)}
+                  className="bg-gray-50 border border-gray-300 rounded px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="October">October</option>
+                  <option value="November">November</option>
+                  <option value="December">December</option>
+                </select>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-100 rounded-xl">
+                      <th className="text-left p-3 font-bold text-gray-800">User ID</th>
+                      <th className="text-left p-3 font-bold text-gray-800">Name</th>
+                      <th className="text-left p-3 font-bold text-gray-800">Email</th>
+                      <th className="text-left p-3 font-bold text-gray-800">Verified</th>
+                      <th className="text-left p-3 font-bold text-gray-800">Status</th>
+                      <th className="text-left p-3 font-bold text-gray-800">Rules</th>
+                      <th className="text-left p-3 font-bold text-gray-800">Company</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.users_id} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="p-3 text-gray-700">{user.users_id}</td>
+                        <td className="p-3 text-gray-700">{user.users_name}</td>
+                        <td className="p-3 text-gray-700">{user.email}</td>
+                        <td className="p-3 text-gray-700">{user.code === 0 ? 'Verified' : 'Not Verified'}</td>
+                        <td className="p-3 text-gray-700">{user.status ? 'Active' : 'Inactive'}</td>
+                        <td className="p-3 text-gray-700">{user.rules_name || 'None'}</td>
+                        <td className="p-3 text-gray-700">{user.company}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

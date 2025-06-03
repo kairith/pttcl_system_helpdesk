@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { tbl_users_rules } from '../../types/rules';
 import NavSlide from '@/app/components/navbar/navbar';
 import { fetchUserRules } from '../user_rules/action';
@@ -9,9 +9,15 @@ export default function UserRules() {
   const [rules, setRules] = useState<tbl_users_rules[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState('October');
 
   const handleSidebarToggle = (isOpen: boolean) => {
     setIsSidebarOpen(isOpen);
+  };
+
+  const handlePeriodChange = (value: string) => {
+    setSelectedPeriod(value);
+    // Optionally, add logic to filter rules based on selected period
   };
 
   useEffect(() => {
@@ -44,27 +50,6 @@ export default function UserRules() {
     );
   }
 
-  if (rules.length === 0) {
-    return (
-      <div className="flex">
-        <NavSlide onToggle={handleSidebarToggle} />
-        <main
-          className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
-          }`}
-        >
-          <div
-            className={`transition-opacity duration-300 ease-in-out ${
-              isSidebarOpen ? 'opacity-100' : 'opacity-70'
-            }`}
-          >
-            <div className="text-center">No rules found.</div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="flex">
       <NavSlide onToggle={handleSidebarToggle} />
@@ -79,58 +64,68 @@ export default function UserRules() {
           }`}
         >
           <div className="container mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Rules Table</h1>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="py-2 px-4 border-b">Rules ID</th>
-                    <th className="py-2 px-4 border-b">Rules Name</th>
-                    <th className="py-2 px-4 border-b">Add User</th>
-                    <th className="py-2 px-4 border-b">Edit User</th>
-                    <th className="py-2 px-4 border-b">Delete User</th>
-                    <th className="py-2 px-4 border-b">List User</th>
-                    <th className="py-2 px-4 border-b">Add Ticket</th>
-                    <th className="py-2 px-4 border-b">Edit Ticket</th>
-                    <th className="py-2 px-4 border-b">Delete Ticket</th>
-                    <th className="py-2 px-4 border-b">List Ticket</th>
-                    <th className="py-2 px-4 border-b">List Ticket Assign</th>
-                    <th className="py-2 px-4 border-b">Add User Rules</th>
-                    <th className="py-2 px-4 border-b">Edit User Rules</th>
-                    <th className="py-2 px-4 border-b">Delete User Rules</th>
-                    <th className="py-2 px-4 border-b">List User Rules</th>
-                    <th className="py-2 px-4 border-b">Add Station</th>
-                    <th className="py-2 px-4 border-b">Edit Station</th>
-                    <th className="py-2 px-4 border-b">Delete Station</th>
-                    <th className="py-2 px-4 border-b">List Station</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rules.map((rule) => (
-                    <tr key={rule.rules_id} className="hover:bg-gray-50">
-                      <td className="py-2 px-4 border-b">{rule.rules_id}</td>
-                      <td className="py-2 px-4 border-b">{rule.rules_name}</td>
-                      <td className="py-2 px-4 border-b">{rule.add_user_status ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.edit_user_status ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.delete_user_status ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.list_user_status ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.add_ticket_status ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.edit_ticket_status ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.delete_ticket_status ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.list_ticket_status ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.list_ticket_assign ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.add_user_rules ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.edit_user_rules ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.delete_user_rules ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.list_user_rules ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.add_station ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.edit_station ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.delete_station ? 1 : 0}</td>
-                      <td className="py-2 px-4 border-b">{rule.list_station ? 1 : 0}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="mt-8 p-6 bg-white rounded-lg shadow-md">
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">Rules Table</h1>
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => handlePeriodChange(e.target.value)}
+                  className="bg-gray-50 border border-gray-300 rounded px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="October">October</option>
+                  <option value="November">November</option>
+                  <option value="December">December</option>
+                </select>
+              </div>
+              <Suspense
+                fallback={
+                  <div className="text-center text-gray-600 py-4">
+                    <div className="flex justify-center items-center">
+                      <svg
+                        className="animate-spin h-8 w-8 text-blue-500 mr-3"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
+                        ></path>
+                      </svg>
+                      <span>Loading rules...</span>
+                    </div>
+                  </div>
+                }
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-100 rounded-xl">
+                        <th className="text-left p-3 font-bold text-gray-800">Rules ID</th>
+                        <th className="text-left p-3 font-bold text-gray-800">Rules Name</th>
+                       
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rules.map((rule) => (
+                        <tr key={rule.rules_id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="p-3 text-gray-700">{rule.rules_id}</td>
+                          <td className="p-3 text-gray-700">{rule.rules_name}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Suspense>
             </div>
           </div>
         </div>
