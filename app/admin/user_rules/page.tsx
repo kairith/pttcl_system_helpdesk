@@ -67,15 +67,7 @@ export default function UserRules() {
             <div className="mt-8 p-6 bg-white rounded-lg shadow-md">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Rules Table</h1>
-                <select
-                  value={selectedPeriod}
-                  onChange={(e) => handlePeriodChange(e.target.value)}
-                  className="bg-gray-50 border border-gray-300 rounded px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="October">October</option>
-                  <option value="November">November</option>
-                  <option value="December">December</option>
-                </select>
+                
               </div>
               <Suspense
                 fallback={

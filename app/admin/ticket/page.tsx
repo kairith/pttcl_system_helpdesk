@@ -130,7 +130,7 @@ export default function Tickets() {
                         <td className="p-3 text-gray-700">{ticket.province}</td>
                         <td className="p-3 text-gray-700">{ticket.issue_description}</td>
                         <td className="p-3 text-gray-700">{ticket.issue_type}</td>
-                        <td className="p-3 text-gray-700">{ticket.status ? 'Active' : 'Inactive'}</td>
+                        <td className="p-3 text-gray-700">{ticket.status}</td>
                         <td className="p-3 text-gray-700">{ticket.users_name || 'N/A'}</td>
                         <td className="p-3 text-gray-700">{new Date(ticket.ticket_open).toLocaleString()}</td>
                         <td className="p-3 text-gray-700">{ticket.ticket_on_hold ? new Date(ticket.ticket_on_hold).toLocaleString() : 'N/A'}</td>
