@@ -17,4 +17,5 @@ export interface Ticket {
   ticket_time: Date | string;
   comment: string | null;
   user_create_ticket: number;
+  issue_type_id: number;
 }

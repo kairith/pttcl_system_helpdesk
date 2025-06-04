@@ -1,3 +1,4 @@
+// components/NavSlide.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,7 +13,7 @@ import {
   LineChart,
   Calendar,
   LogOut,
-} from 'lucide-react'; 
+} from 'lucide-react';
 
 interface NavSlideProps {
   onToggle?: (isOpen: boolean) => void;
@@ -21,7 +22,9 @@ interface NavSlideProps {
 const NavSlide = ({ onToggle }: NavSlideProps) => {
   const [isOpen, setIsOpen] = useState(true);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
 
   useEffect(() => {
     onToggle?.(isOpen);

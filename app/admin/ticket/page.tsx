@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Ticket } from '../../types/ticket';
-import NavSlide from '@/app/components/navbar/navbar';
-import { fetchTickets } from '../ticket/action';
 
+import { fetchTickets } from '../ticket/action';
+import Header from '@/app/components/common/Header';
 export default function Tickets() {
   const [tickets, setTickets] = useState<(Ticket & { users_name: string; creator_name: string })[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -32,8 +32,10 @@ export default function Tickets() {
   if (error) {
     return (
       <div className="flex">
-        <NavSlide onToggle={handleSidebarToggle} />
+      
+        {/* <NavSlide onToggle={handleSidebarToggle} /> */}
         <main
+          
           className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
             isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
           }`}
@@ -53,12 +55,15 @@ export default function Tickets() {
   if (tickets.length === 0) {
     return (
       <div className="flex">
-        <NavSlide onToggle={handleSidebarToggle} />
+      
+        {/* <NavSlide onToggle={handleSidebarToggle} /> */}
+          
         <main
           className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
             isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
           }`}
         >
+          
           <div
             className={`transition-opacity duration-300 ease-in-out ${
               isSidebarOpen ? 'opacity-100' : 'opacity-70'
@@ -73,7 +78,8 @@ export default function Tickets() {
 
   return (
     <div className="flex">
-      <NavSlide onToggle={handleSidebarToggle} />
+      <Header/>
+      {/* <NavSlide onToggle={handleSidebarToggle} /> */}
       <main
         className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
           isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
@@ -88,15 +94,7 @@ export default function Tickets() {
             <div className="mt-8 p-6 bg-white rounded-lg shadow-md">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Tickets Table</h1>
-                <select
-                  value={selectedPeriod}
-                  onChange={(e) => handlePeriodChange(e.target.value)}
-                  className="bg-gray-50 border border-gray-300 rounded px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="October">October</option>
-                  <option value="November">November</option>
-                  <option value="December">December</option>
-                </select>
+                
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -118,6 +116,7 @@ export default function Tickets() {
                       <th className="text-left p-3 font-bold text-gray-800">Closed</th>
                       <th className="text-left p-3 font-bold text-gray-800">Last Updated</th>
                       <th className="text-left p-3 font-bold text-gray-800">Comment</th>
+                      <th className="text-left p-3 font-bold text-gray-800">issue type id</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -139,6 +138,7 @@ export default function Tickets() {
                         <td className="p-3 text-gray-700">{ticket.ticket_close ? new Date(ticket.ticket_close).toLocaleString() : 'N/A'}</td>
                         <td className="p-3 text-gray-700">{new Date(ticket.ticket_time).toLocaleString()}</td>
                         <td className="p-3 text-gray-700">{ticket.comment || 'N/A'}</td>
+                        <td className="p-3 text-gray-700">{ticket.issue_type_id}</td>
                       </tr>
                     ))}
                   </tbody>

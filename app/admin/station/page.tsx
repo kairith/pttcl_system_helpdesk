@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Station } from '../../types/station';
-import NavSlide from '@/app/components/navbar/navbar';
+
 import { fetchStations } from './action';
+import Header from '@/app/components/common/Header';
 
 export default function Stations() {
   const [stations, setStations] = useState<Station[]>([]);
@@ -32,7 +33,7 @@ export default function Stations() {
   if (error) {
     return (
       <div className="flex">
-        <NavSlide onToggle={handleSidebarToggle} />
+        {/* <NavSlide onToggle={handleSidebarToggle} /> */}
         <main
           className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
             isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
@@ -53,7 +54,7 @@ export default function Stations() {
   if (stations.length === 0) {
     return (
       <div className="flex">
-        <NavSlide onToggle={handleSidebarToggle} />
+        {/* <NavSlide onToggle={handleSidebarToggle} /> */}
         <main
           className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
             isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
@@ -73,7 +74,8 @@ export default function Stations() {
 
   return (
     <div className="flex">
-      <NavSlide onToggle={handleSidebarToggle} />
+      <Header/>
+      {/* <NavSlide onToggle={handleSidebarToggle} /> */}
       <main
         className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
           isSidebarOpen ? 'md:ml-64' : 'md:ml-16'

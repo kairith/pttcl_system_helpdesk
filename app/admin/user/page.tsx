@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { User } from '../../types/user';
-import NavSlide from '@/app/components/navbar/navbar';
+
 import { fetchUsers } from '../user/action';
+import Header from '@/app/components/common/Header';
 
 export default function Users() {
   const [users, setUsers] = useState<(User & { rules_name: string })[]>([]);
@@ -32,7 +33,7 @@ export default function Users() {
   if (error) {
     return (
       <div className="flex">
-        <NavSlide onToggle={handleSidebarToggle} />
+        {/* <NavSlide onToggle={handleSidebarToggle} /> */}
         <main
           className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
             isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
@@ -53,7 +54,7 @@ export default function Users() {
   if (users.length === 0) {
     return (
       <div className="flex">
-        <NavSlide onToggle={handleSidebarToggle} />
+        {/* <NavSlide onToggle={handleSidebarToggle} /> */}
         <main
           className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
             isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
@@ -73,7 +74,8 @@ export default function Users() {
 
   return (
     <div className="flex">
-      <NavSlide onToggle={handleSidebarToggle} />
+      <Header />
+      {/* <NavSlide onToggle={handleSidebarToggle} /> */}
       <main
         className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
           isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
@@ -88,15 +90,7 @@ export default function Users() {
             <div className="mt-8 p-6 bg-white rounded-lg shadow-md">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Users Table</h1>
-                <select
-                  value={selectedPeriod}
-                  onChange={(e) => handlePeriodChange(e.target.value)}
-                  className="bg-gray-50 border border-gray-300 rounded px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="October">October</option>
-                  <option value="November">November</option>
-                  <option value="December">December</option>
-                </select>
+                
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">

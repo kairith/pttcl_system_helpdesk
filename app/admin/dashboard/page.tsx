@@ -1,10 +1,7 @@
 "use client";
+import HeaderWithSidebar from "@/app/components/common/Header";
 import React, { useState, useEffect } from "react";
-import Header from "@/app/components/common/Header";
-import Card from "@/app/components/common/Card";
-import Dropdown from "@/app/components/ui/Dropdown";
 import Image from "next/image";
-import NavSlide from "@/app/components/navbar/navbar";
 import { Bar, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -20,6 +17,7 @@ import {
   fetchTicketsCount,
   fetchDashboardData,
 } from "@/app/admin/dashboard/all_ticket";
+import Card from "@/app/components/common/Card";
 
 // Register Chart.js components
 ChartJS.register(
@@ -64,7 +62,11 @@ interface StatsData {
   close: number;
 }
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  isSidebarOpen: boolean;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>("October");
   const [ticketData, setTicketData] = useState<TicketData[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
@@ -82,7 +84,6 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      // Fetch stats for cards
       const countResult = await fetchTicketsCount(selectedPeriod);
       if (countResult.error) {
         setError(countResult.error);
@@ -90,7 +91,6 @@ const Dashboard: React.FC = () => {
         setStats(countResult.stats);
       }
 
-      // Fetch tickets, chart data, bar chart data, and doughnut chart data
       const { tickets, chartData, barChartData, doughnutChartData, error } =
         await fetchDashboardData(selectedPeriod);
       if (error) {
@@ -147,23 +147,29 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <HeaderWithSidebar/>
       <div className="flex">
-        <NavSlide />
-        <main className="flex-1 p-8 ml-60">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+        <main
+          className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
+            isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
+          }`}
+        >
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-8">
+              Dashboard
+            </h1>
             {error && <p className="text-red-600 mb-4">{error}</p>}
+            Dashboard
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
               {statsCards.map((stat, index) => (
-                <Card key={index} className="p-6">
+                <Card key={index} className="p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-gray-600 text-sm font-medium mb-2">
+                      <p className="text-gray-600 text-xs sm:text-sm font-medium mb-2">
                         {stat.title}
                       </p>
-                      <p className="text-3xl font-bold text-gray-800 mb-4">
+                      <p className="text-xl sm:text-3xl font-bold text-gray-800 mb-2 sm:mb-4">
                         {stat.value}
                       </p>
                       <div className="flex items-center">
@@ -174,12 +180,12 @@ const Dashboard: React.FC = () => {
                               : "/images/img_ictrendingdown24px.svg"
                           }
                           alt="trend"
-                          width={24}
-                          height={23}
+                          width={20}
+                          height={20}
                           className="mr-2"
                         />
                         <span
-                          className={`text-sm font-medium ${
+                          className={`text-xs sm:text-sm font-medium ${
                             stat.trendType === "positive"
                               ? "text-green-600"
                               : "text-red-600"
@@ -190,13 +196,13 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                     <div
-                      className={`w-15 h-15 rounded-full ${stat.bgColor} flex items-center justify-center`}
+                      className={`w-12 h-12 sm:w-15 sm:h-15 rounded-full ${stat.bgColor} flex items-center justify-center`}
                     >
                       <Image
                         src={stat.icon}
                         alt={stat.title}
-                        width={40}
-                        height={40}
+                        width={32}
+                        height={32}
                       />
                     </div>
                   </div>
@@ -204,19 +210,22 @@ const Dashboard: React.FC = () => {
               ))}
             </div>
             {/* Total Ticket Chart */}
-            <Card className="mb-8 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
+            <Card className="mb-6 sm:mb-8 p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-0">
                   Total Ticket
                 </h2>
-                <Dropdown
-                  options={["October", "November", "December"]}
+                <select
                   value={selectedPeriod}
-                  onChange={handlePeriodChange}
-                  className="bg-gray-50 border border-gray-300 rounded px-4 py-2"
-                />
+                  onChange={(e) => handlePeriodChange(e.target.value)}
+                  className="w-full sm:w-48 px-2 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="October">2024</option>
+                  <option value="November">2025</option>
+                  <option value="December">2026</option>
+                </select>
               </div>
-              <div className="relative h-96">
+              <div className="relative w-full h-64 sm:h-80">
                 <Bar
                   data={{
                     labels: chartData.map((data) => data.month),
@@ -244,19 +253,18 @@ const Dashboard: React.FC = () => {
                       },
                     },
                   }}
-                  height={300}
                 />
               </div>
             </Card>
             {/* Ticket Summary */}
-            <Card className="p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            <Card className="p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
                 Ticket Summary
               </h2>
-              <div className="flex">
+              <div className="flex flex-col lg:flex-row">
                 {/* Bar Chart */}
-                <div className="flex-1 mr-8">
-                  <div className="relative h-96">
+                <div className="flex-1 mb-6 lg:mb-0 lg:mr-6">
+                  <div className="relative w-full h-64 sm:h-80">
                     <Bar
                       data={{
                         labels: barChartData.map((data) => data.issue_type),
@@ -287,6 +295,7 @@ const Dashboard: React.FC = () => {
                                 : "rgb(72, 128, 255)"
                             ),
                             borderWidth: 1,
+                            borderRadius: 4,
                           },
                         ],
                       }}
@@ -306,27 +315,22 @@ const Dashboard: React.FC = () => {
                             min: 0,
                             max: 50,
                             ticks: {
-                              // Remove stepSize
-                              // Use callback to display specific tick labels
                               callback: function (value) {
-                                // Define which ticks to show
                                 if ([0, 15, 30, 45].includes(Number(value))) {
                                   return value;
                                 }
-                                // Otherwise, hide tick
                                 return null;
                               },
                             },
                           },
                         },
                       }}
-                      height={300}
                     />
                   </div>
                 </div>
                 {/* Doughnut Chart */}
-                <div className="w-96 relative">
-                  <div className="relative w-96 h-96">
+                <div className="w-full lg:w-80">
+                  <div className="relative w-full h-64 sm:h-80">
                     <Doughnut
                       data={{
                         labels: doughnutChartData.map((data) => data.provider),
@@ -352,52 +356,41 @@ const Dashboard: React.FC = () => {
                         maintainAspectRatio: false,
                         plugins: {
                           legend: { position: "bottom" },
-                          title: {
-                            display: true,
-                            text: "Tickets by issue type",
-                          },
+                          title: { display: true, text: "Tickets by Category" },
                         },
                       }}
-                      height={300}
                     />
                   </div>
                 </div>
               </div>
             </Card>
             {/* Ticket Details Table */}
-            <Card className="mt-8 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
+            <Card className="mt-6 sm:mt-8 p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
                   Ticket Details
                 </h2>
-                <Dropdown
-                  options={["October", "November", "December"]}
-                  value={selectedPeriod}
-                  onChange={handlePeriodChange}
-                  className="bg-gray-50 border border-gray-300 rounded px-4 py-2"
-                />
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-100 rounded-xl">
-                      <th className="text-left p-3 font-bold text-gray-800">
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         No
                       </th>
-                      <th className="text-left p-3 font-bold text-gray-800">
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Ticket ID
                       </th>
-
-                      <th className="text-left p-3 font-bold text-gray-800">
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Station ID
                       </th>
-                      <th className="text-left p-3 font-bold text-gray-800">
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Station Type
                       </th>
-                      <th className="text-left p-3 font-bold text-gray-800">
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Issue Description
                       </th>
-                      <th className="text-left p-3 font-bold text-gray-800">
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Issue Type
                       </th>
                     </tr>
@@ -405,21 +398,22 @@ const Dashboard: React.FC = () => {
                   <tbody>
                     {ticketData.map((ticket) => (
                       <tr key={ticket.id} className="border-b border-gray-200">
-                        <td className="p-3 text-gray-700">{ticket.id}</td>
-                        <td className="p-3 text-gray-700">
+                        <td className="p-2 sm:p-3 text-gray-700">
+                          {ticket.id}
+                        </td>
+                        <td className="p-2 sm:p-3 text-gray-700">
                           {ticket.ticket_id}
                         </td>
-
-                        <td className="p-3 text-gray-700">
+                        <td className="p-2 sm:p-3 text-gray-700">
                           {ticket.station_id}
                         </td>
-                        <td className="p-3 text-gray-700">
+                        <td className="p-2 sm:p-3 text-gray-700">
                           {ticket.station_type}
                         </td>
-                        <td className="p-3 text-gray-700">
+                        <td className="p-2 sm:p-3 text-gray-700">
                           {ticket.issue_description}
                         </td>
-                        <td className="p-3 text-gray-700">
+                        <td className="p-2 sm:p-3 text-gray-700">
                           {ticket.issue_type}
                         </td>
                       </tr>

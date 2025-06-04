@@ -140,8 +140,8 @@ const [barChartData] = await connection.execute<RowDataPacket[]>(`
     const [doughnutChartData] = await connection.execute<RowDataPacket[]>(
       `SELECT 
      CASE 
-       WHEN issue_type IN ('hardware', 'software') THEN 'PTT_Digital'
-       WHEN issue_type IN ('despencer', 'aba', 'network', 'atg', 'fleetcard') THEN 'Third_Party'
+       WHEN issue_type IN ('Hardware', 'Software') THEN 'PTT_Digital'
+       WHEN issue_type IN ('Dispenser', 'ABA', 'Network', 'ATG', 'Fleetcard') THEN 'Third_Party'
        ELSE 'Unknown'
      END AS provider,
      ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage

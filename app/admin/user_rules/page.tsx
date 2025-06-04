@@ -2,8 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { tbl_users_rules } from '../../types/rules';
-import NavSlide from '@/app/components/navbar/navbar';
+
 import { fetchUserRules } from '../user_rules/action';
+import Header from '@/app/components/common/Header';
 
 export default function UserRules() {
   const [rules, setRules] = useState<tbl_users_rules[]>([]);
@@ -32,7 +33,7 @@ export default function UserRules() {
   if (error) {
     return (
       <div className="flex">
-        <NavSlide onToggle={handleSidebarToggle} />
+        {/* <NavSlide onToggle={handleSidebarToggle} /> */}
         <main
           className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
             isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
@@ -52,7 +53,9 @@ export default function UserRules() {
 
   return (
     <div className="flex">
-      <NavSlide onToggle={handleSidebarToggle} />
+       <Header />
+      {/* <NavSlide onToggle={handleSidebarToggle} /> */}
+       
       <main
         className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
           isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
