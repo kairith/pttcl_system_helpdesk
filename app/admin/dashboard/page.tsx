@@ -1,5 +1,5 @@
 "use client";
-import { Line } from "react-chartjs-2";
+
 import LineChartCard from "@/app/components/LineChartCard";
 import HeaderWithSidebar from "@/app/components/common/Header";
 import React, { useState, useEffect } from "react";
@@ -35,7 +35,7 @@ ChartJS.register(
 interface TicketData {
   id: number;
   ticket_id: string;
-  province: string;
+  status?: string;
   station_id: string;
   station_type: string;
   issue_description: string;
@@ -151,7 +151,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <HeaderWithSidebar/>
+      <HeaderWithSidebar />
       <div className="flex">
         <main
           className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
@@ -215,7 +215,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
             </div>
             {/* Line Chart Card */}
             <div className="mb-6 sm:mb-8">
-            <LineChartCard title={""}/>
+              <LineChartCard title={""} />
             </div>
             {/* Total Ticket Chart */}
             <Card className="mb-6 sm:mb-8 p-4 sm:p-6">
@@ -264,9 +264,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                 />
               </div>
             </Card>
-            <div>
-            
-            </div>
+            <div></div>
             {/* Ticket Summary */}
             <Card className="p-4 sm:p-6">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
@@ -317,7 +315,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                           legend: { display: false },
                           title: {
                             display: true,
-                            text: "Tickets by Issue Type",
+                            text: "Tickets by Issue Type  ",
                           },
                         },
                         scales: {
@@ -367,7 +365,10 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                         maintainAspectRatio: false,
                         plugins: {
                           legend: { position: "bottom" },
-                          title: { display: true, text: "Tickets by Category" },
+                          title: {
+                            display: true,
+                            text: "Tickets by Category %",
+                          },
                         },
                       }}
                     />
@@ -375,7 +376,6 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                 </div>
               </div>
             </Card>
-          
             {/* Ticket Details Table */}
             <Card className="mt-6 sm:mt-8 p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -393,6 +393,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Ticket ID
                       </th>
+                    
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Station ID
                       </th>
@@ -405,6 +406,9 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Issue Type
                       </th>
+                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
+                        status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -416,6 +420,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                         <td className="p-2 sm:p-3 text-gray-700">
                           {ticket.ticket_id}
                         </td>
+                       
                         <td className="p-2 sm:p-3 text-gray-700">
                           {ticket.station_id}
                         </td>
@@ -427,6 +432,9 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                         </td>
                         <td className="p-2 sm:p-3 text-gray-700">
                           {ticket.issue_type}
+                        </td>
+                         <td className="p-2 sm:p-3 text-gray-700">
+                          {ticket.status}
                         </td>
                       </tr>
                     ))}

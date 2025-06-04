@@ -108,7 +108,7 @@ export async function fetchDashboardData(period?: string) {
 
     // Fetch all tickets
     const [tickets] = await connection.execute<RowDataPacket[]>(
-      `SELECT id, ticket_id, province, station_id, station_type, issue_description, issue_type 
+      `SELECT id, ticket_id, status, station_id, station_type, issue_description, issue_type 
        FROM tbl_ticket${whereClause}`,
       params
     );

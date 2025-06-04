@@ -160,7 +160,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
               family: "'Inter', sans-serif",
             },
             color: "#4B5563",
-            stepSize: 1,
+            stepSize: 5,
             beginAtZero: true,
           },
           grid: {
