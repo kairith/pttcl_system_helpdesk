@@ -1,25 +1,15 @@
-'use client';
+"use client";
+import React, { useState, useEffect, Suspense } from "react";
+import { tbl_users_rules } from "../../types/rules";
+import { fetchUserRules } from "../user_rules/action";
+import Header from "@/app/components/common/Header";
+interface UserRulesProps {
+  isSidebarOpen: boolean;
+}
 
-import { useState, useEffect, Suspense } from 'react';
-import { tbl_users_rules } from '../../types/rules';
-
-import { fetchUserRules } from '../user_rules/action';
-import Header from '@/app/components/common/Header';
-
-export default function UserRules() {
+export default function UserRules({ isSidebarOpen }: UserRulesProps) {
   const [rules, setRules] = useState<tbl_users_rules[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState('October');
-
-  const handleSidebarToggle = (isOpen: boolean) => {
-    setIsSidebarOpen(isOpen);
-  };
-
-  const handlePeriodChange = (value: string) => {
-    setSelectedPeriod(value);
-    // Optionally, add logic to filter rules based on selected period
-  };
 
   useEffect(() => {
     async function loadRules() {
@@ -32,52 +22,60 @@ export default function UserRules() {
 
   if (error) {
     return (
-      <div className="flex">
-        {/* <NavSlide onToggle={handleSidebarToggle} /> */}
-        <main
-          className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
-          }`}
-        >
-          <div
-            className={`transition-opacity duration-300 ease-in-out ${
-              isSidebarOpen ? 'opacity-100' : 'opacity-70'
+      <div className="min-h-screen bg-gray-100">
+        <div className="flex">
+          <main
+            className={`flex-1 p-4 sm:p-6 lg:p-8 min-h-screen transition-all duration-300 ease-in-out ${
+              isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
             }`}
           >
-            <div className="text-red-500 text-center">{error}</div>
-          </div>
-        </main>
+            <div className="flex items-center justify-center h-full">
+              <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md w-full">
+                <svg
+                  className="mx-auto h-12 w-12 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="mt-4 text-lg font-semibold text-red-600">{error}</p>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex">
-       <Header />
-      {/* <NavSlide onToggle={handleSidebarToggle} /> */}
-       
-      <main
-        className={`flex-1 p-4 min-h-screen transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'md:ml-64' : 'md:ml-16'
-        }`}
-      >
-        <div
-          className={`transition-opacity duration-300 ease-in-out ${
-            isSidebarOpen ? 'opacity-100' : 'opacity-70'
+    <div className="min-h-screen bg-gray-100">
+      <Header />
+      <div className="flex">
+        <main
+          className={`flex-1 p-4 sm:p-6 lg:p-8 min-h-screen transition-all duration-300 ease-in-out ${
+            isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
           }`}
         >
-          <div className="container mx-auto">
-            <div className="mt-8 p-6 bg-white rounded-lg shadow-md">
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Rules Table</h1>
-                
+          <div className="container mx-auto max-w-5xl">
+            <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+              <div className="mb-4 sm:mb-6">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                  Rules
+                </h1>
               </div>
               <Suspense
                 fallback={
-                  <div className="text-center text-gray-600 py-4">
-                    <div className="flex justify-center items-center">
+                  <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center space-x-3">
                       <svg
-                        className="animate-spin h-8 w-8 text-blue-500 mr-3"
+                        className="animate-spin h-8 w-8 text-blue-600"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -89,42 +87,68 @@ export default function UserRules() {
                           r="10"
                           stroke="currentColor"
                           strokeWidth="4"
-                        ></circle>
+                        />
                         <path
                           className="opacity-75"
                           fill="currentColor"
                           d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
-                        ></path>
+                        />
                       </svg>
-                      <span>Loading rules...</span>
+                      <span className="text-lg font-medium text-gray-600">Loading roles...</span>
                     </div>
                   </div>
                 }
               >
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-gray-100 rounded-xl">
-                        <th className="text-left p-3 font-bold text-gray-800">Rules ID</th>
-                        <th className="text-left p-3 font-bold text-gray-800">Rules Name</th>
-                       
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rules.map((rule) => (
-                        <tr key={rule.rules_id} className="border-b border-gray-200 hover:bg-gray-50">
-                          <td className="p-3 text-gray-700">{rule.rules_id}</td>
-                          <td className="p-3 text-gray-700">{rule.rules_name}</td>
+                {rules.length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md w-full">
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      <p className="mt-4 text-lg font-semibold text-gray-600">No Rules found.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="bg-gray-200 text-gray-800 font-semibold rounded-t-lg sticky top-0">
+                          <th className="text-left p-3 sm:p-4 first:rounded-tl-lg">Role ID</th>
+                          <th className="text-left p-3 sm:p-4 last:rounded-tr-lg">Role Name</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {rules.map((row, index) => (
+                          <tr
+                            key={row.rules_id}
+                            className={`border-b border-gray-200 hover:bg-blue-50 transition-all duration-150 ${
+                              index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                            }`}
+                          >
+                            <td className="p-3 sm:p-4 text-gray-700">{row.rules_id}</td>
+                            <td className="p-3 sm:p-4 text-gray-700">{row.rules_name}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </Suspense>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

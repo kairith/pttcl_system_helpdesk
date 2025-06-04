@@ -92,7 +92,7 @@ const HeaderWithSidebar = () => {
             <Calendar size={20} />
             {isSidebarOpen && <span>Report</span>}
           </Link>
-          <Link href="/logout" className="flex items-center gap-3 text-red-600 hover:bg-red-100 rounded px-3 py-2 transition-all">
+          <Link href="/" className="flex items-center gap-3 text-red-600 hover:bg-red-100 rounded px-3 py-2 transition-all">
             <LogOut size={20} />
             {isSidebarOpen && <span>Logout</span>}
           </Link>
