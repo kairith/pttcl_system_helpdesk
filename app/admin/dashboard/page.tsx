@@ -1,4 +1,6 @@
 "use client";
+import { Line } from "react-chartjs-2";
+import LineChartCard from "@/app/components/LineChartCard";
 import HeaderWithSidebar from "@/app/components/common/Header";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -67,6 +69,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
+  const [lineChartData, setLineChartData] = useState<ChartData[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<string>("October");
   const [ticketData, setTicketData] = useState<TicketData[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
@@ -100,6 +103,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
         setChartData(chartData);
         setBarChartData(barChartData);
         setDoughnutChartData(doughnutChartData);
+        setLineChartData(lineChartData);
       }
     };
 
@@ -209,6 +213,10 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                 </Card>
               ))}
             </div>
+            {/* Line Chart Card */}
+            <div className="mb-6 sm:mb-8">
+            <LineChartCard title={""}/>
+            </div>
             {/* Total Ticket Chart */}
             <Card className="mb-6 sm:mb-8 p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6">
@@ -256,6 +264,9 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                 />
               </div>
             </Card>
+            <div>
+            
+            </div>
             {/* Ticket Summary */}
             <Card className="p-4 sm:p-6">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
@@ -364,6 +375,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                 </div>
               </div>
             </Card>
+          
             {/* Ticket Details Table */}
             <Card className="mt-6 sm:mt-8 p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
