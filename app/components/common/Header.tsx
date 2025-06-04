@@ -18,7 +18,6 @@ import {
 const HeaderWithSidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
   const menuItems = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
     { label: 'Ticket', href: '/admin/ticket', icon: <Ticket size={20} /> },
@@ -46,7 +45,7 @@ const HeaderWithSidebar = () => {
           <div className="flex-1 max-w-md mx-8">
             <div className="relative bg-gray-50 rounded-full px-4 py-2 flex items-center">
               <Image src="/images/img_search.svg" alt="Search" width={15} height={15} className="mr-3" />
-              <input type="text" placeholder="Search" className="bg-transparent outline-none flex-1 text-gray-600" />
+              <input type="text" placeholder="Search" className="bg-transparent outline-none flex-1 text-black-90" />
             </div>
           </div>
           <div className="flex items-center space-x-6">
@@ -61,7 +60,7 @@ const HeaderWithSidebar = () => {
         className={`fixed top-0 left-0 h-screen bg-white border-r border-gray-200 shadow-sm transition-transform duration-300 z-50 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
-      >
+        >
         {/* Top Logo Section */}
         <div className="flex items-center gap-3 p-4">
           <Image
@@ -73,7 +72,7 @@ const HeaderWithSidebar = () => {
             onClick={toggleSidebar} // Toggle sidebar on logo click
           />
           {isSidebarOpen && <span className="text-blue-700 text-sm font-semibold">PTT (Cambodia) Limited</span>}
-        </div>
+      </div>
 
         {/* Main Menu */}
         <nav className="mt-6 px-2 space-y-1 text-sm font-medium">

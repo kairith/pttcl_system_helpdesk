@@ -222,12 +222,12 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-0">
                   Total Ticket
-                </h2>
-                <select
+                  </h2>
+                  <select
                   value={selectedPeriod}
                   onChange={(e) => handlePeriodChange(e.target.value)}
                   className="w-full sm:w-48 px-2 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
+                  >
                   <option value="October">2024</option>
                   <option value="November">2025</option>
                   <option value="December">2026</option>
@@ -252,7 +252,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                     maintainAspectRatio: false,
                     plugins: {
                       legend: { position: "top" },
-                      title: { display: true, text: "Tickets per Month" },
+                      title: { display: true, text: "All Tickets" },
                     },
                     scales: {
                       y: {
