@@ -21,7 +21,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
   useEffect(() => {
     async function loadStations() {
       const { stations, error } = await fetchStations();
-      setStations(stations);
+      setStations(stations || []);
       setError(error);
     }
     loadStations();
@@ -32,63 +32,11 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
       <div className="min-h-screen bg-gray-100">
         <div className="flex">
           <main
-            className={`flex-1 p-4 sm:p-6 lg:p-8 min-h-screen transition-all duration-300 ease-in-out ${
+            className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
               isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
             }`}
           >
-            <div className="flex items-center justify-center h-full">
-              <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md w-full">
-                <svg
-                  className="mx-auto h-12 w-12 text-red-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <p className="mt-4 text-lg font-semibold text-red-600">{error}</p>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  }
-
-  if (stations.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-100">
-        <div className="flex">
-          <main
-            className={`flex-1 p-4 sm:p-6 lg:p-8 min-h-screen transition-all duration-300 ease-in-out ${
-              isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
-            }`}
-          >
-            <div className="flex items-center justify-center h-full">
-              <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md w-full">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <p className="mt-4 text-lg font-semibold text-gray-600">No stations found.</p>
-              </div>
-            </div>
+            <div className="text-red-500 text-center text-sm sm:text-base">{error}</div>
           </main>
         </div>
       </div>
@@ -100,15 +48,15 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
       <Header />
       <div className="flex">
         <main
-          className={`flex-1 p-4 sm:p-6 lg:p-8 min-h-screen transition-all duration-300 ease-in-out ${
+          className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
             isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
           }`}
         >
-          <div className="container mx-auto max-w-7xl">
-            <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                  Stations Table
+          <div className="container mx-auto">
+            <div className="mt-19 sm:mt-6 p-4 sm:p-6 bg-white rounded-lg shadow-md">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-8 gap-4">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
+                  Stations
                 </h1>
                 <select
                   value={selectedPeriod}
@@ -120,32 +68,41 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                   <option value="December">December</option>
                 </select>
               </div>
+              {error && <p className="text-red-600 mb-4">{error}</p>}
               <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse">
+                <table className="w-full text-sm min-w-[600px]">
                   <thead>
-                    <tr className="bg-gray-200 text-gray-800 font-semibold rounded-t-lg">
-                      <th className="text-left p-3 sm:p-4 first:rounded-tl-lg">ID</th>
-                      <th className="text-left p-3 sm:p-4">Station ID</th>
-                      <th className="text-left p-3 sm:p-4">Station Name</th>
-                      <th className="text-left p-3 sm:p-4">Province</th>
-                      <th className="text-left p-3 sm:p-4 last:rounded-tr-lg">Station Type</th>
+                    <tr className="bg-gray-100 rounded-xl">
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">ID</th>
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station ID</th>
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station Name</th>
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Province</th>
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station Type</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {stations.map((station, index) => (
-                      <tr
-                        key={station.id}
-                        className={`border-b border-gray-200 hover:bg-blue-50 transition-colors duration-150 ${
-                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        }`}
-                      >
-                        <td className="p-3 sm:p-4 text-gray-700">{station.id}</td>
-                        <td className="p-3 sm:p-4 text-gray-700">{station.station_id}</td>
-                        <td className="p-3 sm:p-4 text-gray-700">{station.station_name}</td>
-                        <td className="p-3 sm:p-4 text-gray-700">{station.province}</td>
-                        <td className="p-3 sm:p-4 text-gray-700">{station.station_type}</td>
+                    {stations.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-gray-500">
+                          No stations found.
+                        </td>
                       </tr>
-                    ))}
+                    ) : (
+                      stations.map((station, index) => (
+                        <tr
+                          key={station.id}
+                          className={`border-b border-gray-200 hover:bg-blue-50 transition-colors duration-150 ${
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }`}
+                        >
+                          <td className="p-2 sm:p-3 text-gray-700">{station.id}</td>
+                          <td className="p-2 sm:p-3 text-gray-700">{station.station_id}</td>
+                          <td className="p-2 sm:p-3 text-gray-700">{station.station_name}</td>
+                          <td className="p-2 sm:p-3 text-gray-700">{station.province}</td>
+                          <td className="p-2 sm:p-3 text-gray-700">{station.station_type}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

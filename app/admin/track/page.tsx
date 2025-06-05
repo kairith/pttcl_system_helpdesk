@@ -168,7 +168,7 @@ export default function TrackTicketPage() {
                   <p className="text-gray-800">{ticket.ticket_time || 'N/A'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">User Create Ticket ID</label>
+                  <label className="text-sm font-medium text-gray-600">Created By User ID</label>
                   <p className="text-gray-800">{ticket.user_create_ticket}</p>
                 </div>
               </div>

@@ -1,7 +1,6 @@
-// components/HeaderWithSidebar.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -17,7 +16,31 @@ import {
 
 const HeaderWithSidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  // Close sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isSidebarOpen &&
+        sidebarRef.current &&
+        headerRef.current &&
+        !sidebarRef.current.contains(event.target as Node) &&
+        !headerRef.current.contains(event.target as Node)
+      ) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSidebarOpen]);
+
   const menuItems = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
     { label: 'Ticket', href: '/admin/ticket', icon: <Ticket size={20} /> },
@@ -30,11 +53,11 @@ const HeaderWithSidebar = () => {
   return (
     <div>
       {/* Header */}
-      <header className="bg-white shadow-md h-16 fixed top-0 left-0 right-0 z-50">
+      <header ref={headerRef} className="bg-white shadow-md h-16 fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center justify-between h-full px-6">
           <div className="flex items-center">
             <Image
-              src="/img/logo_Station2.png"
+              src="/img/menu.png"
               alt="Logo"
               width={32}
               height={32}
@@ -48,19 +71,28 @@ const HeaderWithSidebar = () => {
               <input type="text" placeholder="Search" className="bg-transparent outline-none flex-1 text-black-90" />
             </div>
           </div>
-          <div className="flex items-center space-x-6">
-            {/* Notifications and Profile */}
-            {/* Add your notifications and profile here */}
-          </div>
+
+          <a href="/admin/dashboard" className="flex items-center space-x-6">
+            <div className="flex items-center space-x-6">
+              <Image
+                src="/img/logo_Station2.png"
+                alt="Logo"
+                width={32}
+                height={32}
+                className="cursor-pointer"
+              />
+            </div>
+          </a>
         </div>
       </header>
 
       {/* Sidebar */}
       <div
+        ref={sidebarRef}
         className={`fixed top-0 left-0 h-screen bg-white border-r border-gray-200 shadow-sm transition-transform duration-300 z-50 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
-        >
+      >
         {/* Top Logo Section */}
         <div className="flex items-center gap-3 p-4">
           <Image
@@ -72,7 +104,7 @@ const HeaderWithSidebar = () => {
             onClick={toggleSidebar} // Toggle sidebar on logo click
           />
           {isSidebarOpen && <span className="text-blue-700 text-sm font-semibold">PTT (Cambodia) Limited</span>}
-      </div>
+        </div>
 
         {/* Main Menu */}
         <nav className="mt-6 px-2 space-y-1 text-sm font-medium">

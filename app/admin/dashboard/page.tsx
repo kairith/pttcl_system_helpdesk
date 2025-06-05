@@ -162,10 +162,12 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-8">
               Dashboard
             </h1>
-            {error && <p className="text-red-600 mb-4">{error}</p>}
-            Dashboard
+            {error && <p className="text-red-600 mb-4 ">{error}</p>}
+           
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            {/* Card design */}
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8 pt-5">
               {statsCards.map((stat, index) => (
                 <Card key={index} className="p-4 sm:p-6">
                   <div className="flex items-center justify-between">
@@ -393,7 +395,6 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Ticket ID
                       </th>
-                    
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
                         Station ID
                       </th>
@@ -450,3 +451,5 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
 };
 
 export default Dashboard;
+
+
