@@ -4,43 +4,58 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import './layout.tsx';
-import './globals.css'; 
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setErrors([]);
+  setIsLoading(true);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors([]);
+  // Client-side validation
+  if (!/^\S+@\S+\.\S+$/.test(email)) {
+    setErrors(['Invalid email format.']);
+    setIsLoading(false);
+    return;
+  }
+  if (password.length < 6) {
+    setErrors(['Password must be at least 6 characters.']);
+    setIsLoading(false);
+    return;
+  }
 
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const response = await fetch('/api/data/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, rememberMe }),
+    });
 
-      if (!response.ok) {
-        const data = await response.json();
-        setErrors([data.error || 'Login failed. Please try again.']);
-        return;
-      }
+    const data = await response.json();
 
-      // On successful login, redirect to a dashboard or home page
-      router.push('/dashboard');
-    } catch (error) {
-      setErrors(['An error occurred. Please try again later.']);
+    if (!response.ok) {
+      setErrors([data.error || 'Login failed. Please try again.']);
+      setIsLoading(false);
+      return;
     }
-  };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+    // Store token and user data in sessionStorage
+    sessionStorage.setItem('token', data.token);
+    sessionStorage.setItem('user', JSON.stringify(data.user));
+
+    // Redirect based on role
+    router.push(data.user.isAdmin ? '/admin/dashboard' : '/dashboard');
+  } catch (error) {
+    setErrors(['An error occurred. Please try again later.']);
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="login-page flex items-center justify-center min-h-screen bg-gray-100">
@@ -49,7 +64,7 @@ export default function LoginPage() {
           <div className="card-header bg-gray-500 text-white text-center flex flex-col items-center py-4 rounded-t-2xl">
             <Image
               src="/img/logo_Station.png"
-              alt="Logo"
+              alt="PTT Cambodia Logo"
               width={120}
               height={120}
               className="mb-2"
@@ -61,36 +76,36 @@ export default function LoginPage() {
               Login with your email and password.
             </p>
             {errors.length > 0 && (
-              <div className="alert alert-danger text-center mb-4">
+              <div className="alert alert-danger text-center mb-4" role="alert">
                 {errors.map((error, index) => (
                   <div key={index}>{error}</div>
                 ))}
               </div>
             )}
             <form onSubmit={handleSubmit}>
-              <div className="input-group mb-4 relative">
+              <div className="input-group mb-4 flex">
                 <input
                   type="email"
-                  className="form-control w-full p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-control flex-1 p-2 border border-r-0 border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-                <span className="input-group-text absolute right-0 top-0 h-full flex items-center px-3 bg-gray-200 rounded-r-md">
+                <span className="input-group-text p-2 bg-gray-200 rounded-r-md">
                   <i className="fas fa-envelope animate-bounce"></i>
                 </span>
               </div>
-              <div className="input-group mb-4 relative">
+              <div className="input-group mb-4 flex">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  className="form-control w-full p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="form-control flex-1 p-2 border border-r-0 border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                <span className="input-group-text absolute right-0 top-0 h-full flex items-center px-3 bg-gray-200 rounded-r-md">
+                <span className="input-group-text p-2 bg-gray-200 rounded-r-md">
                   <i className="fas fa-lock animate-bounce"></i>
                 </span>
               </div>
@@ -100,7 +115,7 @@ export default function LoginPage() {
                   className="form-check-input"
                   id="showpassword"
                   checked={showPassword}
-                  onChange={togglePasswordVisibility}
+                  onChange={() => setShowPassword(!showPassword)}
                 />
                 <label className="form-check-label" htmlFor="showpassword">
                   Show Password
@@ -126,8 +141,9 @@ export default function LoginPage() {
               <button
                 type="submit"
                 className="btn btn-primary w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+                disabled={isLoading}
               >
-                Login
+                {isLoading ? 'Logging in...' : 'Login'}
               </button>
             </form>
           </div>
