@@ -1,9 +1,9 @@
-
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 
-export async function GET(request: Request, { params }: { params: { ticket_id: string } }) {
-  const { ticket_id } = params;
+export async function GET(request: NextRequest, context: { params: Promise<{ ticket_id: string }> }) {
+  // Await params to resolve the promise
+  const { ticket_id } = await context.params;
   console.log('API route hit for ticket_id:', ticket_id);
 
   // Create MySQL connection
@@ -32,7 +32,7 @@ export async function GET(request: Request, { params }: { params: { ticket_id: s
         return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
       }
 
-      return NextResponse.json({ ticket: rows[0] });
+      return NextResponse.json({ ticket: rows[0] }, { status: 200 });
     } catch (error) {
       console.error('Error fetching ticket:', error);
       await connection.end();

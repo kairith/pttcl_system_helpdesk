@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect } from "react";
 import { User } from "../../types/user";
@@ -14,6 +15,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
   const [error, setError] = useState<string | null>(null);
   const [filterId, setFilterId] = useState("");
   const [showFilterInput, setShowFilterInput] = useState(false);
+  const [showExportOptions, setShowExportOptions] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
     setShowFilterInput(false);
   };
 
-  const handleExport = async () => {
+  const handleExport = async (format: "excel" | "pdf" | "csv") => {
     try {
       const token = sessionStorage.getItem("token");
       if (!token) {
@@ -50,31 +52,41 @@ export default function Users({ isSidebarOpen }: UsersProps) {
         return;
       }
 
-      const response = await fetch("/api/data/export-users", {
+      const response = await fetch(`/api/data/export-users?format=${format}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
         },
       });
+
       if (!response.ok) {
         const data = await response.json();
         if (data.error && data.error.includes("expired")) {
           setError("Session expired. Please log in again.");
           router.push("/");
         } else {
-          throw new Error(data.error || "Export failed");
+          throw new Error(data.error || `Export to ${format} failed`);
         }
       }
+
+      const extension = format === "excel" ? "xlsx" : format;
+      const fileName = `users_export.${extension}`;
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "users_export.zip";
+      a.download = fileName;
       a.click();
       window.URL.revokeObjectURL(url);
+      setShowExportOptions(false);
     } catch (error) {
       setError(`Failed to export users: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
+  };
+
+  const toggleExportOptions = () => {
+    setShowExportOptions((prev) => !prev);
   };
 
   const filteredUsers = filterId
@@ -112,7 +124,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
               {error && <p className="text-red-600 mb-4">{error}</p>}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <button
-                  onClick={() => router.push("/admin/add_user")}
+                  onClick={() => router.push("/admin/user/add_user")}
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex-1 sm:flex-none sm:w-40 text-sm sm:text-base"
                 >
                   <span className="mr-2">+</span> Create User
@@ -142,12 +154,36 @@ export default function Users({ isSidebarOpen }: UsersProps) {
                     </div>
                   )}
                 </div>
-                <button
-                  onClick={handleExport}
-                  className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 flex-1 sm:flex-none sm:w-32 text-sm sm:text-base"
-                >
-                  <span className="mr-2">📄</span> Export
-                </button>
+                <div className="relative flex items-center gap-3">
+                  <button
+                    onClick={toggleExportOptions}
+                    className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 flex-1 sm:flex-none sm:w-32 text-sm sm:text-base flex items-center justify-center"
+                  >
+                    <span className="mr-2">📄</span> Export
+                  </button>
+                  {showExportOptions && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleExport("excel")}
+                        className="bg-white border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base"
+                      >
+                        Excel
+                      </button>
+                      <button
+                        onClick={() => handleExport("pdf")}
+                        className="bg-white border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base"
+                      >
+                        PDF
+                      </button>
+                      <button
+                        onClick={() => handleExport("csv")}
+                        className="bg-white border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base"
+                      >
+                        CSV
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

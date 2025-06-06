@@ -65,7 +65,7 @@ export async function fetchTicketsCount(period?: string) {
       params
     );
 
-    console.log("fetchTicketsCount results:", rows);
+    // console.log("fetchTicketsCount results:", rows);
 
     await connection.end();
 
@@ -149,12 +149,12 @@ const [barChartData] = await connection.execute<RowDataPacket[]>(`
    GROUP BY provider`
     );
 
-    console.log("fetchDashboardData results:", {
-      tickets,
-      chartData,
-      barChartData,
-      doughnutChartData,
-    });
+    // console.log("fetchDashboardData results:", {
+    //   tickets,
+    //   chartData,
+    //   barChartData,
+    //   doughnutChartData,
+    // });
 
     await connection.end();
 
