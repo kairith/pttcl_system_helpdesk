@@ -53,7 +53,7 @@ export default function AddTicket() {
     const token = sessionStorage.getItem('token');
     if (!token) {
       setErrors(['Please log in to create a ticket.']);
-      setTimeout(() => router.push('/login'), 2000);
+      setTimeout(() => router.push('/'), 2000);
       return;
     }
     try {
@@ -63,18 +63,18 @@ export default function AddTicket() {
       if (!userId) {
         setErrors(['Invalid token: userId missing (tried users_id, userId, id, sub). Please log in again.']);
         sessionStorage.removeItem('token');
-        setTimeout(() => router.push('/login'), 2000);
+        setTimeout(() => router.push('/'), 2000);
         return;
       }
       if (decoded.exp * 1000 < Date.now()) {
         setErrors(['Your session has expired. Please log in again.']);
         sessionStorage.removeItem('token');
-        setTimeout(() => router.push('/login'), 2000);
+        setTimeout(() => router.push('/'), 2000);
       }
     } catch (error) {
       setErrors(['Invalid token. Please log in again.']);
       sessionStorage.removeItem('token');
-      setTimeout(() => router.push('/login'), 2000);
+      setTimeout(() => router.push('/'), 2000);
     }
   }, [router]);
 
@@ -141,7 +141,7 @@ export default function AddTicket() {
     if (!token) {
       setErrors(['Please log in to create a ticket.']);
       setIsLoading(false);
-      setTimeout(() => router.push('/login'), 2000);
+      setTimeout(() => router.push('/'), 2000);
       return;
     }
 
@@ -210,7 +210,7 @@ export default function AddTicket() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-6 sm:p-8">
         <HeaderWithSidebar />
-        <h1 className="text-3xl font-semibold text-gray-800 mb-6">Add New Ticket</h1>
+        <h1 className="text-3xl font-semibold text-gray-800 mb-6">Add Ticket</h1>
         {errors.length > 0 && (
           <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-3 mb-6 text-sm font-medium">
             {errors.map((error, index) => (
