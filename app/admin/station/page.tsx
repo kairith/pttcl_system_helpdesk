@@ -58,15 +58,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
                   Stations
                 </h1>
-                <select
-                  value={selectedPeriod}
-                  onChange={(e) => handlePeriodChange(e.target.value)}
-                  className="w-full sm:w-48 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors duration-200"
-                >
-                  <option value="October">October</option>
-                  <option value="November">November</option>
-                  <option value="December">December</option>
-                </select>
+               
               </div>
               {error && <p className="text-red-600 mb-4">{error}</p>}
               <div className="overflow-x-auto">

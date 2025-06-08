@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Ticket,
@@ -18,6 +19,7 @@ const HeaderWithSidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const router = useRouter();
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -41,6 +43,16 @@ const HeaderWithSidebar = () => {
     };
   }, [isSidebarOpen]);
 
+  const handleLogout = () => {
+    const confirmed = window.confirm('Are you sure you want to logout?');
+    if (confirmed) {
+      // Clear JWT token (adjust based on your auth storage)
+      sessionStorage.removeItem('token');
+      // Redirect to home page
+      router.push('/');
+    }
+  };
+
   const menuItems = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
     { label: 'Ticket', href: '/admin/ticket', icon: <Ticket size={20} /> },
@@ -62,7 +74,7 @@ const HeaderWithSidebar = () => {
               width={32}
               height={32}
               className="cursor-pointer"
-              onClick={toggleSidebar} // Toggle sidebar on logo click
+              onClick={toggleSidebar}
             />
           </div>
           <div className="flex-1 max-w-md mx-8">
@@ -71,7 +83,6 @@ const HeaderWithSidebar = () => {
               <input type="text" placeholder="Search" className="bg-transparent outline-none flex-1 text-black-90" />
             </div>
           </div>
-
           <a href="/admin/dashboard" className="flex items-center space-x-6">
             <div className="flex items-center space-x-6">
               <Image
@@ -101,7 +112,7 @@ const HeaderWithSidebar = () => {
             width={32}
             height={32}
             className="cursor-pointer"
-            onClick={toggleSidebar} // Toggle sidebar on logo click
+            onClick={toggleSidebar}
           />
           {isSidebarOpen && <span className="text-blue-700 text-sm font-semibold">PTT (Cambodia) Limited</span>}
         </div>
@@ -109,7 +120,11 @@ const HeaderWithSidebar = () => {
         {/* Main Menu */}
         <nav className="mt-6 px-2 space-y-1 text-sm font-medium">
           {menuItems.map((item) => (
-            <Link key={item.href} href={item.href} className="flex items-center gap-3 text-gray-700 hover:bg-gray-100 rounded px-3 py-2 transition-all">
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center gap-3 text-gray-700 hover:bg-gray-100 rounded px-3 py-2 transition-all"
+            >
               {item.icon}
               {isSidebarOpen && <span>{item.label}</span>}
             </Link>
@@ -119,14 +134,20 @@ const HeaderWithSidebar = () => {
         {/* Finalize Section */}
         <div className="absolute bottom-4 left-0 w-full px-2">
           {isSidebarOpen && <p className="text-xs text-gray-400 px-1 mb-2">Finalize</p>}
-          <Link href="/admin/report" className="flex items-center gap-3 text-gray-700 hover:bg-gray-100 rounded px-3 py-2 transition-all">
+          <Link
+            href="/admin/report"
+            className="flex items-center gap-3 text-gray-700 hover:bg-gray-100 rounded px-3 py-2 transition-all"
+          >
             <Calendar size={20} />
             {isSidebarOpen && <span>Report</span>}
           </Link>
-          <Link href="/" className="flex items-center gap-3 text-red-600 hover:bg-red-100 rounded px-3 py-2 transition-all">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 text-red-600 hover:bg-red-100 rounded px-3 py-2 transition-all w-full text-left"
+          >
             <LogOut size={20} />
             {isSidebarOpen && <span>Logout</span>}
-          </Link>
+          </button>
         </div>
       </div>
     </div>
