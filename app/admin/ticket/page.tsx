@@ -69,7 +69,7 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
     setFilteredTickets(tickets);
   };
 
-  const handleExport = async (format: 'excel' | 'pdf' | 'csv') => {
+  const handleExport = async (format: 'xlsx' | 'pdf' | 'csv') => {
     const token = sessionStorage.getItem('token');
     if (!token) {
       alert('Please log in to export tickets.');
@@ -209,7 +209,7 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
                   {showExportOptions && (
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleExport('excel')}
+                        onClick={() => handleExport('xlsx')}
                         className="bg-white border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base disabled:opacity-50"
                         disabled={isExporting}
                       >
@@ -239,21 +239,21 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
                     <tr className="bg-gray-100 rounded-xl">
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">ID</th>
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Ticket ID</th>
-                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station Name</th>
-                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station Type</th>
-                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Province</th>
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station ID</th>
+                      {/* <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station Type</th> */}
+                      {/* <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Province</th> */}
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Issue Description</th>
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Issue Type</th>
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Status</th>
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Assign</th>
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Opened</th>
-                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">On Hold</th>
+                      {/* <th className="text-left p-2 sm:p-3 font-bold text-gray-800">On Hold</th>
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">In Progress</th>
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Pending Vendor</th>
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Closed</th>
                       <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Last Updated</th>
-                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Comment</th>
-                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Issue Type ID</th>
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Comment</th> */}
+                      {/* <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Issue Type ID</th> */}
                     </tr>
                   </thead>
                   <tbody>
@@ -268,9 +268,9 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
                         <tr key={ticket.id} className="border-b border-gray-200 hover:bg-gray-50">
                           <td className="p-2 sm:p-3 text-gray-700">{ticket.id}</td>
                           <td className="p-2 sm:p-3 text-gray-700">{ticket.ticket_id}</td>
-                          <td className="p-2 sm:p-3 text-gray-700">{ticket.station_name || 'N/A'}</td>
-                          <td className="p-2 sm:p-3 text-gray-700">{ticket.station_type}</td>
-                          <td className="p-2 sm:p-3 text-gray-700">{ticket.province}</td>
+                          {/* <td className="p-2 sm:p-3 text-gray-700">{ticket.station_name || 'N/A'}</td> */}
+                          <td className="p-2 sm:p-3 text-gray-700">{ticket.station_id}</td>
+                          {/* <td className="p-2 sm:p-3 text-gray-700">{ticket.province}</td> */}
                           <td className="p-2 sm:p-3 text-gray-700">{ticket.issue_description}</td>
                           <td className="p-2 sm:p-3 text-gray-700">{ticket.issue_type}</td>
                           <td className="p-2 sm:p-3 text-gray-700">{ticket.status}</td>
@@ -280,33 +280,33 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
                               ? new Date(ticket.ticket_open).toLocaleString()
                               : 'N/A'}
                           </td>
-                          <td className="p-2 sm:p-3 text-gray-700">
+                          {/* <td className="p-2 sm:p-3 text-gray-700">
                             {ticket.ticket_on_hold && ticket.ticket_on_hold !== '0000-00-00 00:00:00'
                               ? new Date(ticket.ticket_on_hold).toLocaleString()
                               : 'N/A'}
-                          </td>
-                          <td className="p-2 sm:p-3 text-gray-700">
+                          </td> */}
+                          {/* <td className="p-2 sm:p-3 text-gray-700">
                             {ticket.ticket_in_progress && ticket.ticket_in_progress !== '0000-00-00 00:00:00'
                               ? new Date(ticket.ticket_in_progress).toLocaleString()
                               : 'N/A'}
-                          </td>
-                          <td className="p-2 sm:p-3 text-gray-700">
+                          </td> */}
+                          {/* <td className="p-2 sm:p-3 text-gray-700">
                             {ticket.ticket_pending_vendor && ticket.ticket_pending_vendor !== '0000-00-00 00:00:00'
                               ? new Date(ticket.ticket_pending_vendor).toLocaleString()
                               : 'N/A'}
-                          </td>
-                          <td className="p-2 sm:p-3 text-gray-700">
+                          </td> */}
+                          {/* <td className="p-2 sm:p-3 text-gray-700">
                             {ticket.ticket_close && ticket.ticket_close !== '0000-00-00 00:00:00'
                               ? new Date(ticket.ticket_close).toLocaleString()
                               : 'N/A'}
-                          </td>
-                          <td className="p-2 sm:p-3 text-gray-700">
+                          </td> */}
+                          {/* <td className="p-2 sm:p-3 text-gray-700">
                             {ticket.ticket_time && ticket.ticket_time !== '0000-00-00 00:00:00'
                               ? new Date(ticket.ticket_time).toLocaleString()
                               : 'N/A'}
-                          </td>
-                          <td className="p-2 sm:p-3 text-gray-700">{ticket.comment || 'N/A'}</td>
-                          <td className="p-2 sm:p-3 text-gray-700">{ticket.issue_type_id}</td>
+                          </td> */}
+                          {/* <td className="p-2 sm:p-3 text-gray-700">{ticket.comment || 'N/A'}</td> */}
+                          {/* <td className="p-2 sm:p-3 text-gray-700">{ticket.issue_type_id}</td> */}
                         </tr>
                       ))
                     )}
