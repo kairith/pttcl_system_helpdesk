@@ -3,6 +3,8 @@ import React, { useState, useEffect, Suspense } from "react";
 import { tbl_users_rules } from "../../types/rules";
 import { fetchUserRules } from "../user_rules/action";
 import Header from "@/app/components/common/Header";
+import Link from "next/link"; // Import Link for navigation
+
 interface UserRulesProps {
   isSidebarOpen: boolean;
 }
@@ -65,10 +67,17 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
         >
           <div className="container mx-auto max-w-5xl">
             <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200">
-              <div className="mb-4 sm:mb-6">
+              <div className="mb-4 sm:mb-6 flex justify-between items-center">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
                   Rules
                 </h1>
+                <Link href="/admin/user_rules/add_rules">
+                  <button
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Add Rules
+                  </button>
+                </Link>
               </div>
               <Suspense
                 fallback={
