@@ -5,6 +5,7 @@ export interface Ticket {
   station_name: string;
   station_type: number;
   province: number;
+  
   issue_description: string;
   issue_type: string;
   status: number;

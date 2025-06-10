@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import mysql from "mysql2/promise"; // Install mysql2
+import { dbConfig } from "@/app/database/db-config";
 
-const db = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "1122",
-  database: "pttcl_helpdesk_nextjs",
-});
-
+const db = mysql.createPool(dbConfig)
 export async function GET(request: NextRequest) {
   try {
     const [rows] = await db.execute("SELECT station_id, station_name, station_type, province FROM tbl_station");

@@ -3,15 +3,11 @@ import mysql from 'mysql2/promise';
 import { RowDataPacket } from 'mysql2';
 import { User } from '../../types/user';
 import { tbl_users_rules } from '../../types/rules';
+import { dbConfig } from '@/app/database/db-config';
 
 export async function GET() {
   try {
-    const connection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '1122',
-      database: process.env.DB_DATABASE || 'pttcl_helpdesk_nextjs',
-    });
+    const connection = await mysql.createConnection(dbConfig);
 
     const [rows] = await connection.execute<(RowDataPacket & User)[]>('SELECT * FROM tbl_users ');
     console.log('Database rows:', rows); // Debug: Log the rows

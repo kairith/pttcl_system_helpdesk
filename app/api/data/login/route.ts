@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import mysql from 'mysql2/promise';
 import crypto from 'crypto';
-import { dbConfig } from '@/app/lib/db-config';
+import { dbConfig } from '@/app/database/db-config';
 
 export async function POST(request: Request) {
   let connection;

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import mysql from 'mysql2/promise';
 import jwt from 'jsonwebtoken';
-import { dbConfig } from '@/app/lib/db-config';
+import { dbConfig } from '@/app/database/db-config';
 
 export async function POST(request: Request) {
   let connection;

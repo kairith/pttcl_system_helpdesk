@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import { Station } from '@/app/types/station'; // Adjust path based on your project structure
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import { dbConfig } from '@/app/database/db-config'; // Adjust path to your dbConfig file
 
 export async function POST(request: NextRequest) {
   let connection;
@@ -29,13 +30,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create MySQL connection
-    connection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '1122',
-      database: process.env.DB_DATABASE || 'pttcl_helpdesk_nextjs',
-    });
+    // Create MySQL connection using dbConfig
+    connection = await mysql.createConnection(dbConfig);
 
     // Check for duplicate station_id
     const [existingRows] = await connection.execute<RowDataPacket[]>(

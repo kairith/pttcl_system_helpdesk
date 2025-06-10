@@ -42,7 +42,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
     setShowFilterInput(false);
   };
 
-  const handleExport = async (format: "excel" | "pdf" | "csv") => {
+  const handleExport = async (format: "xlsx" | "pdf" | "csv") => {
     try {
       const token = sessionStorage.getItem("token");
       if (!token) {
@@ -68,8 +68,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
         }
       }
 
-      const extension = format === "excel" ? "xlsx" : format;
-      const fileName = `stations_export.${extension}`;
+      const fileName = `stations_export.${format}`;
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -89,7 +88,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
   };
 
   const filteredStations = filterId
-    ? stations.filter((station) => station.id.toString().includes(filterId))
+    ? stations.filter((station) => station.station_id.toString().includes(filterId))
     : stations;
 
   const handleCreateStation = () => {
@@ -129,18 +128,17 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
         >
           <div className="container mx-auto">
             <div className="mt-19 sm:mt-6 p-4 sm:p-6 bg-white rounded-lg shadow-md">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-8">Stations</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-8">
+                Stations</h1>
               {error && <p className="text-red-600 mb-4">{error}</p>}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <div className="relative flex items-center gap-3">
                   <button
-                  onClick={handleCreateStation}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex-1 sm:flex-none sm:w-41 text-sm sm:text-base disabled:opacity-10"
-                 
-                >
-                  <span className="mr-2">+</span> Create station
-                </button>
-               
+                    onClick={handleCreateStation}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex-1 sm:flex-none sm:w-40 text-sm sm:text-base flex items-center justify-center"
+                  >
+                    <span className="mr-2">+</span> Create Station
+                  </button>
                 </div>
                 <div className="relative flex items-center gap-3">
                   <button
@@ -177,7 +175,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                   {showExportOptions && (
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleExport("excel")}
+                        onClick={() => handleExport("xlsx")}
                         className="bg-white border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base"
                       >
                         Excel

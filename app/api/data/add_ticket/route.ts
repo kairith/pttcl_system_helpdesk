@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import jwt from 'jsonwebtoken';
-import { dbConfig } from '@/app/lib/db-config';
+import { dbConfig } from '@/app/database/db-config';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { ensureDirectoryExistence } from '@/app/lib/utils';

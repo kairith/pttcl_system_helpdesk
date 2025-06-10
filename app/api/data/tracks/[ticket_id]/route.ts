@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
+import { dbConfig } from '@/app/database/db-config';
 
 export async function GET(request: NextRequest, context: { params: Promise<{ ticket_id: string }> }) {
   // Await params to resolve the promise
@@ -8,12 +9,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ tic
 
   // Create MySQL connection
   try {
-    const connection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '1122',
-      database: process.env.DB_NAME || 'pttcl_helpdesk_nextjs',
-    });
+    const connection = await mysql.createConnection(dbConfig);
     console.log('Database connected successfully');
 
     try {
