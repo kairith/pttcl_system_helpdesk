@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Header from "@/app/components/common/Header";
+import Header from "@/app/components/common/Header/Header";
 
 interface Permissions {
   add: boolean;
@@ -8,7 +8,7 @@ interface Permissions {
   delete: boolean;
   list: boolean;
 }
-
+                                                           
 interface AddRulesProps {
   isSidebarOpen: boolean;
 }
@@ -112,7 +112,7 @@ export default function AddRules({ isSidebarOpen }: AddRulesProps) {
             )}
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 mb-6">
               <div className="mb-4">
-                <label htmlFor="roleName" className="block text-sm font-medium text-gray-700">Roles Name</label>
+                <label htmlFor="roleName" className="block text-sm font-medium text-gray-700">Add Roles</label>
                 <input
                   type="text"
                   id="roleName"

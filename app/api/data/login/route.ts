@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    console.log('Request body:', body);
+    // console.log('Request body:', body);
     const { email, password, rememberMe } = body;
 
     // Validate input
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       LEFT JOIN tbl_users_rules r ON u.rules_id = r.rules_id
       WHERE u.email = ?
     `;
-    console.log('Executing query:', query, 'with email:', email);
+    // console.log('Executing query:', query, 'with email:', email);
     const [rows] = await connection.execute(query, [email]);
     const user = (rows as any[])[0];
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { User } from "../../types/user";
 import { fetchUsers } from "../user/action";
-import Header from "@/app/components/common/Header";
+import Header from "@/app/components/common/Header/Header";
 import { useRouter } from "next/navigation";
 
 interface UsersProps {

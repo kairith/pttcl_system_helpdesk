@@ -1,7 +1,7 @@
 "use client";
 
 import LineChartCard from "@/app/components/LineChartCard";
-import HeaderWithSidebar from "@/app/components/common/Header";
+import HeaderWithSidebar from "@/app/components/common/Header/Header";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Bar, Doughnut } from "react-chartjs-2";

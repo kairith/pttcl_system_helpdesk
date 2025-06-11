@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import HeaderWithSidebar from '@/app/components/common/Header';
+import HeaderWithSidebar from '@/app/components/common/Header/Header';
 
 export default function CreateUserPage() {
   const [usersName, setUsersName] = useState('');

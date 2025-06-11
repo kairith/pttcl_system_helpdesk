@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/app/components/common/Header';
+import Header from '@/app/components/common/Header/Header';
 
 export default function AddStation() {
   const [formData, setFormData] = useState({

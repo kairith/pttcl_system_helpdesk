@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Station } from "../../types/station";
 import { fetchStations } from "./action";
-import Header from "@/app/components/common/Header";
+import Header from "@/app/components/common/Header/Header";
 import { useRouter } from "next/navigation";
 
 interface StationsProps {

@@ -5,7 +5,6 @@ export interface Ticket {
   station_name: string;
   station_type: number;
   province: number;
-  
   issue_description: string;
   issue_type: string;
   status: number;
@@ -19,4 +18,7 @@ export interface Ticket {
   comment: string | null;
   user_create_ticket: number;
   issue_type_id: number;
+
+
 }
+

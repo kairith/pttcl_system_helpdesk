@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import HeaderWithSidebar from '@/app/components/common/Header';
+import HeaderWithSidebar from '@/app/components/common/Header/Header';
 import {jwtDecode} from 'jwt-decode';
 
 interface Station {

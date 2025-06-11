@@ -2,8 +2,8 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { tbl_users_rules } from "../../types/rules";
 import { fetchUserRules } from "../user_rules/action";
-import Header from "@/app/components/common/Header";
-import Link from "next/link"; // Import Link for navigation
+import Header from "@/app/components/common/Header/Header";
+import Link from "next/link";
 
 interface UserRulesProps {
   isSidebarOpen: boolean;
