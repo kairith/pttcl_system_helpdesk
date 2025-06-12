@@ -14,6 +14,7 @@ interface Ticket {
   issue_type: string | null;
   issue_type_id: string | null;
   comment: string | null;
+  users_name: string | null;
   status: string | null;
   users_id: string | null;
   ticket_open: string | null;
@@ -180,9 +181,9 @@ export default function TrackTicketPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">
-                      User ID
+                      Assign to
                     </label>
-                    <p className="text-gray-800 break-words">{ticket.users_id}</p>
+                    <p className="text-gray-800 break-words">{ticket.users_name || 'Not Assigned'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">

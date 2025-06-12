@@ -184,86 +184,90 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
       </div>
 
       {isModalOpen && selectedTicket && (
-        <div
-          className="fixed inset-0 bg-gray-200 bg-opacity-20 flex items-center justify-center z-50"
-          style={{ backdropFilter: "blur(5px)", WebkitBackdropFilter: "blur(5px)" }}
-        >
-          <div
-            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl modal-content"
-            style={{ transition: "transform 0.3s ease-in-out, opacity 0.3s ease-in-out" }}
-          >
-            <h2 className="text-xl font-bold text-gray-800 mb-6">
-              Ticket Details: <span className="text-blue-600">{selectedTicket.ticket_id}</span>
-            </h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Ticket ID</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.ticket_id}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Station ID</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.station_id}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Station Name</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.station_name || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Station Type</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.station_type || "N/A"}</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Province</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.province || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Issue Description</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.issue_description || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Issue Type</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.issue_type || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Issue Type ID</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.issue_type_id || "N/A"}</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Status</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.status || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">User ID</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.users_id || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Comment</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.comment || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Ticket Time</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.ticket_time ? new Date(selectedTicket.ticket_time).toLocaleString() : "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Created By User ID</label>
-                  <p className="text-gray-800 break-words">{selectedTicket.user_create_ticket || "N/A"}</p>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={closeModal}
-              className="mt-6 w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-            >
-              Close
-            </button>
+  <div
+   className="fixed inset-0 flex items-center justify-center z-50"
+    style={{
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', // Adjust the opacity of the black background
+      backdropFilter: 'blur(10px)', // Set the blur effect
+      WebkitBackdropFilter: 'blur(10px)' // For Safari support
+    }} // Increased blur value
+  >
+    <div
+      className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl modal-content"
+      style={{ transition: "transform 0.3s ease-in-out, opacity 0.3s ease-in-out" }}
+    >
+      <h2 className="text-xl font-bold text-gray-800 mb-6">
+        Ticket Details: <span className="text-blue-600">{selectedTicket.ticket_id}</span>
+      </h2>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-gray-600">Ticket ID</label>
+            <p className="text-gray-800 break-words">{selectedTicket.ticket_id}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Station ID</label>
+            <p className="text-gray-800 break-words">{selectedTicket.station_id}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Station Name</label>
+            <p className="text-gray-800 break-words">{selectedTicket.station_name || "N/A"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Station Type</label>
+            <p className="text-gray-800 break-words">{selectedTicket.station_type || "N/A"}</p>
           </div>
         </div>
-      )}
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-gray-600">Province</label>
+            <p className="text-gray-800 break-words">{selectedTicket.province || "N/A"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Issue Description</label>
+            <p className="text-gray-800 break-words">{selectedTicket.issue_description || "N/A"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Issue Type</label>
+            <p className="text-gray-800 break-words">{selectedTicket.issue_type || "N/A"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Issue Type ID</label>
+            <p className="text-gray-800 break-words">{selectedTicket.issue_type_id || "N/A"}</p>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-gray-600">Status</label>
+            <p className="text-gray-800 break-words">{selectedTicket.status || "N/A"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Assign</label>
+            <p className="text-gray-800 break-words">{selectedTicket.users_name || "Not Assigned"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Comment</label>
+            <p className="text-gray-800 break-words">{selectedTicket.comment || "N/A"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Ticket Time</label>
+            <p className="text-gray-800 break-words">{selectedTicket.ticket_time ? new Date(selectedTicket.ticket_time).toLocaleString() : "N/A"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-600">Created By User ID</label>
+            <p className="text-gray-800 break-words">{selectedTicket.user_create_ticket || "N/A"}</p>
+          </div>
+        </div>
+      </div>
+      <button
+        onClick={closeModal}
+        className="mt-6 w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }

@@ -163,7 +163,7 @@ export default function CreateUserPage() {
                     value={usersName}
                     onChange={(e) => setUsersName(e.target.value)}
                     className="form-control w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                    placeholder="Username"
+                    placeholder="Telegram Username"
                     required
                   />
                 </div>
