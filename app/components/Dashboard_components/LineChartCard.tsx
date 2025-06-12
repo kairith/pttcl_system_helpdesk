@@ -1,6 +1,7 @@
-// LineChartCard.tsx
+// app/components/LineChartCard.tsx
 "use client";
-import React, { useState, useEffect } from "react";
+
+import { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -12,31 +13,48 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { TicketCount } from "@/app/lib/types";
+import { fetchDashboardData } from "@/app/components/Dashboard_components/All_Ticket_Chart";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+interface ChartData {
+  month: string;
+  value: number;
+}
 
 interface LineChartCardProps {
   title: string;
 }
 
 const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
-  const [chartData, setChartData] = useState<TicketCount[]>([]);
+  const [selectedYear, setSelectedYear] = useState("2024");
+  const [chartData, setChartData] = useState<ChartData[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadChartData() {
       try {
-        const response = await fetch("/api/data");
-        if (!response.ok) throw new Error("Failed to fetch data");
-        const data: TicketCount[] = await response.json();
-        setChartData(data);
+        const { chartData, error } = await fetchDashboardData(undefined, selectedYear);
+        console.log("LineChartCard received chartData for", selectedYear, ":", chartData);
+        setChartData(chartData);
+        setError(error);
       } catch (err) {
         setError("Failed to load chart data.");
       }
     }
     loadChartData();
-  }, []);
+  }, [selectedYear]);
+
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+  };
+
+  // Ensure all months are displayed, even with zero tickets
+  const allMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const formattedData = allMonths.map((month) => {
+    const data = chartData.find((d) => d.month === month);
+    return { month, value: data ? data.value : 0 };
+  });
 
   if (error) {
     return (
@@ -61,16 +79,15 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
   }
 
   const chartConfig = {
-    type: "line" as const,
     data: {
-      labels: chartData.map((item) => item.month),
+      labels: formattedData.map((item) => item.month),
       datasets: [
         {
-          label: "Tickets Opened in 2024",
-          data: chartData.map((item) => item.value),
+          label: `Tickets Opened in ${selectedYear}`,
+          data: formattedData.map((item) => item.value),
           fill: true,
           borderColor: "rgb(59, 130, 246)",
-          backgroundColor: "rgb(255, 255, 255)",
+          backgroundColor: "rgba(59, 130, 246, 0.1)",
           tension: 0.5,
           pointRadius: 5,
           pointHoverRadius: 6,
@@ -96,15 +113,15 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
         },
         title: {
           display: true,
-          text: title,
+          // text: `${title} : ${selectedYear}`,
           font: {
-            size: 1,
+            size: 18,
             family: "'Inter', sans-serif",
             weight: "bold" as const,
           },
           color: "#1F2937",
           padding: {
-            top: 1,
+            top: 10,
             bottom: 20,
           },
         },
@@ -173,11 +190,26 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
 
   return (
     <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-4 sm:mb-6">
-        {title}
-      </h1>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-4 sm:mb-0">
+          {title}
+        </h1>
+        <select
+          value={selectedYear}
+          onChange={(e) => handleYearChange(e.target.value)}
+          className="w-full sm:w-48 px-2 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+        </select>
+      </div>
       <div className="relative h-80 sm:h-96">
-        <Line data={chartConfig.data} options={chartConfig.options} />
+        {chartData.length === 0 ? (
+          <p className="text-gray-500 text-center">No tickets found for {selectedYear}</p>
+        ) : (
+          <Line data={chartConfig.data} options={chartConfig.options} />
+        )}
       </div>
     </div>
   );

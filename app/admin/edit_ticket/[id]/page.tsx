@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Ticket } from "@/app/types/ticket"; // Adjust path as needed
+import { Ticket } from "@/app/types/ticket";
 
 export default function EditTicketPage() {
   const router = useRouter();
@@ -91,7 +91,7 @@ export default function EditTicketPage() {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to update ticket");
       }
-      router.push("/admin/track");
+      router.push("/admin/ticket");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -104,39 +104,40 @@ export default function EditTicketPage() {
   if (!ticket) return null;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Update Ticket</h2>
-        <p className="text-sm text-gray-600 mb-4">Ticket ID: {ticket.ticket_id}</p>
+    <div className="min-h-screen bg-[#F4F6FA] flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-8">
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">Edit Ticket</h1>
+        <p className="text-sm text-gray-500 mb-6">Ticket ID: {ticket.ticket_id}</p>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Station ID</label>
+              <label className="block text-gray-600 font-medium text-sm mb-1">Station ID</label>
               <input
                 type="text"
                 name="station_id"
                 value={formData.station_id}
                 onChange={handleChange}
-                className="w-full px-3 py-2 bg-gray-50 rounded-md border border-gray-300 mt-1"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Station Name</label>
+              <label className="block text-gray-600 font-medium text-sm mb-1">Station Name</label>
               <input
                 type="text"
                 name="station_name"
                 value={formData.station_name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 bg-gray-50 rounded-md border border-gray-300 mt-1"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Assign</label>
+              <label className="block text-gray-600 font-medium text-sm mb-1">Assign</label>
               <select
                 name="users_name"
                 value={formData.users_name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 bg-gray-50 rounded-md border border-gray-300 mt-1"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white text-sm"
               >
                 <option value="">Select User</option>
                 {availableUsers.map((user) => (
@@ -147,70 +148,79 @@ export default function EditTicketPage() {
               </select>
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Issue Type</label>
-            <select
-              name="issue_type"
-              value={formData.issue_type}
-              onChange={handleChange}
-              className="w-full px-3 py-2 bg-gray-50 rounded-md border border-gray-300 mt-1"
-            >
-              <option value="">Select Issue Type</option>
-              {availableIssueTypes.map((type) => (
-                <option key={type.id} value={type.name}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-600 font-medium text-sm mb-1">Issue Type</label>
+              <select
+                name="issue_type"
+                value={formData.issue_type}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white text-sm"
+              >
+                <option value="">Select Issue Type</option>
+                {availableIssueTypes.map((type) => (
+                  <option key={type.id} value={type.name}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-gray-600 font-medium text-sm mb-1">Status</label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white text-sm"
+              >
+                <option value="">Select Status</option>
+                <option value="open">Open</option>
+                <option value="in progress">In Progress</option>
+                <option value="close">Close</option>
+              </select>
+            </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700">Issue Description</label>
+            <label className="block text-gray-600 font-medium text-sm mb-1">Issue Description</label>
             <textarea
               name="issue_description"
               value={formData.issue_description}
               onChange={handleChange}
               disabled
-              className="w-full px-3 py-2 bg-gray-50 rounded-md border border-gray-300 mt-1 h-24"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100 text-sm h-28 resize-none"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700">Comment</label>
+            <label className="block text-gray-600 font-medium text-sm mb-1">Comment</label>
             <input
               type="text"
               name="comment"
               value={formData.comment}
               onChange={handleChange}
-              className="w-full px-3 py-2 bg-gray-50 rounded-md border border-gray-300 mt-1"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white text-sm"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Status</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full px-3 py-2 bg-gray-50 rounded-md border border-gray-300 mt-1"
+
+          <div className="flex gap-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
             >
-              <option value="">Select Status</option>
-              <option value="open">Open</option>
-              <option value="in progress">In Progress</option>
-              <option value="close">Close</option>
-            </select>
+              {loading ? "Updating..." : "Update Ticket"}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/admin/ticket")}
+              className="w-full bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 transition-colors text-sm font-medium"
+            >
+              Cancel
+            </button>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-blue-300 transition-colors mt-4"
-          >
-            {loading ? "Updating..." : "Update Ticket"}
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push("/admin/ticket")}
-            className="w-full py-2 mt-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-          >
-            Cancel
-          </button>
+
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </form>
       </div>
