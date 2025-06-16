@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { Ticket } from "@/app/types/ticket"; // Adjust path as needed
+import { Ticket } from "@/app/types/ticket";
 
 interface FilterSectionProps {
   showFilterInput: boolean;
@@ -68,7 +68,7 @@ export default function FilterSection({
         stationIdDropdownRef.current &&
         !stationIdDropdownRef.current.contains(event.target as Node)
       ) {
-        // Optionally clear stationIdFilter if needed
+        // Keep dropdown behavior as is
       }
     };
 
@@ -81,7 +81,7 @@ export default function FilterSection({
   }, [showFilterInput, stationIdFilter]);
 
   const handleSelectChange = (key: string, value: string) => {
-    console.log(`Selected ${key}: ${value}`); // Debug log
+    console.log(`Selected ${key}: ${value}`);
     onFilterChange(key, value);
   };
 
@@ -128,44 +128,10 @@ export default function FilterSection({
             </div>
           )}
         </div>
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700">Station Name</label>
-          <select
-            value={stationNameFilter || ""}
-            onChange={(e) => handleSelectChange("stationNameFilter", e.target.value)}
-            className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base w-full appearance-none"
-            disabled={isExporting}
-          >
-            <option value="">Station Name</option>
-            {tickets.length > 0 &&
-              [...new Set(tickets.map((ticket) => ticket.station_name))].map((name) => (
-                <option key={name} value={name || ""}>
-                  {name || "N/A"}
-                </option>
-              ))}
-          </select>
-        </div>
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700">Province</label>
-          <select
-            value={provinceFilter || ""}
-            onChange={(e) => handleSelectChange("provinceFilter", e.target.value)}
-            className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base w-full appearance-none"
-            disabled={isExporting}
-          >
-            <option value="">Province</option>
-            {tickets.length > 0 &&
-              [...new Set(tickets.map((ticket) => ticket.province))].map((prov) => (
-                <option key={prov} value={prov || ""}>
-                  {prov || "N/A"}
-                </option>
-              ))}
-          </select>
-        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Issue Type</label>
           <select
-            value={issueTypeFilter || ""}
+            value={issueTypeFilter}
             onChange={(e) => handleSelectChange("issueTypeFilter", e.target.value)}
             className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base w-full appearance-none"
             disabled={isExporting}
@@ -182,7 +148,7 @@ export default function FilterSection({
         <div>
           <label className="block text-sm font-medium text-gray-700">Ticket Status</label>
           <select
-            value={statusFilter || ""}
+            value={statusFilter}
             onChange={(e) => handleSelectChange("statusFilter", e.target.value)}
             className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base w-full appearance-none"
             disabled={isExporting}
@@ -199,7 +165,7 @@ export default function FilterSection({
         <div>
           <label className="block text-sm font-medium text-gray-700">Assign</label>
           <select
-            value={usersNameFilter || ""}
+            value={usersNameFilter}
             onChange={(e) => handleSelectChange("usersNameFilter", e.target.value)}
             className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base w-full appearance-none"
             disabled={isExporting}
@@ -216,7 +182,7 @@ export default function FilterSection({
         <div>
           <label className="block text-sm font-medium text-gray-700">User Create</label>
           <select
-            value={userCreateTicketFilter || ""}
+            value={userCreateTicketFilter}
             onChange={(e) => handleSelectChange("userCreateTicketFilter", e.target.value)}
             className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base w-full appearance-none"
             disabled={isExporting}
@@ -233,7 +199,7 @@ export default function FilterSection({
         <div>
           <label className="block text-sm font-medium text-gray-700">Issue Type ID</label>
           <select
-            value={issueTypeIdFilter || ""}
+            value={issueTypeIdFilter}
             onChange={(e) => handleSelectChange("issueTypeIdFilter", e.target.value)}
             className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base w-full appearance-none"
             disabled={isExporting}
@@ -289,17 +255,20 @@ export default function FilterSection({
         </div>
         <button
           onClick={() => {
-            console.log("Filter button clicked"); // Debug log
+            console.log("Filter button clicked");
             onFilter();
           }}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm sm:text-base disabled:opacity-50"
+          className="h-11 mt-5 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm sm:text-base disabled:opacity-50"
           disabled={isExporting}
         >
           Filter
         </button>
         <button
-          onClick={onClearFilter}
-          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm sm:text-base disabled:opacity-50"
+          onClick={() => {
+            console.log("Clear filter button clicked");
+            onClearFilter();
+          }}
+          className="h-11 mt-5 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm sm:text-base disabled:opacity-50"
           disabled={isExporting}
         >
           Clear

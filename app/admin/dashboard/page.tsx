@@ -58,7 +58,10 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
           setStats(countResult.stats);
         }
 
-        const { ticketData, error } = await fetchDashboardData(undefined, selectedYear);
+        const { ticketData, error } = await fetchDashboardData(
+          undefined,
+          selectedYear
+        );
         if (error) {
           setError(error);
         } else {
@@ -94,43 +97,45 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
             </div>
             {error && <p className="text-red-600 mb-4">{error}</p>}
             <StatsCards stats={stats} />
-             {/* all ticket lineChart */}
-            <LineChartCard title="Ticket Trends"   />
+            {/* all ticket lineChart */}
+            <LineChartCard title="Ticket Trends" />
 
-
-
-          <div className="mb-6 sm:mb-8 bg-white shadow-lg rounded-xl border border-gray-200 p-4 sm:p-6 mt-9">
+            <div className="mb-6 sm:mb-8 bg-white shadow-lg rounded-xl border border-gray-200 p-4 sm:p-6 mt-9">
               {/* all ticket barchart  */}
-              <TicketChart  />
+              <TicketChart />
             </div>
-
-
 
             <Card className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
-                Ticket Summary
-              </h2>
-              <select
-                value={selectedYear}
-                onChange={handleYearChange}
-                className="w-full sm:w-48 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="ALL">All Years</option>
-                <option value="2024">2024</option>
-                <option value="2025">2025</option>
-                <option value="2026">2026</option>
-              </select>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
+                  Ticket Summary
+                </h2>
+                <select
+                  value={selectedYear}
+                  onChange={handleYearChange}
+                  className="w-full sm:w-48 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="ALL">All Years</option>
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                </select>
               </div>
 
               <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
                 {/* ticket summary Barchart  */}
-                <BarChartCard title="Tickets by Issue Type" selectedYear={selectedYear} />
+                <BarChartCard
+                  title="Tickets by Issue Type"
+                  selectedYear={selectedYear}
+                />
                 {/* ticket summary Doughnut */}
-                <DoughnutChartCard title="Ticket Categories" selectedYear={selectedYear} />
+                <DoughnutChartCard
+                  title="Ticket Categories"
+                  selectedYear={selectedYear}
+                />
               </div>
             </Card>
-                {/* detail ticket each year  */}
+            {/* detail ticket each year  */}
             <TicketDetailsTable ticketData={ticketData} />
           </div>
         </main>

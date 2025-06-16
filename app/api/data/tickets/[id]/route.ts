@@ -3,6 +3,8 @@ import mysql from "mysql2/promise";
 import jwt from "jsonwebtoken";
 import { dbConfig } from "@/app/database/db-config";
 
+
+
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   let connection;
   try {
@@ -29,6 +31,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     console.log("Decoded Token:", decoded);
     const userId = decoded.users_id ?? decoded.userId ?? decoded.id ?? decoded.sub;
     if (!userId) {
+      
       return NextResponse.json({ error: "Invalid token: userId missing" }, { status: 401 });
     }
 
@@ -97,6 +100,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     const decoded = jwt.verify(token, secret) as any;
     const userId = decoded.users_id ?? decoded.userId ?? decoded.id ?? decoded.sub;
     if (!userId) {
+     
       return NextResponse.json({ error: "Invalid token: userId missing" }, { status: 401 });
     }
 

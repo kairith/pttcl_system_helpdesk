@@ -4,7 +4,7 @@ import mysql from "mysql2/promise";
 import { RowDataPacket } from "mysql2";
 import { dbConfig } from "@/app/database/db-config";
 
-interface TicketData {
+export interface TicketData { // Added 'export'
   id: number;
   ticket_id: string;
   province: string;
@@ -13,6 +13,8 @@ interface TicketData {
   station_type: string;
   issue_description: string;
   issue_type: string;
+  ticket_open?: string;
+  users_name?: string;
 }
 
 interface ChartData {
@@ -76,7 +78,7 @@ export async function fetchTicketsCount(undefined: undefined, selectedYear: stri
   }
 }
 
-export async function fetchDashboardData(period?: string, selectedYear?: string) {
+export async function fetchDashboardData(period?: string, selectedYear?: string, limit: number = 1000) {
   try {
     const connection = await mysql.createConnection(dbConfig);
     let whereClause = " WHERE ticket_open IS NOT NULL";
@@ -92,15 +94,21 @@ export async function fetchDashboardData(period?: string, selectedYear?: string)
       params.push(period);
     }
 
-    // Debug: Count total tickets
-    const [totalCount] = await connection.execute<RowDataPacket[]>(
-      `SELECT COUNT(*) AS total FROM tbl_ticket${whereClause}`,
-      params
+    const [tickets] = await connection.execute<RowDataPacket[]>(
+      `SELECT 
+         t.id, t.ticket_id, t.province, t.status, t.station_id, t.station_type, 
+         t.issue_description, t.issue_type, t.ticket_open,
+         COALESCE(u.users_name, 'Not Assigned') AS users_name
+       FROM tbl_ticket t
+       LEFT JOIN tbl_users u ON t.users_id = u.users_id
+       ${whereClause}
+       ORDER BY t.ticket_open DESC
+       LIMIT ?`,
+      [...params, limit.toString()]
     );
 
-    const [tickets] = await connection.execute<RowDataPacket[]>(
-      `SELECT id, ticket_id, province, status, station_id, station_type, issue_description, issue_type 
-       FROM tbl_ticket${whereClause}`,
+    const [totalCount] = await connection.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS total FROM tbl_ticket${whereClause}`,
       params
     );
 
@@ -145,7 +153,7 @@ export async function fetchDashboardData(period?: string, selectedYear?: string)
 
     await connection.end();
 
-    console.log(`fetchDashboardData (year: ${selectedYear || "ALL"}, period: ${period || "none"}) - Total: ${totalCount[0].total}, Tickets: ${tickets.length}, BarChart: ${barChartData.length}, DoughnutChart: ${doughnutChartData.length}`);
+    console.log(`fetchDashboardData (year: ${selectedYear || "ALL"}, period: ${period || "none"}, limit: ${limit}) - Total: ${totalCount[0].total}, Tickets: ${tickets.length}, BarChart: ${barChartData.length}, DoughnutChart: ${doughnutChartData.length}`);
 
     return {
       ticketData: tickets as TicketData[],
@@ -155,7 +163,7 @@ export async function fetchDashboardData(period?: string, selectedYear?: string)
       error: null,
     };
   } catch (err) {
-    const errorMessage = `Error fetching dashboard data (year: ${selectedYear || "ALL"}, period: ${period || "none"}): ${(err as Error).message}`;
+    const errorMessage = `Error fetching dashboard data (year: ${selectedYear || "ALL"}, period: ${period || "none"}, limit: ${limit}): ${(err as Error).message}`;
     console.error(errorMessage);
     return {
       ticketData: [],

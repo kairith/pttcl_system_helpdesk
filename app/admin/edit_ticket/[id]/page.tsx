@@ -77,6 +77,7 @@ export default function EditTicketPage() {
     if (!token) {
       setError("No authentication token found. Please log in.");
       setLoading(false);
+      router.push("/");
       return;
     }
     try {
