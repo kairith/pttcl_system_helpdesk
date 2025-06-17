@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { ensureDirectoryExistence } from '@/app/lib/utils';
-// Ticket
+// user
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -26,15 +26,15 @@ export async function POST(request: Request) {
 
     const timestamp = Date.now();
     const fileExtension = file.name.split('.').pop();
-    const fileName = `ticket_${timestamp}.${fileExtension}`; // Use 'ticket_' prefix for tickets
-    const uploadDir = join(process.cwd(), 'public/uploads/ticket_image');
+    const fileName = `user_${timestamp}.${fileExtension}`; // Use 'ticket_' prefix for tickets
+    const uploadDir = join(process.cwd(), 'public/uploads/user_image');
     const filePath = join(uploadDir, fileName);
 
     await ensureDirectoryExistence(uploadDir);
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
 
-    const relativePath = `/uploads/ticket_image/${fileName}`;
+    const relativePath = `/uploads/user_image/${fileName}`;
     return NextResponse.json({ imagePath: relativePath }, { status: 200 });
   } catch (error) {
     console.error('Image upload error:', error);

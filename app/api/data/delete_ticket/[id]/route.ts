@@ -35,7 +35,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     connection = await mysql.createConnection(dbConfig);
 
     const [ticketRows] = await connection.execute(
-      "SELECT * FROM tbl_ticket WHERE id = ?",
+      "SELECT * FROM tbl_ticket WHERE ticket_id = ?",
       [params.id]
     );
     const ticket = (ticketRows as any[])[0];
@@ -45,7 +45,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
 
     await connection.beginTransaction();
 
-    const deleteQuery = "DELETE FROM tbl_ticket WHERE id = ?";
+    const deleteQuery = "DELETE FROM tbl_ticket WHERE ticket_id = ?";
     await connection.execute(deleteQuery, [params.id]);
 
     await connection.commit();

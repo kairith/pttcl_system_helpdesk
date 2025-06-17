@@ -413,7 +413,10 @@ export default function Users({ isSidebarOpen }: UsersProps) {
                       </Dialog.Title>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Are you sure you want to delete user ID {deleteUserId}
+                          Are you sure you want to delete user&nbsp;
+                          {
+                            users.find((u) => u.users_id === deleteUserId)?.users_name ?? deleteUserId
+                          }
                           ? This action cannot be undone.
                         </p>
                       </div>

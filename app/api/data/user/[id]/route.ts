@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createConnection } from "mysql2/promise";
+import { dbConfig } from "@/app/database/db-config";
 
 const TABLE_NAME = "tbl_users";
 
@@ -13,12 +14,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "Unauthorized: Invalid or missing token" }, { status: 401 });
     }
 
-    const connection = await createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-    });
+    const connection = await createConnection(dbConfig);
 
     const [rows] = await connection.execute(
       `SELECT users_id, users_name, email, status, rules_id, company FROM ${TABLE_NAME} WHERE users_id = ?`,

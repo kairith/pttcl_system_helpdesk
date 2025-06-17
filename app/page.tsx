@@ -5,6 +5,18 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
+interface LoginResponse {
+  token: string;
+  user: { isAdmin: boolean; users_id: number; email: string; users_name: string; [key: string]: any };
+  error?: string;
+}
+
+interface UserImageResponse {
+  imagePath: string;
+  usersId?: number;
+  error?: string;
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,49 +25,73 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setErrors([]);
-  setIsLoading(true);
 
-  // Client-side validation
-  if (!/^\S+@\S+\.\S+$/.test(email)) {
-    setErrors(['Invalid email format.']);
-    setIsLoading(false);
-    return;
-  }
-  if (password.length < 6) {
-    setErrors(['Password must be at least 6 characters.']);
-    setIsLoading(false);
-    return;
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors([]);
+    setIsLoading(true);
 
-  try {
-    const response = await fetch('/api/data/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, rememberMe }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      setErrors([data.error || 'Login failed. Please try again.']);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErrors(['Please enter a valid email address.']);
+      setIsLoading(false);
+      return;
+    }
+    if (password.length < 6) {
+      setErrors(['Password must be at least 6 characters.']);
       setIsLoading(false);
       return;
     }
 
-    // Store token and user data in sessionStorage
-    sessionStorage.setItem('token', data.token);
-    sessionStorage.setItem('user', JSON.stringify(data.user));
+    try {
+      const response = await fetch('/api/data/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
 
-    // Redirect based on role
-    router.push(data.user.isAdmin ? '/admin/dashboard' : '/dashboard');
-  } catch (error) {
-    setErrors(['An error occurred. Please try again later.']);
-    setIsLoading(false);
-  }
-};
+      const data: LoginResponse = await response.json();
+      console.log('Login response data:', data);
+
+      if (!response.ok) {
+        setErrors([data.error || 'Login failed. Please try again.']);
+        if (response.status === 401) setErrors(['Invalid credentials.']);
+        else if (response.status >= 500) setErrors(['Server error. Try again later.']);
+        setIsLoading(false);
+        return;
+      }
+
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('user', JSON.stringify(data.user));
+
+      // Fetch user image
+      try {
+        const imageResponse = await fetch(`/api/data/user_image?users_id=${data.user.users_id}`);
+        console.log('Image response status:', imageResponse.status);
+        const imageData: UserImageResponse = await imageResponse.json();
+        console.log('Image response data:', imageData);
+
+        if (imageResponse.ok && imageData.imagePath) {
+          const imagePath = imageData.imagePath.toLowerCase();
+          sessionStorage.setItem('userImage', imagePath);
+          console.log('Stored userImage in sessionStorage:', imagePath);
+        } else {
+          console.error('Image fetch failed:', imageData.error || 'No image path returned');
+          sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
+          console.log('Stored default userImage in sessionStorage:', '/Uploads/user_image/Default-avatar.jpg');
+        }
+      } catch (imageError) {
+        console.error('Failed to fetch user image:', imageError);
+        sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
+        console.log('Stored default userImage in sessionStorage due to error:', '/Uploads/user_image/Default-avatar.jpg');
+      }
+
+      router.push(data.user.isAdmin ? '/admin/dashboard' : '/dashboard');
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors(['An error occurred. Please try again later.']);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="login-page flex items-center justify-center min-h-screen bg-gray-100">
@@ -76,7 +112,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               Login with your email and password.
             </p>
             {errors.length > 0 && (
-              <div className="alert alert-danger text-center mb-4" role="alert">
+              <div className="alert alert-danger text-center mb-4" role="alert" aria-live="polite">
                 {errors.map((error, index) => (
                   <div key={index}>{error}</div>
                 ))}
@@ -91,9 +127,10 @@ const handleSubmit = async (e: React.FormEvent) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  aria-label="Email address"
                 />
                 <span className="input-group-text p-2 bg-gray-200 rounded-r-md">
-                  <i className="fas fa-envelope animate-bounce"></i>
+                  <i className="fas fa-envelope" aria-hidden="true"></i>
                 </span>
               </div>
               <div className="input-group mb-4 flex">
@@ -104,9 +141,10 @@ const handleSubmit = async (e: React.FormEvent) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  aria-label="Password"
                 />
                 <span className="input-group-text p-2 bg-gray-200 rounded-r-md">
-                  <i className="fas fa-lock animate-bounce"></i>
+                  <i className="fas fa-lock" aria-hidden="true"></i>
                 </span>
               </div>
               <div className="form-check mb-4">

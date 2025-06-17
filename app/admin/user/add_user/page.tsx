@@ -98,7 +98,7 @@ export default function CreateUserPage() {
       if (imageFile) {
         const formData = new FormData();
         formData.append('image', imageFile);
-        const uploadResponse = await fetch('/api/data/upload_image', {
+        const uploadResponse = await fetch('/api/data/upload_user_image', {
           method: 'POST',
           body: formData,
         });
