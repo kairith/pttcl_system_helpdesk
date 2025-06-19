@@ -13,7 +13,15 @@ import {
 } from "chart.js";
 import { TicketCount } from "@/app/lib/types";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface DashboardProps {
   isSidebarOpen: boolean;
@@ -62,7 +70,9 @@ export default function Dashboard({ isSidebarOpen }: DashboardProps) {
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <p className="mt-4 text-lg font-semibold text-red-600">{error}</p>
+                <p className="mt-4 text-lg font-semibold text-red-600">
+                  {error}
+                </p>
               </div>
             </div>
           </main>
