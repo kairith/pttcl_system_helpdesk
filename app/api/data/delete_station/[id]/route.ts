@@ -8,14 +8,13 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (!token || typeof token !== "string" || token.trim() === "") {
       return NextResponse.json({ error: "Unauthorized: Invalid or missing token" }, { status: 401 });
     }
-
     const connection = await createConnection(dbConfig);
 
     const [result] = await connection.execute(
       "DELETE FROM tbl_station WHERE station_id = ?",
       [params.id]
     );
-
+    
     await connection.end();
 
     if ((result as any).affectedRows === 0) {

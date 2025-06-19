@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ tic
         [ticket_id]
       );
 
-      console.log('Query executed, rows:', rows);
+      // console.log('Query executed, rows:', rows);
 
       if (!Array.isArray(rows) || rows.length === 0) {
         console.log('No ticket found for ticket_id:', ticket_id);
