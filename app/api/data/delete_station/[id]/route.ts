@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createConnection } from "mysql2/promise";
+import { dbConfig } from "@/app/database/db-config";
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -8,15 +9,10 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: "Unauthorized: Invalid or missing token" }, { status: 401 });
     }
 
-    const connection = await createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-    });
+    const connection = await createConnection(dbConfig);
 
     const [result] = await connection.execute(
-      "DELETE FROM tbl_station WHERE id = ?",
+      "DELETE FROM tbl_station WHERE station_id = ?",
       [params.id]
     );
 

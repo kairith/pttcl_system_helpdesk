@@ -34,7 +34,7 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
   };
 
   const handleEdit = (ticketId: string) => {
-    router.push(`/admin/edit_ticket/${ticketId}`);
+    router.push(`/pages/admin/edit_ticket/${ticketId}`);
   };
 
   const handleDelete = (ticketId: string) => {

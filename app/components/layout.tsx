@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import Header from './common/Header/Header';
+import Header from './common/Header/Headerwithsidebar';
 import NavSlide from '../components/navbar/navbar';
 
 export default function Layout({ children }: { children: React.ReactNode }) {

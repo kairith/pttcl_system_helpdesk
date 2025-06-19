@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchTickets } from "@/app/admin/ticket/action";
+import { fetchTickets } from "@/app/pages/admin/ticket/action";
 import { utils, write } from "xlsx";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";

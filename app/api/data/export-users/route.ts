@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { fetchUsers } from "@/app/admin/user/action"; // Adjust path to your fetchUsers function
+import { fetchUsers } from "@/app/pages/admin/user/action"; // Adjust path to your fetchUsers function
 import { utils, write } from "xlsx"; // Use named imports for xlsx
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";

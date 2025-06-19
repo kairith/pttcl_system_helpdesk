@@ -85,7 +85,7 @@ export default function LoginPage() {
         console.log('Stored default userImage in sessionStorage due to error:', '/Uploads/user_image/Default-avatar.jpg');
       }
 
-      router.push(data.user.isAdmin ? '/admin/dashboard' : '/dashboard');
+      router.push(data.user.isAdmin ? '/pages/admin/dashboard' : '/pages/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       setErrors(['An error occurred. Please try again later.']);
