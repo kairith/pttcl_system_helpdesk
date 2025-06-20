@@ -1,6 +1,7 @@
 "use client";
 import Header from "@/app/components/common/Header/Headerwithsidebar";
 import NavSlide from "@/app/components/navbar/navbar";
+import LoadingSpinner from "@/app/components/ui/loading";
 import { useState } from "react";
 
 // Assuming Ticket type based on usage
@@ -93,6 +94,7 @@ export default function TrackTicketPage() {
                 className="w-full sm:w-auto px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
               >
                 {loading ? "Searching..." : "Search"}
+              
               </button>
             </form>
             {error && <p className="mt-2 text-red-500 text-sm">{error}</p>}

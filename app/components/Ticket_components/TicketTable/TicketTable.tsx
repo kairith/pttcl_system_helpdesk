@@ -5,6 +5,7 @@ import { Ticket } from "@/app/types/ticket";
 import { PencilIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
 import { Dialog, Transition } from "@headlessui/react";
+import { toast } from "react-toastify";
 
 interface TicketTableProps {
   filteredTickets: (Ticket & { users_name: string; creator_name: string })[];
@@ -39,7 +40,9 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
 
   const handleDelete = (ticketId: string) => {
     // Find the ticket object based on ticketId to set selectedTicket
-    const ticketToDelete = filteredTickets.find((t) => t.id.toString() === ticketId);
+    const ticketToDelete = filteredTickets.find(
+      (t) => t.id.toString() === ticketId
+    );
     if (!ticketToDelete) {
       console.error("Ticket not found for ID:", ticketId);
       return;
@@ -53,29 +56,41 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
 
     const token = sessionStorage.getItem("token");
     if (!token) {
-      alert("No authentication token found. Please log in.");
+      toast.error("No authentication token found. Please log in.");
       return;
     }
+
     try {
-      // Assuming the API accepts ticket_id; adjust if it uses internal id
-      const ticketToDelete = selectedTicket || filteredTickets.find((t) => t.id.toString() === deleteTicketId);
+      const ticketToDelete =
+        selectedTicket ||
+        filteredTickets.find((t) => t.id.toString() === deleteTicketId);
+
       if (!ticketToDelete) throw new Error("Ticket data unavailable");
-      const response = await fetch(`/api/data/delete_ticket/${ticketToDelete.ticket_id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+
+      const response = await fetch(
+        `/api/data/delete_ticket/${ticketToDelete.ticket_id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to delete ticket");
       }
-      alert("Ticket deleted successfully");
-      window.location.reload();
+
+      toast.success("✅ Ticket deleted successfully");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000); // wait 2s so toast shows
     } catch (err: any) {
       console.error("Delete error:", err.message);
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       closeDeleteModal();
     }
@@ -86,7 +101,9 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
     setSelectedTicket(null);
   };
 
-  const handleView = (ticket: Ticket & { users_name: string; creator_name: string }) => {
+  const handleView = (
+    ticket: Ticket & { users_name: string; creator_name: string }
+  ) => {
     setSelectedTicket(ticket);
     setIsViewModalOpen(true);
   };
@@ -102,7 +119,8 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
     if (isViewModalOpen && tableElement) {
       tableElement.style.filter = "blur(5px)";
       tableElement.style.opacity = "0.4";
-      tableElement.style.transition = "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
+      tableElement.style.transition =
+        "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
 
       const modal = document.querySelector(".modal-content");
       if (modal) {
@@ -110,7 +128,8 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
         (modal as HTMLElement).style.opacity = "0";
         timeout = setTimeout(() => {
           if (modal) {
-            (modal as HTMLElement).style.transition = "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
+            (modal as HTMLElement).style.transition =
+              "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
             (modal as HTMLElement).style.transform = "translateY(0) scale(1)";
             (modal as HTMLElement).style.opacity = "1";
           }
@@ -119,7 +138,8 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
     } else if (deleteTicketId && tableElement) {
       tableElement.style.filter = "blur(5px)";
       tableElement.style.opacity = "0.4";
-      tableElement.style.transition = "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
+      tableElement.style.transition =
+        "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
 
       const modal = document.querySelector(".delete-modal-content");
       if (modal) {
@@ -127,7 +147,8 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
         (modal as HTMLElement).style.opacity = "0";
         timeout = setTimeout(() => {
           if (modal) {
-            (modal as HTMLElement).style.transition = "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
+            (modal as HTMLElement).style.transition =
+              "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
             (modal as HTMLElement).style.transform = "translateY(0) scale(1)";
             (modal as HTMLElement).style.opacity = "1";
           }
@@ -136,11 +157,15 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
     } else if (tableElement) {
       tableElement.style.filter = "none";
       tableElement.style.opacity = "1";
-      tableElement.style.transition = "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
+      tableElement.style.transition =
+        "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
 
-      const modal = document.querySelector(".modal-content") || document.querySelector(".delete-modal-content");
+      const modal =
+        document.querySelector(".modal-content") ||
+        document.querySelector(".delete-modal-content");
       if (modal) {
-        (modal as HTMLElement).style.transition = "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
+        (modal as HTMLElement).style.transition =
+          "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
         (modal as HTMLElement).style.transform = "translateY(20px) scale(0.95)";
         (modal as HTMLElement).style.opacity = "0";
         timeout = setTimeout(() => {
@@ -320,132 +345,111 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
       {/* View Ticket Modal */}
       {isViewModalOpen && selectedTicket && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50"
+          className="fixed inset-0 flex items-center justify-center z-[2000] bg-black/50 supports-[backdrop-filter]:backdrop-blur-lg"
           style={{
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
+            paddingTop: "env(safe-area-inset-top)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+            paddingLeft: "env(safe-area-inset-left)",
+            paddingRight: "env(safe-area-inset-right)",
           }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
         >
           <div
-            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl modal-content"
+            className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-[calc(100vw-16px)] max-w-md sm:max-w-lg lg:max-w-4xl modal-content"
             style={{
-              transition: "transform 0.3s ease-in-out, opacity 0.3s ease-in-out",
+              transition:
+                "transform 0.3s ease-in-out, opacity 0.3s ease-in-out",
             }}
           >
-            <h2 className="text-xl font-bold text-gray-800 mb-6">
+            <h2
+              id="modal-title"
+              className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6"
+            >
               Ticket Details:{" "}
               <span className="text-blue-600">{selectedTicket.ticket_id}</span>
             </h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Ticket ID
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.ticket_id}
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Ticket ID :{selectedTicket.ticket_id}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Station ID
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.station_id}
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Station ID :{selectedTicket.station_id}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Station Name
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.station_name || "N/A"}
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Station Name :{selectedTicket.station_name || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Station Type
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.station_type || "N/A"}
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Station Type :{selectedTicket.station_type || "N/A"}
                   </p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Province
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.province || "N/A"}
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Province :{selectedTicket.province || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Issue Description
-                  </label>
-                  <p className="text-gray-800 break-words">
+                  <p className="text-gray-800 break-words max-h-20 overflow-y-auto">
+                    {" "}
+                    Issue Description :
                     {selectedTicket.issue_description || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Issue Type
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.issue_type || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Issue Type ID
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.issue_type_id || "N/A"}
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Issue Type :{selectedTicket.issue_type || "N/A"}
                   </p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Status
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.status || "N/A"}
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Status :{selectedTicket.status || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Assign
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.users_name || "Not Assigned"}
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Assign :{selectedTicket.users_name || "Not Assigned"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Comment
-                  </label>
-                  <p className="text-gray-800 break-words">
-                    {selectedTicket.comment || "N/A"}
+                  <p className="text-gray-800 break-words max-h-20 overflow-y-auto">
+                    {" "}
+                    Comment :{selectedTicket.comment || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Ticket Time
-                  </label>
-                  <p className="text-gray-800 break-words">
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Ticket Time :
                     {selectedTicket.ticket_time
                       ? new Date(selectedTicket.ticket_time).toLocaleString()
                       : "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Created By User ID
-                  </label>
-                  <p className="text-gray-800 break-words">
+                  <p className="text-gray-800 break-words truncate">
+                    {" "}
+                    Created By User ID :
                     {selectedTicket.user_create_ticket || "N/A"}
                   </p>
                 </div>
@@ -453,7 +457,11 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
             </div>
             <button
               onClick={closeViewModal}
-              className="mt-6 w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === "Escape") closeViewModal();
+              }}
+              className="mt-4 sm:mt-6 w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors focus:ring-4 focus:ring-blue-200"
+              aria-label="Close modal"
             >
               Close
             </button>
@@ -505,7 +513,8 @@ export default function TicketTable({ filteredTickets }: TicketTableProps) {
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
                       Are you sure you want to delete ticket with Ticket ID{" "}
-                      {selectedTicket?.ticket_id || deleteTicketId}? This action cannot be undone.
+                      {selectedTicket?.ticket_id || deleteTicketId}? This action
+                      cannot be undone.
                     </p>
                   </div>
                   <div className="mt-4 flex justify-end gap-2">

@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import HeaderWithSidebar from "@/app/components/common/Header/Headerwithsidebar";
+import LoadingSpinner from "@/app/components/ui/loading";
 
 export default function EditStation() {
   const [station, setStation] = useState<{
@@ -105,7 +106,9 @@ export default function EditStation() {
   };
 
   if (error) return <div className="text-red-500 text-center p-4">{error}</div>;
-  if (!station) return <div className="text-center p-4">Loading...</div>;
+  if (!station) return 
+     <LoadingSpinner />
+  ;
 
   return (
     <div className="min-h-screen bg-gray-50">

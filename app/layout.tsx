@@ -1,10 +1,10 @@
-import { Inter } from 'next/font/google';
-import './globals.css';
-import Script from 'next/script';
+import { Inter } from "next/font/google";
+import "./globals.css";
+import Script from "next/script";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // ✅ Add this line
 
-const inter = Inter({ subsets: ['latin'] });
-
-
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
@@ -29,8 +29,18 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         {children}
+
+        {/* ✅ Add ToastContainer here */}
+        <ToastContainer
+          position="top-right"
+          autoClose={2000}
+          toastStyle={{ marginTop: "5rem" , marginRight: "1rem" }}
+        
+        />
+
         <Script src="https://code.jquery.com/jquery-3.6.0.min.js" />
         <Script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js" />
+        {/* <script src="https://cdn.jsdelivr.net/npm/react-hot-toast@2.4.1/dist/index.umd.min.js"></script> */}
       </body>
     </html>
   );

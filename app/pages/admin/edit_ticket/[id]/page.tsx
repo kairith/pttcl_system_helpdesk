@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Ticket } from "@/app/types/ticket";
+import LoadingSpinner from "@/app/components/ui/loading";
 
 export default function EditTicketPage() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function EditTicketPage() {
         setError("No authentication token found. Please log in.");
         setLoading(false);
         router.push("/");
-        return;
+        return <LoadingSpinner/>;
       }
       try {
         const response = await fetch(`/api/data/tickets/${id}`, {
@@ -78,7 +79,7 @@ export default function EditTicketPage() {
       setError("No authentication token found. Please log in.");
       setLoading(false);
       router.push("/");
-      return;
+      return <LoadingSpinner/>;
     }
     try {
       const response = await fetch(`/api/data/tickets/${id}`, {
@@ -101,7 +102,7 @@ export default function EditTicketPage() {
     }
   };
 
-  if (loading) return <div className="text-center p-4">Loading...</div>;
+  if (loading) return <LoadingSpinner/>;
   if (error) return <div className="text-center p-4 text-red-500">{error}</div>;
   if (!ticket) return null;
 

@@ -100,12 +100,13 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
             {/* all ticket lineChart */}
             <LineChartCard title="Ticket Trends" />
 
-            <div className="mb-6 sm:mb-8 bg-white shadow-lg rounded-xl border border-gray-200 p-4 sm:p-6 mt-9">
-              {/* all ticket barchart  */}
+            {/* all ticket barchart  */}
+            {/* <div className="mb-6 sm:mb-8 bg-white shadow-lg rounded-xl border border-gray-200 p-4 sm:p-6 mt-9">
+              
               <TicketChart />
-            </div>
-
-            <Card className="p-4 sm:p-6">
+            </div> */}
+            <div className="mb-6 sm:mb-8 bg-white shadow-lg rounded-xl border border-gray-200 mt-9">
+            <Card className="p-4  sm:p-6">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
                   Ticket Summary
@@ -135,6 +136,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
                 />
               </div>
             </Card>
+            </div>
             {/* detail ticket each year  */}
             <TicketDetailsTable ticketData={ticketData} />
           </div>

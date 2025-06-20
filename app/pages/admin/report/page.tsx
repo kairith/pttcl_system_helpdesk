@@ -28,7 +28,7 @@ interface PivotData {
 
 interface User {
   id: string;
-  user_name: string;
+  users_name: string;
 }
 
 interface ReportsProps {
@@ -280,7 +280,7 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
                   <option value="">All Users</option>
                   {users.map((user) => (
                     <option key={user.id} value={user.id}>
-                      {user.user_name}
+                      {user.users_name}
                     </option>
                   ))}
                 </select>
