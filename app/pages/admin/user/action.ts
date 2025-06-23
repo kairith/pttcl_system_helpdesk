@@ -18,9 +18,10 @@ export async function fetchUsers() {
     );
 
     await connection.end();
-    return { users: rows, error: null };
+    return { users: rows, error: null };  
   } catch (err) {
     console.error('Database error:', err);
     return { users: [], error: `Error fetching data: ${(err as Error).message}` };
   }
 }
+

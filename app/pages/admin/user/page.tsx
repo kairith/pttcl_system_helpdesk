@@ -1,12 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { User } from "../../../types/user";
+
+import { useState, useEffect, Fragment } from "react";
+import { User } from "@/app/types/user";
 import { fetchUsers } from "./action";
 import Header from "@/app/components/common/Header/Headerwithsidebar";
 import { useRouter } from "next/navigation";
 import { TrashIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
 
 interface UsersProps {
   isSidebarOpen: boolean;
@@ -21,12 +21,14 @@ export default function Users({ isSidebarOpen }: UsersProps) {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
+  const [filterIdError, setFilterIdError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     async function loadUsers() {
       setIsLoading(true);
       const { users, error } = await fetchUsers();
+      console.log("Fetched users:", users); // Debug log
       setUsers(users || []);
       setError(error);
       setIsLoading(false);
@@ -35,11 +37,20 @@ export default function Users({ isSidebarOpen }: UsersProps) {
   }, []);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilterId(e.target.value);
+    const value = e.target.value.trim();
+    if (value && !/^\d+$/.test(value)) {
+      setFilterIdError("User ID must be numeric");
+    } else {
+      setFilterIdError(null);
+      setFilterId(value);
+    }
+    console.log("Filter ID updated:", value); // Debug log
   };
 
   const handleFilterNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilterName(e.target.value);
+    const value = e.target.value;
+    setFilterName(value);
+    console.log("Filter Name updated:", value); // Debug log
   };
 
   const handleFilterToggle = () => {
@@ -47,13 +58,17 @@ export default function Users({ isSidebarOpen }: UsersProps) {
     if (showFilterInput) {
       setFilterId("");
       setFilterName("");
+      setFilterIdError(null);
     }
+    console.log("Filter input toggled:", !showFilterInput); // Debug log
   };
 
   const handleClearFilter = () => {
     setFilterId("");
     setFilterName("");
+    setFilterIdError(null);
     setShowFilterInput(false);
+    console.log("Filters cleared"); // Debug log
   };
 
   const handleExport = async (format: "excel" | "pdf" | "csv") => {
@@ -153,15 +168,18 @@ export default function Users({ isSidebarOpen }: UsersProps) {
     setDeleteUserId(null);
   };
 
-  const filteredUsers =
-    filterId || filterName
-      ? users.filter(
-          (user) =>
-            user.users_id.toString().includes(filterId) ||
-            user.users_name.toLowerCase().includes(filterName.toLowerCase()) ||
-            user.email.toLowerCase().includes(filterName.toLowerCase())
-        )
-      : users;
+  const filteredUsers = users.filter((user) => {
+    const matchesId = filterId
+      ? user.users_id.toString().includes(filterId)
+      : true;
+    const matchesName = filterName
+      ? user.users_name.toLowerCase().includes(filterName.toLowerCase()) ||
+        user.email.toLowerCase().includes(filterName.toLowerCase())
+      : true;
+    return matchesId && matchesName;
+  });
+
+  console.log("Filtered users:", filteredUsers); // Debug log
 
   if (error) {
     return (
@@ -214,15 +232,22 @@ export default function Users({ isSidebarOpen }: UsersProps) {
                     <span className="mr-2">🔍</span> Filter
                   </button>
                   {showFilterInput && (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={filterId}
-                        onChange={handleFilterChange}
-                        placeholder="Enter User ID"
-                        className="w-full sm:w-40 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        aria-label="Filter by User ID"
-                      />
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div>
+                        <input
+                          type="text"
+                          value={filterId}
+                          onChange={handleFilterChange}
+                          placeholder="Enter User ID"
+                          className="w-full sm:w-40 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                          aria-label="Filter by User ID"
+                        />
+                        {filterIdError && (
+                          <p className="text-red-600 text-xs mt-1">
+                            {filterIdError}
+                          </p>
+                        )}
+                      </div>
                       <input
                         type="text"
                         value={filterName}
@@ -236,7 +261,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
                         className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 text-sm sm:text-base"
                         aria-label="Reset filter"
                       >
-                        Reset filter
+                        Reset Filter
                       </button>
                     </div>
                   )}
@@ -357,7 +382,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
                             {user.rules_name || "None"}
                           </td>
                           <td className="p-2 sm:p-3 text-gray-700">
-                            {user.company}
+                            {user.company || "None"}
                           </td>
                         </tr>
                       ))
@@ -413,24 +438,24 @@ export default function Users({ isSidebarOpen }: UsersProps) {
                       </Dialog.Title>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Are you sure you want to delete user&nbsp;
-                          {
-                            users.find((u) => u.users_id === deleteUserId)?.users_name ?? deleteUserId
-                          }
-                          ? This action cannot be undone.
+                          Are you sure you want to delete user 
+                          <span className="font-medium">
+                            {users.find((u) => u.users_id === deleteUserId)?.users_name || deleteUserId}
+                          </span>?
+                          This action cannot be undone.
                         </p>
                       </div>
                       <div className="mt-4 flex justify-end gap-2">
                         <button
                           type="button"
-                          className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                          className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                           onClick={closeDeleteModal}
                         >
                           Cancel
                         </button>
                         <button
                           type="button"
-                          className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                          className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                           onClick={() => handleDeleteUser(deleteUserId!)}
                         >
                           Delete

@@ -95,8 +95,7 @@ export default function AddRules({ isSidebarOpen }: AddRulesProps) {
       <Header />
       <div className="flex">
         {/* Sidebar */}
-       
-
+      
         <main
           className={`flex-1 p-4 sm:p-6 lg:p-8 min-h-screen transition-all duration-300 ease-in-out ${
             isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
