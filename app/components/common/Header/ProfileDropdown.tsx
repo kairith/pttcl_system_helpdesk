@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { User } from "./UserDataProvider";
+import { useRouter } from "next/navigation";
 
 interface ProfileDropdownProps {
   isProfileOpen: boolean;
@@ -17,6 +18,14 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   userImage,
   handleLogout,
 }) => {
+  const router = useRouter();
+
+  const handleManageAccount = () => {
+    if (user?.users_id) {
+      router.push(`/pages/Users/edit_user_profile?users_id=${user.users_id}`);
+    }
+  };
+  
   return (
     <>
       <style jsx>{`
@@ -39,7 +48,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       `}</style>
       {isProfileOpen && (
         <div
-          className={`profile-dropdown fixed mt-18 right-2 sm:right-4 w-[calc(100vw-16px)] max-w-80 bg-white rounded-2xl shadow-lg border border-gray-200 py-4 z-50 ${
+          className={`profile-dropdown fixed top-20 right-2 sm:right-4 w-[calc(100vw-16px)] max-w-80 bg-white rounded-2xl shadow-lg border border-gray-200 py-4 z-50 ${
             isProfileOpen ? "open" : "closed"
           }`}
         >
@@ -63,7 +72,11 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             </div>
             <p className="text-lg font-semibold">Hi, {user?.users_name || "Guest"}!</p>
             <p className="text-sm text-gray-500 truncate w-full">{user?.email || "No email"}</p>
-            <button className="mt-3 px-4 py-3 border border-gray-300 rounded-full text-sm text-blue-600 hover:bg-gray-100">
+            <button
+              onClick={handleManageAccount}
+              className="mt-3 px-4 py-3 border border-gray-300 rounded-full text-sm text-blue-600 hover:bg-gray-100"
+              aria-label="Manage your account"
+            >
               Manage your Account
             </button>
           </div>
@@ -71,6 +84,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             <button
               onClick={handleLogout}
               className="w-full text-left text-sm text-red-600 hover:bg-gray-100 rounded-md px-3 py-3"
+              aria-label="Sign out"
             >
               Sign out
             </button>
@@ -82,3 +96,4 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 };
 
 export default ProfileDropdown;
+
