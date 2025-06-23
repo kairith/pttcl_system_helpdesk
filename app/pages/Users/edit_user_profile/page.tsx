@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
-import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 interface User {
   users_id: number;
   users_name: string;
   email: string;
-  password: string; // Hashed password from DB
-  company: string;
+  password?: string;
+  company?: string | null;
+  user_image?: string | null;
 }
 
 export default function EditUserProfilePage() {
@@ -26,11 +27,14 @@ export default function EditUserProfilePage() {
     company: "",
   });
   const [oldPassword, setOldPassword] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showOldPasswordModal, setShowOldPasswordModal] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Get token from sessionStorage
   const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
 
   useEffect(() => {
@@ -53,20 +57,34 @@ export default function EditUserProfilePage() {
         const data = await response.json();
         setUser(data);
         setFormData({
-          users_name: data.users_name,
-          email: data.email,
+          users_name: data.users_name || "",
+          email: data.email || "",
           newPassword: "",
           confirmPassword: "",
-          company: data.company,
+          company: data.company || "",
         });
+        setImagePreview(data.user_image || null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
+        toast.error(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
     };
     fetchUser();
   }, [users_id, token]);
+
+  useEffect(() => {
+    if (selectedImage) {
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(selectedImage);
+    } else if (removeImage) {
+      setImagePreview(null);
+    } else {
+      setImagePreview(user?.user_image || null);
+    }
+  }, [selectedImage, removeImage, user?.user_image]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -76,20 +94,58 @@ export default function EditUserProfilePage() {
     setOldPassword(e.target.value);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        setError("Please select an image file");
+        toast.error("Please select an image file");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image size must be less than 5MB");
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
+      setSelectedImage(file);
+      setRemoveImage(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setRemoveImage(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!users_id) {
       setError("User ID not provided");
+      toast.error("User ID not provided");
       return;
     }
 
-    // Validate new password and confirm password match
     if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
       setError("New password and confirm password do not match");
+      toast.error("New password and confirm password do not match");
       return;
     }
 
-    // Show modal for old password
+    if (!formData.users_name.trim()) {
+      setError("Name is required");
+      toast.error("Name is required");
+      return;
+    }
+
+    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("Valid email is required");
+      toast.error("Valid email is required");
+      return;
+    }
+
     setShowOldPasswordModal(true);
   };
 
@@ -101,7 +157,6 @@ export default function EditUserProfilePage() {
         throw new Error("Please enter your current password");
       }
 
-      // Verify old password
       const verifyResponse = await fetch(`/api/data/edit_user_profile/${users_id}/verify`, {
         method: "POST",
         headers: {
@@ -110,37 +165,48 @@ export default function EditUserProfilePage() {
         },
         body: JSON.stringify({ password: oldPassword }),
       });
-      if (!verifyResponse.ok) {
-        const errorData = await verifyResponse.json();
-        throw new Error(errorData.error || "Invalid old password");
+      const verifyData = await verifyResponse.json();
+      if (!verifyResponse.ok || !verifyData.success) {
+        throw new Error(verifyData.error || "Invalid current password");
+      }
+
+      const formDataToSend = new FormData();
+      formDataToSend.append("users_name", formData.users_name.trim());
+      formDataToSend.append("email", formData.email.trim());
+      if (formData.newPassword) {
+        formDataToSend.append("password", formData.newPassword);
+      }
+      if (formData.company) {
+        formDataToSend.append("company", formData.company);
+      }
+      if (selectedImage) {
+        formDataToSend.append("user_image", selectedImage);
+      }
+      if (removeImage) {
+        formDataToSend.append("remove_image", "true");
       }
 
       const response = await fetch(`/api/data/edit_user_profile/${users_id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify({
-          users_name: formData.users_name,
-          email: formData.email,
-          password: formData.newPassword || undefined, // Only update if new password is provided
-          company: formData.company,
-          currentPassword: oldPassword, // Ensure currentPassword is sent
-        }),
+        body: formDataToSend,
       });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to update user");
       }
       toast.success("Profile updated successfully!");
-      setTimeout(() => router.push("/"), 2000); // Redirect after toast
+      setTimeout(() => router.push("/"), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
       setShowOldPasswordModal(false);
-      setOldPassword(""); // Clear old password after attempt
+      setOldPassword("");
     }
   };
 
@@ -149,131 +215,208 @@ export default function EditUserProfilePage() {
     setOldPassword("");
     setError(null);
   };
-// ... (rest of the page.tsx code remains the same until the modal)
 
-if (loading) return <div className="text-center p-4">Loading...</div>;
-if (error) return <div className="text-red-600 p-4">{error}</div>;
-if (!user) return <div className="text-center p-4">User not found</div>;
+  if (loading) return <div className="text-center p-4">Loading...</div>;
+  if (error) return <div className="text-red-600 p-4">{error}</div>;
+  if (!user) return <div className="text-center p-4">User not found</div>;
 
-return (
-  <div className="min-h-screen bg-gray-100 p-4">
-    <Toaster position="top-right" />
-    <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Edit Profile</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            type="text"
-            name="users_name"
-            value={formData.users_name}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">New Password</label>
-          <input
-            type="password"
-            name="newPassword"
-            value={formData.newPassword}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            placeholder="Leave blank to keep current password"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            placeholder="Confirm new password"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Company</label>
-          <input
-            type="text"
-            name="company"
-            value={formData.company}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Save Changes"}
-        </button>
-      </form>
-
-      {showOldPasswordModal && (
-        <>
-          <style jsx>{`
-            @keyframes modalOpen {
-              from {
-                transform: scale(0.95);
-                opacity: 0;
-              }
-              to {
-                transform: scale(1);
-                opacity: 1;
-              }
-            }
-            .animate-modal-open {
-              animation: modalOpen 0.3s ease-in-out forwards;
-            }
-          `}</style>
-       <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-200/50 backdrop-blur-sm transition-opacity duration-300">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-95 opacity-0 animate-modal-open">
-              <h2 className="text-xl font-semibold mb-4">Verify Your Identity</h2>
-              <p className="text-gray-600 mb-4">Please enter your current password to save changes.</p>
-              <input
-                type="password"
-                value={oldPassword}
-                onChange={handleOldPasswordChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 mb-4"
-                placeholder="Enter your current password"
-                autoFocus
+  return (
+    <div className="min-h-screen bg-gray-100 p-4">
+      <Toaster position="top-right" />
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">Edit Profile</h1>
+        <div className="flex flex-col items-center mb-6">
+          <div className="relative w-20 h-20 mb-2 aspect-square">
+            <Image
+              src={imagePreview || "/Uploads/user_image/Default-avatar.jpg"}
+              alt={`Profile picture of ${formData.users_name || "user"}`}
+              fill
+              className="rounded-full object-cover"
+              sizes="80px"
+              priority
+              onError={() => console.error("Failed to load profile image:", imagePreview)}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 bg-white p-1 rounded-full shadow"
+              aria-label="Change profile picture"
+            >
+              <Image
+                src="/img/camera-icon.png"
+                alt=""
+                width={16}
+                height={16}
+                aria-hidden="true"
+                onError={() => console.error("Failed to load camera icon")}
               />
-              {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
-              <div className="flex justify-end space-x-4">
-                <button
-                  onClick={handleModalClose}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleVerifyAndSave}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  disabled={loading || !oldPassword}
-                >
-                  {loading ? "Verifying..." : "Confirm"}
-                </button>
+            </button>
+          </div>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+            ref={fileInputRef}
+            id="user_image"
+            aria-label="Upload profile picture"
+          />
+          {imagePreview && (
+            <button
+              onClick={handleRemoveImage}
+              className="text-sm text-red-600 hover:underline"
+              aria-label="Remove profile picture"
+            >
+              Remove Image
+            </button>
+          )}
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="users_name" className="block text-sm font-medium text-gray-700">
+              Name
+            </label>
+            <input
+              type="text"
+              id="users_name"
+              name="users_name"
+              value={formData.users_name}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              required
+              aria-required="true"
+            />
+          </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              required
+              aria-required="true"
+            />
+          </div>
+          <div>
+            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+              New Password
+            </label>
+            <input
+              type="password"
+              id="newPassword"
+              name="newPassword"
+              value={formData.newPassword}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              placeholder="Leave blank to keep current password"
+            />
+          </div>
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              placeholder="Confirm new password"
+            />
+          </div>
+          <div>
+            <label htmlFor="company" className="block text-sm font-medium text-gray-700">
+              Company
+            </label>
+            <input
+              type="text"
+              id="company"
+              name="company"
+              value={formData.company}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+            disabled={loading}
+            aria-busy={loading}
+          >
+            {loading ? "Saving..." : "Save Changes"}
+          </button>
+        </form>
+
+        {showOldPasswordModal && (
+          <>
+            <style jsx>{`
+              @keyframes modalOpen {
+                from {
+                  transform: scale(0.95);
+                  opacity: 0;
+                }
+                to {
+                  transform: scale(1);
+                  opacity: 1;
+                }
+              }
+              .animate-modal-open {
+                animation: modalOpen 0.3s ease-in-out forwards;
+              }
+            `}</style>
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-gray-200/50 backdrop-blur-sm transition-opacity duration-300"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-title"
+            >
+              <div className="bg-white rounded-lg p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-95 opacity-0 animate-modal-open">
+                <h2 id="modal-title" className="text-xl font-semibold mb-4">
+                  Verify Your Identity
+                </h2>
+                <p className="text-gray-600 mb-4">Please enter your current password to save changes.</p>
+                <input
+                  type="password"
+                  value={oldPassword}
+                  onChange={handleOldPasswordChange}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 mb-4"
+                  placeholder="Enter your current password"
+                  autoFocus
+                  id="oldPassword"
+                  aria-describedby={error ? "password-error" : undefined}
+                />
+                {error && (
+                  <p id="password-error" className="text-red-600 text-sm mb-4">
+                    {error}
+                  </p>
+                )}
+                <div className="flex justify-end space-x-4">
+                  <button
+                    onClick={handleModalClose}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                    aria-label="Cancel"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleVerifyAndSave}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    disabled={loading || !oldPassword}
+                    aria-busy={loading}
+                  >
+                    {loading ? "Verifying..." : "Confirm"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
-  </div>
- );
+  );
 }

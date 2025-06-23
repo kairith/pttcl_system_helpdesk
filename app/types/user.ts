@@ -7,4 +7,5 @@ export interface User {
      status: number;
      rules_id: number;
      company: string;
+     user_image?: string | null;
    }
