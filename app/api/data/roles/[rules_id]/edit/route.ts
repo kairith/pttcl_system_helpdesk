@@ -2,29 +2,33 @@ import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import { dbConfig } from '@/app/database/db-config';
 
-// Create a connection pool
 const pool = mysql.createPool(dbConfig);
 
-// PATCH: Update a rule's name and permissions
-export async function PATCH(request: Request, { params }: { params: { rules_id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ rules_id: string }> }) {
   let connection;
   try {
+    const { rules_id } = await params; // Await params to resolve dynamic route parameters
+    console.log('PATCH request for rules_id:', rules_id);
+    const ruleId = parseInt(rules_id, 10);
+    if (isNaN(ruleId)) {
+      console.error('Invalid rule ID:', rules_id);
+      return NextResponse.json({ error: 'Invalid rule ID' }, { status: 400 });
+    }
+
     const body = await request.json();
+    console.log('PATCH request body:', body);
     const { rules_name, permissions } = body;
 
     // Validate rules_name
     if (!rules_name || typeof rules_name !== 'string' || !rules_name.trim()) {
+      console.error('Missing or invalid rules_name:', rules_name);
       return NextResponse.json({ error: 'Rule name is required' }, { status: 400 });
     }
 
     // Validate permissions
     if (!permissions || typeof permissions !== 'object') {
+      console.error('Invalid permissions:', permissions);
       return NextResponse.json({ error: 'Permissions are required' }, { status: 400 });
-    }
-
-    const rules_id = parseInt(params.rules_id, 10);
-    if (isNaN(rules_id)) {
-      return NextResponse.json({ error: 'Invalid rule ID' }, { status: 400 });
     }
 
     connection = await pool.getConnection();
@@ -38,40 +42,45 @@ export async function PATCH(request: Request, { params }: { params: { rules_id: 
       WHERE rules_id = ?`,
       [
         rules_name,
-        permissions.users.add ? 1 : 0,
-        permissions.users.edit ? 1 : 0,
-        permissions.users.delete ? 1 : 0,
-        permissions.users.list ? 1 : 0,
-        permissions.tickets.add ? 1 : 0,
-        permissions.tickets.edit ? 1 : 0,
-        permissions.tickets.delete ? 1 : 0,
-        permissions.tickets.list ? 1 : 0,
-        permissions.tickets.listAssign ? 1 : 0,
-        permissions.userRules.add ? 1 : 0,
-        permissions.userRules.edit ? 1 : 0,
-        permissions.userRules.delete ? 1 : 0,
-        permissions.userRules.list ? 1 : 0,
-        permissions.stations.add ? 1 : 0,
-        permissions.stations.edit ? 1 : 0,
-        permissions.stations.delete ? 1 : 0,
-        permissions.stations.list ? 1 : 0,
-        rules_id,
+        permissions.users?.add ? 1 : 0,
+        permissions.users?.edit ? 1 : 0,
+        permissions.users?.delete ? 1 : 0,
+        permissions.users?.list ? 1 : 0,
+        permissions.tickets?.add ? 1 : 0,
+        permissions.tickets?.edit ? 1 : 0,
+        permissions.tickets?.delete ? 1 : 0,
+        permissions.tickets?.list ? 1 : 0,
+        permissions.tickets?.listAssign ? 1 : 0,
+        permissions.userRules?.add ? 1 : 0,
+        permissions.userRules?.edit ? 1 : 0,
+        permissions.userRules?.delete ? 1 : 0,
+        permissions.userRules?.list ? 1 : 0,
+        permissions.stations?.add ? 1 : 0,
+        permissions.stations?.edit ? 1 : 0,
+        permissions.stations?.delete ? 1 : 0,
+        permissions.stations?.list ? 1 : 0,
+        ruleId,
       ]
     );
 
     if ((result as any).affectedRows === 0) {
+      console.error('No rule found with rules_id:', ruleId);
       return NextResponse.json({ error: 'Rule not found' }, { status: 404 });
     }
 
+    console.log('Rule updated successfully:', { rules_id: ruleId });
     return NextResponse.json({ message: 'Rule updated successfully' }, { status: 200 });
   } catch (error) {
     if (error instanceof Error) {
-      console.error('Error updating rule:', error.message);
+      console.error('Error updating rule:', error.message, error.stack);
     } else {
       console.error('Error updating rule:', error);
     }
     return NextResponse.json({ error: 'Failed to update rule' }, { status: 500 });
   } finally {
-    if (connection) connection.release();
+    if (connection) {
+      connection.release();
+      console.log('Database connection released');
+    }
   }
 }

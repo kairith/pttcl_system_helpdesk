@@ -3,41 +3,71 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import HeaderWithSidebar from '@/app/components/common/Header/Headerwithsidebar';
+import { tbl_users_rules } from '@/app/types/rules';
 
 export default function CreateUserPage() {
   const [usersName, setUsersName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
-  const [status, setStatus] = useState(1); // Default to Active
+  const [status, setStatus] = useState(1);
   const [rulesId, setRulesId] = useState('');
-  const [roles, setRoles] = useState<{ rules_id: number; rules_name: string }[]>([]);
+  const [roles, setRoles] = useState<tbl_users_rules[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePath, setImagePath] = useState<string>('');
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Fetch roles
   useEffect(() => {
-    fetch('/api/data/roles')
-      .then(res => res.json())
-      .then(data => {
-        if (!data || data.length === 0) {
-          setErrors(['No roles available.']);
+    async function initialize() {
+      // Fetch roles
+      const token = sessionStorage.getItem('token');
+      console.log('Fetching roles with token:', token ? '[token present]' : '[no token]');
+      if (!token) {
+        setErrors(['Please log in.']);
+        router.push('/');
+        return;
+      }
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'}/api/data/roles`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          cache: 'no-store',
+        });
+        console.log('Fetch roles response status:', response.status, response.statusText);
+        const data = await response.json();
+        console.log('Fetch roles response data:', data);
+        if (!response.ok) {
+          setErrors([data.error || 'Failed to load roles.']);
+          setRoles([]);
           return;
         }
-        setRoles(data);
-        setRulesId(data[0]?.rules_id.toString() || '');
-      })
-      .catch(() => setErrors(['Failed to load roles.']));
-  }, []);
+        const fetchedRoles = Array.isArray(data.rules) ? data.rules : [];
+        console.log('Roles fetched successfully:', fetchedRoles.length, 'items');
+        setRoles(fetchedRoles);
+        setRulesId(fetchedRoles[0]?.rules_id?.toString() || '');
+      } catch (err) {
+        if (err instanceof Error) {
+          console.error('Unexpected error fetching roles:', err.message, err.stack);
+          setErrors([`Failed to load roles: ${err.message}`]);
+        } else {
+          console.error('Unexpected error fetching roles:', err);
+          setErrors(['Failed to load roles: Unknown error']);
+        }
+        setRoles([]);
+      }
+    }
+    initialize();
+  }, [router]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
       setErrors(['Invalid file type. Only JPEG, PNG, or GIF allowed.']);
@@ -45,7 +75,6 @@ export default function CreateUserPage() {
       return;
     }
 
-    // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       setErrors(['File size exceeds 5MB limit.']);
@@ -62,7 +91,6 @@ export default function CreateUserPage() {
     setErrors([]);
     setIsLoading(true);
 
-    // Client-side validation
     if (!usersName || !email || !password || !company || !rulesId) {
       setErrors(['All fields (except image) are required.']);
       setIsLoading(false);
@@ -87,22 +115,25 @@ export default function CreateUserPage() {
     try {
       const token = sessionStorage.getItem('token');
       if (!token) {
-        setErrors(['Please log in as an admin.']);
+        setErrors(['Please log in.']);
         setIsLoading(false);
         router.push('/');
         return;
       }
 
-      // Upload image if selected
       let uploadedImagePath = '';
       if (imageFile) {
         const formData = new FormData();
         formData.append('image', imageFile);
         const uploadResponse = await fetch('/api/data/upload_user_image', {
           method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: formData,
         });
         const uploadData = await uploadResponse.json();
+        console.log('Image upload response:', uploadData);
         if (!uploadResponse.ok) {
           setErrors([uploadData.error || 'Failed to upload image.']);
           setIsLoading(false);
@@ -112,18 +143,17 @@ export default function CreateUserPage() {
         setImagePath(uploadedImagePath);
       }
 
-      // Create user
       const response = await fetch('/api/data/add_user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ usersName, email, password, company, status, rulesId, imagePath: uploadedImagePath }),
+        body: JSON.stringify({ usersName, email, password, company, status, rulesId: Number(rulesId), imagePath: uploadedImagePath }),
       });
 
       const data = await response.json();
-
+      console.log('Create user response:', data);
       if (!response.ok) {
         setErrors([data.error || 'Failed to create user.']);
         setIsLoading(false);
@@ -132,6 +162,7 @@ export default function CreateUserPage() {
 
       router.push('/pages/admin/user');
     } catch (error: any) {
+      console.error('Error creating user:', error.message, error.stack);
       setErrors([`An error occurred: ${error.message || 'Unknown error'}`]);
       setIsLoading(false);
     }
@@ -220,7 +251,8 @@ export default function CreateUserPage() {
                     onChange={(e) => setRulesId(e.target.value)}
                     className="form-control w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     required
-                 >
+                  >
+                    <option value="">Select a role</option>
                     {roles.map((role) => (
                       <option key={role.rules_id} value={role.rules_id}>
                         {role.rules_name.charAt(0).toUpperCase() + role.rules_name.slice(1)}

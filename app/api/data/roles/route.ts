@@ -9,11 +9,7 @@ const pool = mysql.createPool(dbConfig);
 export async function GET() {
   let connection;
   try {
-    console.log('Attempting to connect to database with config:', {
-      host: dbConfig.host,
-      user: dbConfig.user,
-      database: dbConfig.database,
-    });
+    console.log('Attempting to connect to database with config:', dbConfig);
     connection = await pool.getConnection();
     console.log('Database connection established');
     const [rows] = await connection.execute(`
