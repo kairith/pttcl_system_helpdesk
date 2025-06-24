@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
-
+// add rules for roles of any user
 interface Permissions {
   users: { add: boolean; edit: boolean; delete: boolean; list: boolean };
   tickets: { add: boolean; edit: boolean; delete: boolean; list: boolean; listAssign: boolean };

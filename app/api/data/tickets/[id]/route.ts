@@ -3,7 +3,7 @@ import mysql from "mysql2/promise";
 import jwt from "jsonwebtoken";
 import { dbConfig } from "@/app/database/db-config";
 
-
+// check by id
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   let connection;

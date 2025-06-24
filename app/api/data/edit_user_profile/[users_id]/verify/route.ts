@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import bcrypt from "bcryptjs";
 import { dbConfig } from "@/app/database/db-config";
-
+// verify password by users_id after change in edit profille 
 export async function POST(request: Request, { params }: { params: Promise<{ users_id: string }> }) {
   const paramsData = await params;
   const token = request.headers.get("authorization")?.replace("Bearer ", "");

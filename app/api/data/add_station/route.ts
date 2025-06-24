@@ -3,7 +3,7 @@ import mysql from 'mysql2/promise';
 import { Station } from '@/app/types/station'; // Adjust path based on your project structure
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { dbConfig } from '@/app/database/db-config'; // Adjust path to your dbConfig file
-
+// the route for add station to web
 export async function POST(request: NextRequest) {
   let connection;
   try {

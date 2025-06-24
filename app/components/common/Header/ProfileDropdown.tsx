@@ -22,7 +22,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 
   const handleManageAccount = () => {
     if (user?.users_id) {
-      router.push(`/pages/Users/edit_user_profile?users_id=${user.users_id}`);
+      //  router.push(`/pages/Users/edit_user_profile?users_id=${user.users_id}`);
+      router.push(`/pages/Users/userprofile?users_id=${user.users_id}`);
     }
   };
   

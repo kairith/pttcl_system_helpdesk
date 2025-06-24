@@ -5,7 +5,7 @@ import { utils, write } from "xlsx";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { dbConfig } from "@/app/database/db-config"; // Adjust path to your dbConfig file
-
+// export file for station table
 interface Station extends RowDataPacket {
   id: number;
   station_id: string;

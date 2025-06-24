@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createConnection } from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
-
+// show by id
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Await params to resolve the dynamic route parameter

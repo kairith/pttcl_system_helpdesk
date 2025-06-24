@@ -4,7 +4,7 @@ import { fetchUsers } from "@/app/pages/admin/user/action"; // Adjust path to yo
 import { utils, write } from "xlsx"; // Use named imports for xlsx
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-
+// export file for user table
 export async function GET(request: NextRequest) {
   try {
     // Extract token from Authorization header

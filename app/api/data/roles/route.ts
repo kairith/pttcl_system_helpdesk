@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import { dbConfig } from '@/app/database/db-config';
-
+// display role in page
 export async function GET() {
   let connection;
   try {

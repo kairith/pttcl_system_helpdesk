@@ -1,4 +1,5 @@
 // app/components/common/Header/hooks/useClickOutside.ts
+// click somewhere outside the navbar component will close it
 import { useEffect, RefObject } from "react";
 
 const useClickOutside = (refs: RefObject<HTMLElement | null>[], callback: () => void) => {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createConnection } from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
-
+// show user by id 
 const TABLE_NAME = "tbl_users";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {

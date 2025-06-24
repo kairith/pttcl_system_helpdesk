@@ -1,7 +1,12 @@
 // app/dashboard/page.tsx
+
+// dashboard page 
 "use client";
 
 import { useState, useEffect } from "react";
+
+
+// import component for the component folder for combine to dashboard
 import HeaderWithSidebar from "@/app/components/common/Header/Headerwithsidebar";
 import {
   fetchTicketsCount,
@@ -15,6 +20,11 @@ import DoughnutChartCard from "@/app/components/Dashboard_components/DoughnutCha
 import TicketDetailsTable from "@/app/components/Dashboard_components/TicketDetailsTable";
 import Card from "@/app/components/common/Card";
 
+//============================================================================================//
+
+
+
+// fetch data from chart
 interface TicketData {
   id: number;
   ticket_id: string;
@@ -37,18 +47,27 @@ interface DashboardProps {
   isSidebarOpen: boolean;
 }
 
+
+//  ============================== //
 const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
+
+  // loading all year for each data in chart or component 2024 by default 
   const [selectedYear, setSelectedYear] = useState("2024");
   const [ticketData, setTicketData] = useState<TicketData[]>([]);
   const [stats, setStats] = useState<StatsData>({
+
+    // all status in the system for ticket  // 
     open: 0,
     on_hold: 0,
     in_progress: 0,
     close: 0,
+
+    // ===================================== // 
   });
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // checking error
 
   useEffect(() => {
+    // refrease data load for dashboard in page
     const loadData = async () => {
       try {
         const countResult = await fetchTicketsCount(undefined, selectedYear);
@@ -72,13 +91,19 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
       }
     };
 
-    loadData();
+    loadData(); // loading data
   }, [selectedYear]);
+  
 
+  // handle year data for entire page
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedYear(e.target.value);
   };
+ // =============================== // 
 
+
+
+ // ========================================= Front-end ============================================ // 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* header for page */}
@@ -97,6 +122,10 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
             </div>
             {error && <p className="text-red-600 mb-4">{error}</p>}
             <StatsCards stats={stats} />
+
+
+            
+
             {/* all ticket lineChart */}
             <LineChartCard title="Ticket Trends" />
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import jwt from "jsonwebtoken";
 import { dbConfig } from "@/app/database/db-config";
-
+//display 
 export async function POST(request: Request) {
   let connection;
   try {

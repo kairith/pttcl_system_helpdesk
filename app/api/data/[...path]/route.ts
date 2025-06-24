@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
+// the endpoint that check the page that not having route in the website for 404 not found
 export async function GET(request: NextRequest) {
   return NextResponse.json(
     {

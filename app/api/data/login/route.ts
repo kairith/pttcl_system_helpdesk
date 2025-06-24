@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import mysql from 'mysql2/promise';
 import crypto from 'crypto';
 import { dbConfig } from '@/app/database/db-config';
-
+// login route
 export async function POST(request: Request) {
   let connection;
 

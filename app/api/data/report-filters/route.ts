@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
-
+// route for filter in admin/report page
 export async function GET(request: Request) {
   try {
     console.log("GET: Fetching report filters");

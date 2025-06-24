@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { ensureDirectoryExistence } from '@/app/lib/utils';
-// user
+// user upload image 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();

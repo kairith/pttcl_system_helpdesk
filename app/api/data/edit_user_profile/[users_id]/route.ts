@@ -5,7 +5,7 @@ import { dbConfig } from "@/app/database/db-config";
 import multer from "multer";
 import { promises as fs } from "fs";
 import path from "path";
-
+// route for update profile 
 const upload = multer({
   storage: multer.diskStorage({
     destination: "./public/uploads/user_image/",

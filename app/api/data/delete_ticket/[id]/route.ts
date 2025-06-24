@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import jwt from "jsonwebtoken";
 import { dbConfig } from "@/app/database/db-config";
-
+// route delete ticket by id in folder/[id]/route
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   let connection;
   try {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -41,6 +42,7 @@ export default function EditUserProfilePage() {
     const fetchUser = async () => {
       if (!users_id) {
         setError("User ID not provided");
+        toast.error("User ID not provided");
         setLoading(false);
         return;
       }
@@ -56,6 +58,7 @@ export default function EditUserProfilePage() {
         }
         const data = await response.json();
         setUser(data);
+        sessionStorage.setItem("user", JSON.stringify(data));
         setFormData({
           users_name: data.users_name || "",
           email: data.email || "",
@@ -63,10 +66,13 @@ export default function EditUserProfilePage() {
           confirmPassword: "",
           company: data.company || "",
         });
-        setImagePreview(data.user_image || null);
+        const imagePath = data.user_image || "/Uploads/user_image/Default-avatar.jpg";
+        setImagePreview(imagePath);
+        sessionStorage.setItem("userImage", imagePath);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-        toast.error(err instanceof Error ? err.message : "Unknown error");
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -76,14 +82,36 @@ export default function EditUserProfilePage() {
 
   useEffect(() => {
     if (selectedImage) {
+      console.log("Selected image:", selectedImage.name, selectedImage.size);
       const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
+      reader.onload = () => {
+        const result = reader.result as string;
+        console.log("Base64 preview:", result.substring(0, 50) + "...");
+        if (result.startsWith("data:image/")) {
+          setImagePreview(result);
+        } else {
+          setError("Invalid image data");
+          toast.error("Invalid image data");
+          console.error("Invalid base64 data:", result);
+        }
+      };
+      reader.onerror = () => {
+        setError("Failed to read image file");
+        toast.error("Failed to read image file");
+        console.error("FileReader error:", reader.error);
+      };
       reader.readAsDataURL(selectedImage);
     } else if (removeImage) {
-      setImagePreview(null);
+      setImagePreview("/Uploads/user_image/Default-avatar.jpg");
+      sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
+    } else if (!selectedImage && !removeImage && user?.user_image) {
+      setImagePreview(user.user_image);
+      sessionStorage.setItem("userImage", user.user_image);
     } else {
-      setImagePreview(user?.user_image || null);
+      setImagePreview("/Uploads/user_image/Default-avatar.jpg");
+      sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
     }
+    console.log("Current imagePreview:", imagePreview);
   }, [selectedImage, removeImage, user?.user_image]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,24 +125,29 @@ export default function EditUserProfilePage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith("image/")) {
-        setError("Please select an image file");
-        toast.error("Please select an image file");
-        return;
+      try {
+        if (!file.type.startsWith("image/")) {
+          throw new Error("Please select an image file (e.g., PNG, JPEG)");
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error("Image size must be less than 5MB");
+        }
+        setSelectedImage(file);
+        setRemoveImage(false);
+        console.log("Image selected:", file.name, file.size);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Failed to process image";
+        setError(errorMessage);
+        toast.error(errorMessage);
+        console.error("Image upload error:", err);
       }
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Image size must be less than 5MB");
-        toast.error("Image size must be less than 5MB");
-        return;
-      }
-      setSelectedImage(file);
-      setRemoveImage(false);
     }
   };
 
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setRemoveImage(true);
+    sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -195,14 +228,21 @@ export default function EditUserProfilePage() {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update user");
+        throw new Error(errorData.error || `Failed to update user: ${response.statusText}`);
       }
+      const updatedUser: User = await response.json();
+      setUser(updatedUser);
+      sessionStorage.setItem("user", JSON.stringify(updatedUser));
+      const newImage = updatedUser.user_image || "/Uploads/user_image/Default-avatar.jpg";
+      sessionStorage.setItem("userImage", newImage);
+      setImagePreview(newImage);
       toast.success("Profile updated successfully!");
       setTimeout(() => router.push("/"), 2000);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const errorMessage = err instanceof Error ? err.message : "Unknown error during update";
       setError(errorMessage);
       toast.error(errorMessage);
+      console.error("PUT request error:", err);
     } finally {
       setLoading(false);
       setShowOldPasswordModal(false);
@@ -220,6 +260,8 @@ export default function EditUserProfilePage() {
   if (error) return <div className="text-red-600 p-4">{error}</div>;
   if (!user) return <div className="text-center p-4">User not found</div>;
 
+  const isBase64 = imagePreview && imagePreview.startsWith("data:image/");
+
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <Toaster position="top-right" />
@@ -227,15 +269,30 @@ export default function EditUserProfilePage() {
         <h1 className="text-2xl font-bold mb-6 text-gray-800">Edit Profile</h1>
         <div className="flex flex-col items-center mb-6">
           <div className="relative w-20 h-20 mb-2 aspect-square">
-            <Image
-              src={imagePreview || "/Uploads/user_image/Default-avatar.jpg"}
-              alt={`Profile picture of ${formData.users_name || "user"}`}
-              fill
-              className="rounded-full object-cover"
-              sizes="80px"
-              priority
-              onError={() => console.error("Failed to load profile image:", imagePreview)}
-            />
+            {isBase64 ? (
+              <img
+                src={imagePreview}
+                alt={`Profile picture of ${formData.users_name || "user"}`}
+                className="rounded-full object-cover w-full h-full"
+                onError={() => {
+                  console.error("Failed to load base64 profile image:", imagePreview);
+                  setImagePreview("/Uploads/user_image/Default-avatar.jpg");
+                }}
+              />
+            ) : (
+              <Image
+                src={imagePreview || "/Uploads/user_image/Default-avatar.jpg"}
+                alt={`Profile picture of ${formData.users_name || "user"}`}
+                fill
+                className="rounded-full object-cover"
+                sizes="80px"
+                priority
+                onError={() => {
+                  console.error("Failed to load profile image:", imagePreview);
+                  setImagePreview("/Uploads/user_image/Default-avatar.jpg");
+                }}
+              />
+            )}
             <button
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-0 right-0 bg-white p-1 rounded-full shadow"
@@ -260,7 +317,7 @@ export default function EditUserProfilePage() {
             id="user_image"
             aria-label="Upload profile picture"
           />
-          {imagePreview && (
+          {imagePreview && imagePreview !== "/Uploads/user_image/Default-avatar.jpg" && (
             <button
               onClick={handleRemoveImage}
               className="text-sm text-red-600 hover:underline"

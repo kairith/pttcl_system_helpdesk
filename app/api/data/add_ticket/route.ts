@@ -5,7 +5,7 @@ import { dbConfig } from '@/app/database/db-config';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { ensureDirectoryExistence } from '@/app/lib/utils';
-
+// route for add ticket 
 export async function POST(request: Request) {
   let connection;
   try {

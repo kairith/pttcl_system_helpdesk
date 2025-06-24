@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
-
+// choose station type but not use
 
 export async function GET(request: Request) {
   try {

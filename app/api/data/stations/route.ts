@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import mysql from "mysql2/promise"; // Install mysql2
 import { dbConfig } from "@/app/database/db-config";
-
+// normal display
 const db = mysql.createPool(dbConfig)
 export async function GET(request: NextRequest) {
   try {

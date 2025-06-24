@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createConnection } from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
-
+// route delete station by id in folder/[id]/route
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const token = request.headers.get("Authorization")?.replace("Bearer ", "");

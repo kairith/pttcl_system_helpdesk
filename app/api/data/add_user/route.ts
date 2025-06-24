@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import mysql from 'mysql2/promise';
 import jwt from 'jsonwebtoken';
 import { dbConfig } from '@/app/database/db-config';
-
+// route for add user
 export async function POST(request: Request) {
   let connection;
   try {

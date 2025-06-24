@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import { dbConfig } from '@/app/database/db-config';
-
+// track every ticket by ticket_id
 export async function GET(request: NextRequest, context: { params: Promise<{ ticket_id: string }> }) {
   const { ticket_id } = await context.params;
   console.log('API route hit for ticket_id:', ticket_id);
