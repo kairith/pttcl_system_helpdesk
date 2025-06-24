@@ -19,3 +19,5 @@ export interface tbl_users_rules {
   delete_station: number;
   list_station: number;
 }
+
+
