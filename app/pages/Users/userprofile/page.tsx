@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -33,7 +32,8 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
+  const token =
+    typeof window !== "undefined" ? sessionStorage.getItem("token") : null;
   const backgroundImage = "/images/background.png"; // Corrected path
 
   useEffect(() => {
@@ -55,11 +55,17 @@ export default function UserProfilePage() {
           throw new Error(errorData.error || "Failed to fetch user profile");
         }
         const data = await response.json();
-        console.log("Fetched tickets for user_id", users_id, ": ", data.tickets); // Debug log
+        console.log(
+          "Fetched tickets for user_id",
+          users_id,
+          ": ",
+          data.tickets
+        ); // Debug log
         setUser(data.user || null); // Safeguard for user
         setTickets(data.tickets || []); // Default to empty array if undefined
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error";
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -72,7 +78,10 @@ export default function UserProfilePage() {
   if (loading) return <div className="text-center p-4">Loading...</div>;
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 p-4" style={{ backgroundImage: `url(${backgroundImage})` }}>
+      <div
+        className="min-h-screen bg-gray-100 p-4"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      >
         <Toaster position="top-right" />
         <div className="max-w-md mx-auto bg-white bg-opacity-90 rounded-lg shadow-lg p-6 text-center">
           <h1 className="text-2xl font-bold mb-4 text-red-600">Error</h1>
@@ -86,94 +95,98 @@ export default function UserProfilePage() {
   }
   if (!user) return <div className="text-center p-4">User not found</div>;
 
-return (
-  <div className="min-h-screen bg-gray-100">
-    <Toaster position="top-right" />
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Toaster position="top-right" />
 
-    {/* Background Header (Cover Photo) */}
-    <div className="relative w-full h-100   ">
-      <img
-        src="/images/background.png" // Replace with the cover photo URL
-        alt="Cover Photo"
-        className="w-full h-full object-cover"
-      />
-    
-    </div>
-
-    {/* Profile Section */}
-    <div className="relative -mt-16 z-10 bg-white max-w-4xl mx-auto rounded-xl p-6 shadow-xl">
-      {/* Profile Picture and Info */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-        {/* Avatar */}
-        <div className="w-40 h-40 relative -mt-16">
-          <img
-            src={user.user_image || "/Uploads/user_image/Default-avatar.jpg"}
-            alt={`Profile of ${user.users_name}`}
-            className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
-          />
-        </div>
-
-        {/* Info and Actions */}
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-2xl font-bold text-gray-800">{user.users_name}</h2>
-           
-            <a
-              href={`/pages/Users/edit_user_profile?users_id=${user.users_id}`}
-              className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition"
-            >
-              ✏️ Edit Profile
-            </a>
-          </div>
-          
-          {user.email && <p className="text-gray-500">{user.email}</p>}
-          {user.company && <p className="text-gray-500">{user.company}</p>}
-        </div>
+      {/* Background Header (Cover Photo) */}
+      <div className="relative w-full h-100   ">
+        <img
+          src="/images/background.png" // Replace with the cover photo URL
+          alt="Cover Photo"
+          className="w-full h-full object-cover"
+        />
       </div>
 
-      {/* Ticket Table */}
-      <div className="mt-10">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">User Ticket</h3>
-        {tickets.length > 0 ? (
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="min-w-full text-sm text-gray-700">
-              <thead className="bg-gray-100 text-gray-600 text-left">
-                <tr>
-                  <th className="px-4 py-3">No</th>
-                  <th className="px-4 py-3">Ticket ID</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Station ID</th>
-                  <th className="px-4 py-3">Station Type</th>
-                  <th className="px-4 py-3">Issue Description</th>
-                  <th className="px-4 py-3">Issue Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tickets.map((ticket, index) => (
-                  <tr key={ticket.ticket_id} className="border-t bg-white hover:bg-gray-50 transition">
-                    <td className="px-4 py-2">{index + 1}</td>
-                    <td className="px-4 py-2">{ticket.ticket_id}</td>
-                    <td className="px-4 py-2">{ticket.status}</td>
-                    <td className="px-4 py-2">{ticket.station_name}</td>
-                    <td className="px-4 py-2">{ticket.station_type}</td>
-                    <td className="px-4 py-2">{ticket.issue_description}</td>
-                    <td className="px-4 py-2">
-                      {ticket.issue_description.toLowerCase().includes("software")
-                        ? "Software"
-                        : "Hardware"}
-                    </td>
+      {/* Profile Section */}
+      <div className="relative -mt-16 z-10 bg-white max-w-4xl mx-auto rounded-xl p-6 shadow-xl">
+        {/* Profile Picture and Info */}
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+          {/* Avatar */}
+          <div className="w-40 h-40 relative -mt-16">
+            <img
+              src={user.user_image || "/Uploads/user_image/Default-avatar.jpg"}
+              alt={`Profile of ${user.users_name}`}
+              className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
+            />
+          </div>
+          {/* Info and Actions */}
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {user.users_name}
+              </h2>
+
+              <a
+                href={`/pages/Users/edit_user_profile?users_id=${user.users_id}`}
+                className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition"
+              >
+                ✏️ Edit Profile
+              </a>
+            </div>
+            {user.email && <p className="text-gray-500">{user.email}</p>}
+            {user.company && <p className="text-gray-500">{user.company}</p>}
+          </div>
+        </div>
+
+        {/* Ticket Table */}
+        <div className="mt-10">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            User Ticket
+          </h3>
+          {tickets.length > 0 ? (
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <table className="min-w-full text-sm text-gray-700">
+                <thead className="bg-gray-100 text-gray-600 text-left">
+                  <tr>
+                    <th className="px-4 py-3">No</th>
+                    <th className="px-4 py-3">Ticket ID</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Station ID</th>
+                    <th className="px-4 py-3">Station Type</th>
+                    <th className="px-4 py-3">Issue Description</th>
+                    <th className="px-4 py-3">Issue Type</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-gray-500">No tickets assigned.</p>
-        )}
+                </thead>
+                <tbody>
+                  {tickets.map((ticket, index) => (
+                    <tr
+                      key={ticket.ticket_id}
+                      className="border-t bg-white hover:bg-gray-50 transition"
+                    >
+                      <td className="px-4 py-2">{index + 1}</td>
+                      <td className="px-4 py-2">{ticket.ticket_id}</td>
+                      <td className="px-4 py-2">{ticket.status}</td>
+                      <td className="px-4 py-2">{ticket.station_name}</td>
+                      <td className="px-4 py-2">{ticket.station_type}</td>
+                      <td className="px-4 py-2">{ticket.issue_description}</td>
+                      <td className="px-4 py-2">
+                        {ticket.issue_description
+                          .toLowerCase()
+                          .includes("software")
+                          ? "Software"
+                          : "Hardware"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-500">No tickets assigned.</p>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
-
-
+  );
 }

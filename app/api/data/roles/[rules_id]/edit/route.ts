@@ -20,7 +20,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ru
     const { rules_name, permissions } = body;
 
     // Validate rules_name
-    if (!rules_name || typeof rules_name !== 'string' || !rules_name.trim()) {
+    if (!rules_name || typeof rules_name !== 'string' || !rules_name.trim()) { 
       console.error('Missing or invalid rules_name:', rules_name);
       return NextResponse.json({ error: 'Rule name is required' }, { status: 400 });
     }
