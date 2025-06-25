@@ -1,8 +1,8 @@
 "use client";
-
-import React, { useState, Fragment } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Ticket,
@@ -26,6 +26,32 @@ interface MenuItem {
   href?: string;
   action?: () => void;
   icon: React.ReactNode;
+  requiredPermission?: string;
+  adminOnly?: boolean;
+  nonAdminOnly?: boolean;
+}
+
+interface Permissions {
+  add_user_status: boolean;
+  edit_user_status: boolean;
+  delete_user_status: boolean;
+  list_user_status: boolean;
+  add_ticket_status: boolean;
+  edit_ticket_status: boolean;
+  delete_ticket_status: boolean;
+  list_ticket_status: boolean;
+  list_ticket_assign: boolean;
+  add_user_rules: boolean;
+  edit_user_rules: boolean;
+  delete_user_rules: boolean;
+  list_user_rules: boolean;
+  add_station: boolean;
+  edit_station: boolean;
+  delete_station: boolean;
+  list_station: boolean;
+  list_dashboard: boolean;
+  list_track: boolean;
+  list_report: boolean;
 }
 
 const menuItems: MenuItem[] = [
@@ -33,40 +59,55 @@ const menuItems: MenuItem[] = [
     label: "Dashboard",
     href: "/pages/admin/dashboard",
     icon: <LayoutDashboard size={20} aria-label="Dashboard" />,
+    requiredPermission: "list_dashboard",
   },
   {
     label: "Ticket",
     href: "/pages/admin/ticket",
     icon: <Ticket size={20} aria-label="Ticket" />,
+    requiredPermission: "list_ticket_status",
+    adminOnly: true, // Only for admins
+  },
+  {
+    label: "My Tickets",
+    href: "/pages/Users/ticket",
+    icon: <Ticket size={20} aria-label="My Tickets" />,
+    requiredPermission: "list_ticket_status",
+    nonAdminOnly: true, // Only for non-admins
   },
   {
     label: "Station",
     href: "/pages/admin/station",
     icon: <MapPin size={20} aria-label="Station" />,
+    requiredPermission: "list_station",
   },
   {
     label: "Users",
     href: "/pages/admin/user",
     icon: <Users size={20} aria-label="Users" />,
+    requiredPermission: "list_user_status",
   },
   {
-    label: "Users Roles",
+    label: "Users Rules",
     href: "/pages/admin/user_rules",
-    icon: <ClipboardList size={20} aria-label="Users Roles" />,
+    icon: <ClipboardList size={20} aria-label="Users Rules" />,
+    requiredPermission: "list_user_rules",
   },
   {
     label: "Track",
     href: "/pages/admin/track",
     icon: <LineChart size={20} aria-label="Track" />,
+    requiredPermission: "list_track",
   },
   {
     label: "Report",
     href: "/pages/admin/report",
     icon: <Calendar size={20} aria-label="Report" />,
+    requiredPermission: "list_report",
   },
   {
     label: "Logout",
-    action: () => {}, // Will be overridden in component
+    action: () => {},
     icon: <LogOut size={20} aria-label="Logout" />,
   },
 ];
@@ -77,13 +118,82 @@ const Sidebar: React.FC<SidebarProps> = ({
   handleLogout,
 }) => {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [permissions, setPermissions] = useState<Permissions | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    async function loadPermissions() {
+      try {
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+          router.push("/");
+          return;
+        }
+
+        const response = await fetch("/api/data/user", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          if (data.error?.includes("Invalid token")) {
+            router.push("/");
+            return;
+          }
+          throw new Error(data.error || "Failed to fetch permissions");
+        }
+        const { user, rules } = await response.json();
+        setIsAdmin(user.rules_id === 1461);
+        const perms: Permissions = {
+          add_user_status: !!rules.add_user_status,
+          edit_user_status: !!rules.edit_user_status,
+          delete_user_status: !!rules.delete_user_status,
+          list_user_status: !!rules.list_user_status,
+          add_ticket_status: !!rules.add_ticket_status,
+          edit_ticket_status: !!rules.edit_ticket_status,
+          delete_ticket_status: !!rules.delete_ticket_status,
+          list_ticket_status: !!rules.list_ticket_status,
+          list_ticket_assign: !!rules.list_ticket_assign,
+          add_user_rules: !!rules.add_user_rules,
+          edit_user_rules: !!rules.edit_user_rules,
+          delete_user_rules: !!rules.delete_user_rules,
+          list_user_rules: !!rules.list_user_rules,
+          add_station: !!rules.add_station,
+          edit_station: !!rules.edit_station,
+          delete_station: !!rules.delete_station,
+          list_station: !!rules.list_station,
+          list_dashboard: rules.list_dashboard !== undefined ? !!rules.list_dashboard : true,
+          list_track: rules.list_track !== undefined ? !!rules.list_track : true,
+          list_report: rules.list_report !== undefined ? !!rules.list_report : true,
+        };
+        setPermissions(perms);
+        console.log("Permissions loaded:", perms);
+      } catch (err) {
+        console.error("Error fetching permissions:", err);
+        router.push("/");
+      }
+    }
+    loadPermissions();
+  }, [router]);
 
   const openLogoutDialog = () => setIsLogoutDialogOpen(true);
   const closeLogoutDialog = () => setIsLogoutDialogOpen(false);
   const confirmLogout = () => {
     handleLogout();
     closeLogoutDialog();
+    router.push("/");
   };
+
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (item.label === "Logout") return true;
+    if (!permissions || !item.requiredPermission) return false;
+    if (item.adminOnly && !isAdmin) return false;
+    if (item.nonAdminOnly && isAdmin) return false;
+    return permissions[item.requiredPermission as keyof Permissions];
+  });
+
+  console.log("Filtered menu items:", filteredMenuItems.map((item) => item.label));
 
   return (
     <>
@@ -110,12 +220,16 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
         <nav className="mt-6 px-2 space-y-1 text-sm font-medium">
-          {menuItems.map((item) => (
+          {filteredMenuItems.map((item) => (
             item.href ? (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 text-gray-700 hover:bg-gray-100 rounded px-3 py-2 transition-all"
+                className={`flex items-center gap-3 rounded px-3 py-2 transition-all ${
+                  pathname === item.href || pathname.startsWith(item.href + "/")
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
               >
                 {item.icon}
                 {isSidebarOpen && <span>{item.label}</span>}
@@ -168,10 +282,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
-                  >
+                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
                     Confirm Logout
                   </Dialog.Title>
                   <div className="mt-2">
@@ -192,7 +303,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                       onClick={confirmLogout}
                     >
-                      Confirm 
+                      Confirm
                     </button>
                   </div>
                 </Dialog.Panel>

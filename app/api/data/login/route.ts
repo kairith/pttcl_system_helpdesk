@@ -1,27 +1,24 @@
-import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import mysql from 'mysql2/promise';
-import crypto from 'crypto';
-import { dbConfig } from '@/app/database/db-config';
-// login route
+import { NextResponse } from "next/server";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import mysql from "mysql2/promise";
+import { dbConfig } from "@/app/database/db-config";
+
 export async function POST(request: Request) {
   let connection;
-
   try {
     const body = await request.json();
-    // console.log('Request body:', body);
     const { email, password, rememberMe } = body;
 
     // Validate input
     if (!email || !password) {
-      console.log('Missing email or password');
-      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+      console.log("Missing email or password");
+      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
     // Connect to the database
     connection = await mysql.createConnection(dbConfig);
-    console.log('Database connected successfully');
+    console.log("Database connected successfully");
 
     // Fetch user from database
     const query = `
@@ -30,40 +27,38 @@ export async function POST(request: Request) {
       LEFT JOIN tbl_users_rules r ON u.rules_id = r.rules_id
       WHERE u.email = ?
     `;
-    // console.log('Executing query:', query, 'with email:', email);
     const [rows] = await connection.execute(query, [email]);
     const user = (rows as any[])[0];
 
     // Check if user exists
     if (!user) {
-      console.log('No user found for email:', email);
-      return NextResponse.json({ error: 'Invalid email' }, { status: 401 });
+      console.log("No user found for email:", email);
+      return NextResponse.json({ error: "Invalid email" }, { status: 401 });
     }
 
     // Check user status
     if (user.status !== 1) {
-      console.log('User inactive, email:', email);
-      return NextResponse.json({ error: 'Account is inactive' }, { status: 401 });
+      console.log("User inactive, email:", email);
+      return NextResponse.json({ error: "Account is inactive" }, { status: 401 });
     }
 
     // Check user verification
     if (user.code !== 0) {
-      console.log('User not verified, email:', email);
-      return NextResponse.json({ error: 'Account not verified' }, { status: 401 });
+      console.log("User not verified, email:", email);
+      return NextResponse.json({ error: "Account not verified" }, { status: 401 });
     }
 
     // Compare passwords
-const passwordMatch = await bcrypt.compare(password.trim(), user.password);
-if (!passwordMatch) {
-  console.log('Password mismatch for email:', email);
-  return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
-}
-
+    const passwordMatch = await bcrypt.compare(password.trim(), user.password);
+    if (!passwordMatch) {
+      console.log("Password mismatch for email:", email);
+      return NextResponse.json({ error: "Invalid password" }, { status: 401 });
+    }
 
     // Prepare JWT payload
     const isAdmin = user.rules_id === 1461;
     const payload = {
-      users_id: user.users_id,
+      users_id: String(user.users_id), // Ensure string
       email: user.email,
       rules_id: user.rules_id,
       isAdmin,
@@ -72,19 +67,21 @@ if (!passwordMatch) {
     };
 
     // Generate JWT token
-    const secret = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
-    const token = jwt.sign(payload, secret, { algorithm: 'HS256' });
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error("JWT_SECRET is not configured");
+    }
+    const token = jwt.sign(payload, secret, { algorithm: "HS256" });
 
-    console.log('Generated token for user:', user.email);
+    console.log("Generated token for user:", user.email);
     return NextResponse.json({
       token,
-      user: { users_id: user.users_id, email, users_name: user.users_name, isAdmin },
+      user: { users_id: String(user.users_id), email, users_name: user.users_name, isAdmin },
     });
   } catch (error) {
-    console.error('Login error:', error);
-    return NextResponse.json({ error: 'An error occurred during login' }, { status: 500 });
+    console.error("Login error:", error);
+    return NextResponse.json({ error: "An error occurred during login" }, { status: 500 });
   } finally {
-    // Ensure the connection is closed
     if (connection) {
       await connection.end();
     }

@@ -13,7 +13,13 @@ interface UserRulesProps {
 
 interface Permissions {
   users: { add: boolean; edit: boolean; delete: boolean; list: boolean };
-  tickets: { add: boolean; edit: boolean; delete: boolean; list: boolean; listAssign: boolean };
+  tickets: {
+    add: boolean;
+    edit: boolean;
+    delete: boolean;
+    list: boolean;
+    listAssign: boolean;
+  };
   stations: { add: boolean; edit: boolean; delete: boolean; list: boolean };
   userRules: { add: boolean; edit: boolean; delete: boolean; list: boolean };
 }
@@ -23,11 +29,19 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedRule, setSelectedRule] = useState<tbl_users_rules | null>(null);
+  const [selectedRule, setSelectedRule] = useState<tbl_users_rules | null>(
+    null
+  );
   const [editRuleName, setEditRuleName] = useState("");
   const [editPermissions, setEditPermissions] = useState<Permissions>({
     users: { add: false, edit: false, delete: false, list: false },
-    tickets: { add: false, edit: false, delete: false, list: false, listAssign: false },
+    tickets: {
+      add: false,
+      edit: false,
+      delete: false,
+      list: false,
+      listAssign: false,
+    },
     stations: { add: false, edit: false, delete: false, list: false },
     userRules: { add: false, edit: false, delete: false, list: false },
   });
@@ -84,18 +98,22 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
     }
   };
 
-  type PermissionKey = 
+  type PermissionKey =
     | keyof Permissions["users"]
     | keyof Permissions["tickets"]
     | keyof Permissions["stations"]
     | keyof Permissions["userRules"];
 
-  const handlePermissionChange = (category: keyof Permissions, permission: PermissionKey) => {
+  const handlePermissionChange = (
+    category: keyof Permissions,
+    permission: PermissionKey
+  ) => {
     setEditPermissions((prev) => ({
       ...prev,
       [category]: {
         ...prev[category],
-        [permission]: !prev[category][permission as keyof typeof prev[typeof category]],
+        [permission]:
+          !prev[category][permission as keyof (typeof prev)[typeof category]],
       },
     }));
   };
@@ -103,11 +121,17 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
   const handleEditSubmit = async () => {
     if (!selectedRule) return;
     try {
-      const response = await fetch(`/api/data/roles/${selectedRule.rules_id}/edit`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rules_name: editRuleName, permissions: editPermissions }),
-      });
+      const response = await fetch(
+        `/api/data/roles/${selectedRule.rules_id}/edit`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            rules_name: editRuleName,
+            permissions: editPermissions,
+          }),
+        }
+      );
       const data = await response.json();
       if (response.ok) {
         setRules(
@@ -124,7 +148,9 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                   edit_ticket_status: editPermissions.tickets.edit ? 1 : 0,
                   delete_ticket_status: editPermissions.tickets.delete ? 1 : 0,
                   list_ticket_status: editPermissions.tickets.list ? 1 : 0,
-                  list_ticket_assign: editPermissions.tickets.listAssign ? 1 : 0,
+                  list_ticket_assign: editPermissions.tickets.listAssign
+                    ? 1
+                    : 0,
                   add_user_rules: editPermissions.userRules.add ? 1 : 0,
                   edit_user_rules: editPermissions.userRules.edit ? 1 : 0,
                   delete_user_rules: editPermissions.userRules.delete ? 1 : 0,
@@ -242,7 +268,9 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                       d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
                     />
                   </svg>
-                  <span className="text-lg font-medium text-gray-600">Loading rules...</span>
+                  <span className="text-lg font-medium text-gray-600">
+                    Loading rules...
+                  </span>
                 </div>
               </div>
             }
@@ -264,7 +292,9 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                  <p className="mt-4 text-lg font-semibold text-gray-600">No Rules found.</p>
+                  <p className="mt-4 text-lg font-semibold text-gray-600">
+                    No Rules found.
+                  </p>
                 </div>
               </div>
             ) : (
@@ -276,13 +306,19 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                 >
                   <thead>
                     <tr className="bg-gray-200 text-gray-800 font-semibold rounded-t-lg sticky top-0">
-                      <th scope="col" className="text-left p-3 sm:p-4 first:rounded-tl-lg">
+                      <th
+                        scope="col"
+                        className="text-left p-3 sm:p-4 first:rounded-tl-lg"
+                      >
                         Rule ID
                       </th>
                       <th scope="col" className="text-left p-3 sm:p-4">
                         Rule Name
                       </th>
-                      <th scope="col" className="text-left p-3 sm:p-4 last:rounded-tr-lg">
+                      <th
+                        scope="col"
+                        className="text-left p-3 sm:p-4 last:rounded-tr-lg"
+                      >
                         Actions
                       </th>
                     </tr>
@@ -295,8 +331,12 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                           index % 2 === 0 ? "bg-white" : "bg-gray-50"
                         }`}
                       >
-                        <td className="p-3 sm:p-4 text-gray-700">{row.rules_id}</td>
-                        <td className="p-3 sm:p-4 text-gray-700">{row.rules_name}</td>
+                        <td className="p-3 sm:p-4 text-gray-700">
+                          {row.rules_id}
+                        </td>
+                        <td className="p-3 sm:p-4 text-gray-700">
+                          {row.rules_name}
+                        </td>
                         <td className="p-3 sm:p-4 text-gray-700">
                           <button
                             onClick={() => handleEdit(row)}
@@ -304,7 +344,7 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                             aria-label={`Edit rule ${row.rules_name}`}
                           >
                             <svg
-                              className="h-5 w-5"
+                              className=" w-8 h-8 p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -327,7 +367,7 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                             aria-label={`Delete rule ${row.rules_name}`}
                           >
                             <svg
-                              className="h-5 w-5"
+                              className="w-8 h-8 p-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -371,7 +411,10 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
               leaveTo="opacity-0 scale-95"
             >
               <div className="bg-white rounded-lg shadow-xl p-6 max-w-lg w-full relative z-50">
-                <Dialog.Title as="h3" className="text-lg font-semibold text-gray-900">
+                <Dialog.Title
+                  as="h3"
+                  className="text-lg font-semibold text-gray-900"
+                >
                   Edit Rule
                 </Dialog.Title>
                 <div className="mt-4">
@@ -391,18 +434,31 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                   />
                 </div>
                 <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-700">Permissions</h4>
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Permissions
+                  </h4>
                   <div className="mt-2 grid grid-cols-2 gap-4">
                     {/* Users Permissions */}
                     <div>
-                      <h5 className="text-sm font-semibold text-gray-600">Users</h5>
-                      {(["add", "edit", "delete", "list"] as Array<keyof Permissions["users"]>).map((perm) => (
-                        <div key={`users-${perm}`} className="flex items-center mt-1">
+                      <h5 className="text-sm font-semibold text-gray-600">
+                        Users
+                      </h5>
+                      {(
+                        ["add", "edit", "delete", "list"] as Array<
+                          keyof Permissions["users"]
+                        >
+                      ).map((perm) => (
+                        <div
+                          key={`users-${perm}`}
+                          className="flex items-center mt-1"
+                        >
                           <input
                             type="checkbox"
                             id={`users-${perm}`}
                             checked={editPermissions.users[perm]}
-                            onChange={() => handlePermissionChange("users", perm)}
+                            onChange={() =>
+                              handlePermissionChange("users", perm)
+                            }
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                           <label
@@ -416,14 +472,29 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                     </div>
                     {/* Tickets Permissions */}
                     <div>
-                      <h5 className="text-sm font-semibold text-gray-600">Tickets</h5>
-                      {(["add", "edit", "delete", "list", "listAssign"] as Array<keyof Permissions["tickets"]>).map((perm) => (
-                        <div key={`tickets-${perm}`} className="flex items-center mt-1">
+                      <h5 className="text-sm font-semibold text-gray-600">
+                        Tickets
+                      </h5>
+                      {(
+                        [
+                          "add",
+                          "edit",
+                          "delete",
+                          "list",
+                          "listAssign",
+                        ] as Array<keyof Permissions["tickets"]>
+                      ).map((perm) => (
+                        <div
+                          key={`tickets-${perm}`}
+                          className="flex items-center mt-1"
+                        >
                           <input
                             type="checkbox"
                             id={`tickets-${perm}`}
                             checked={editPermissions.tickets[perm]}
-                            onChange={() => handlePermissionChange("tickets", perm)}
+                            onChange={() =>
+                              handlePermissionChange("tickets", perm)
+                            }
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                           <label
@@ -437,14 +508,25 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                     </div>
                     {/* Stations Permissions */}
                     <div>
-                      <h5 className="text-sm font-semibold text-gray-600">Stations</h5>
-                      {(["add", "edit", "delete", "list"] as Array<keyof Permissions["stations"]>).map((perm) => (
-                        <div key={`stations-${perm}`} className="flex items-center mt-1">
+                      <h5 className="text-sm font-semibold text-gray-600">
+                        Stations
+                      </h5>
+                      {(
+                        ["add", "edit", "delete", "list"] as Array<
+                          keyof Permissions["stations"]
+                        >
+                      ).map((perm) => (
+                        <div
+                          key={`stations-${perm}`}
+                          className="flex items-center mt-1"
+                        >
                           <input
                             type="checkbox"
                             id={`stations-${perm}`}
                             checked={editPermissions.stations[perm]}
-                            onChange={() => handlePermissionChange("stations", perm)}
+                            onChange={() =>
+                              handlePermissionChange("stations", perm)
+                            }
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                           <label
@@ -458,14 +540,25 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                     </div>
                     {/* UserRules Permissions */}
                     <div>
-                      <h5 className="text-sm font-semibold text-gray-600">User Rules</h5>
-                      {(["add", "edit", "delete", "list"] as Array<keyof Permissions["userRules"]>).map((perm) => (
-                        <div key={`userRules-${perm}`} className="flex items-center mt-1">
+                      <h5 className="text-sm font-semibold text-gray-600">
+                        User Rules
+                      </h5>
+                      {(
+                        ["add", "edit", "delete", "list"] as Array<
+                          keyof Permissions["userRules"]
+                        >
+                      ).map((perm) => (
+                        <div
+                          key={`userRules-${perm}`}
+                          className="flex items-center mt-1"
+                        >
                           <input
                             type="checkbox"
                             id={`userRules-${perm}`}
                             checked={editPermissions.userRules[perm]}
-                            onChange={() => handlePermissionChange("userRules", perm)}
+                            onChange={() =>
+                              handlePermissionChange("userRules", perm)
+                            }
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                           <label
@@ -521,11 +614,15 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
               leaveTo="opacity-0 scale-95"
             >
               <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full relative z-50">
-                <Dialog.Title as="h3" className="text-lg font-semibold text-gray-900">
+                <Dialog.Title
+                  as="h3"
+                  className="text-lg font-semibold text-gray-900"
+                >
                   Delete Rule
                 </Dialog.Title>
                 <p className="mt-2 text-sm text-gray-600">
-                  Are you sure you want to delete the rule "{selectedRule?.rules_name}"? This action cannot be undone.
+                  Are you sure you want to delete the rule "
+                  {selectedRule?.rules_name}"? This action cannot be undone.
                 </p>
                 <div className="mt-6 flex justify-end space-x-3">
                   <button
@@ -536,7 +633,9 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                     Cancel
                   </button>
                   <button
-                    onClick={() => selectedRule && handleDelete(selectedRule.rules_id)}
+                    onClick={() =>
+                      selectedRule && handleDelete(selectedRule.rules_id)
+                    }
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
                   >
                     Delete

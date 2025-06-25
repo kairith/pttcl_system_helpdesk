@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,6 +12,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
 import { TicketCount } from "@/app/lib/types";
 
 ChartJS.register(
@@ -80,6 +82,8 @@ export default function Dashboard({ isSidebarOpen }: DashboardProps) {
       </div>
     );
   }
+
+
 
   const chartConfig = {
     type: "line" as const,
@@ -191,6 +195,7 @@ export default function Dashboard({ isSidebarOpen }: DashboardProps) {
       },
     },
   };
+
 
   return (
     <div className="min-h-screen bg-gray-100">

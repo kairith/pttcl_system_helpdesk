@@ -3,14 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Ticket } from "../../../types/ticket";
-import { fetchTickets } from "./action";
 import HeaderWithSidebar from "@/app/components/common/Header/Headerwithsidebar";
 import ControlsSection from "@/app/components/Ticket_components/ControlsSection/ControlsSection";
 import FilterSection from "@/app/components/Ticket_components/FilterSection/FilterSection";
 import TicketTable from "@/app/components/Ticket_components/TicketTable/TicketTable";
 import { toast } from "react-toastify";
 
-interface TicketsProps {
+interface MyTicketsProps {
   isSidebarOpen: boolean;
 }
 
@@ -24,7 +23,7 @@ interface Permissions {
   };
 }
 
-export default function Tickets({ isSidebarOpen }: TicketsProps) {
+export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
   const [tickets, setTickets] = useState<(Ticket & { users_name: string; creator_name: string })[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<(Ticket & { users_name: string; creator_name: string })[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +32,7 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [usersId, setUsersId] = useState<string | null>(null);
   const router = useRouter();
 
   // Filter states
@@ -63,25 +63,28 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
         setIsLoading(true);
         const token = sessionStorage.getItem("token");
         if (!token) {
-          toast.error("Please log in to access tickets.");
-          router.push("/pages/login");
+          toast.error("Please log in to access your tickets.");
+          router.push("/");
           return;
         }
+        console.log("Token:", token); // Debug token
 
-        // Fetch permissions
-        const response = await fetch("/api/data/user", {
+        // Fetch user data and permissions
+        const userResponse = await fetch("/api/data/user", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!response.ok) {
-          const data = await response.json();
+        if (!userResponse.ok) {
+          const data = await userResponse.json();
           if (data.error?.includes("Invalid token")) {
             toast.error("Session expired. Please log in again.");
-            router.push("/pages/login");
+            router.push("/");
             return;
           }
-          throw new Error(data.error || "Failed to fetch permissions");
+          throw new Error(data.error || "Failed to fetch user data");
         }
-        const { rules } = await response.json();
+        const { users_id, rules } = await userResponse.json();
+        console.log("User response:", { users_id, rules }); // Debug response
+        setUsersId(users_id);
         const userPermissions: Permissions = {
           tickets: {
             add: !!rules.add_ticket_status,
@@ -93,18 +96,21 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
         };
         setPermissions(userPermissions);
         console.log("Permissions loaded:", userPermissions);
+        console.log("Users ID:", users_id);
 
-        // Fetch tickets only if list permission exists
+        // Fetch user's tickets only if list permission exists
         if (userPermissions.tickets.list) {
-          const { tickets, error } = await fetchTickets();
-          if (error) {
-            setError(error);
-            toast.error(error);
-          } else {
-            setTickets(tickets || []);
-            setFilteredTickets(tickets || []);
-            console.log("Loaded tickets:", tickets);
+          const ticketResponse = await fetch("/api/data/UserPage/ticket", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!ticketResponse.ok) {
+            const data = await ticketResponse.json();
+            throw new Error(data.error || "Failed to fetch tickets");
           }
+          const { tickets } = await ticketResponse.json();
+          setTickets(tickets || []);
+          setFilteredTickets(tickets || []);
+          console.log("Loaded tickets:", tickets);
         } else {
           setError("You do not have permission to view tickets.");
           toast.error("You do not have permission to view tickets.");
@@ -125,7 +131,7 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
     const token = sessionStorage.getItem("token");
     if (!token) {
       toast.error("Please log in to create a ticket.");
-      router.push("/pages/login");
+      router.push("/");
       return;
     }
     if (!permissions?.tickets.add) {
@@ -357,7 +363,7 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
     }
 
     setFilteredTickets(result);
-    console.log("Filtered results:", result);
+    console.log("Filtered tickets:", result);
   };
 
   const handleClearFilter = () => {
@@ -387,7 +393,7 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
     setUsersNameFilter("");
     setShowFilterInput(false);
     setFilteredTickets(tickets);
-  };
+};
 
   const handleExport = async (format: "xlsx" | "pdf" | "csv") => {
     if (!permissions?.tickets.list) {
@@ -397,13 +403,13 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
     const token = sessionStorage.getItem("token");
     if (!token) {
       toast.error("Please log in to export tickets.");
-      router.push("/pages/login");
+      router.push("/");
       return;
     }
 
     setIsExporting(true);
     try {
-      const response = await fetch(`/api/data/export-ticket?format=${format}`, {
+      const response = await fetch(`/api/data/UserPage/ticket?format=${format}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -411,7 +417,7 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
         const errorData = await response.json();
         if (errorData.error?.includes("Invalid token")) {
           toast.error("Session expired. Please log in again.");
-          router.push("/pages/login");
+          router.push("/");
           return;
         }
         throw new Error(errorData.error || `Export to ${format} failed`);
@@ -429,7 +435,7 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
       };
       const extension = extensionMap[format] || "bin";
 
-      let fileName = `tickets_export.${extension}`;
+      let fileName = `my_tickets_export.${extension}`;
       const contentDisposition = response.headers.get("Content-Disposition");
       if (contentDisposition && contentDisposition.includes("filename=")) {
         const match = contentDisposition.match(/filename="([^"]+)"/);
@@ -467,7 +473,7 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
             }`}
           >
             <div className="text-gray-500 text-center text-sm sm:text-base">
-              Loading tickets...
+              Loading your tickets...
             </div>
           </main>
         </div>
@@ -498,12 +504,12 @@ export default function Tickets({ isSidebarOpen }: TicketsProps) {
     <div className="min-h-screen bg-gray-50">
       <HeaderWithSidebar />
       <main
-        className={`flex-1 p-4 sm:p-6 lg:p-8 mt-14 w-full transition-all duration-300 ${
+        className={`flex-1 p-4 sm:p-6 mt-14 lg:p-8 w-full transition-all duration-300 ${
           isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
         }`}
        >
         <div className="bg-white shadow rounded-lg p-4">
-          <h1 className="text-2xl font-bold text-gray-800">Tickets</h1>
+          <h1 className="text-2xl font-bold text-gray-800">My Tickets</h1>
         </div>
         {(permissions.tickets.add || permissions.tickets.list) && (
           <div className="mt-4">
