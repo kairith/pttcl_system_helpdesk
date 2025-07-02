@@ -1,8 +1,10 @@
+// root layout interaction with the entire app of styles
+
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // ✅ Add this line
+import "react-toastify/dist/ReactToastify.css"; // 
 
 const inter = Inter({ subsets: ["latin"] });
 

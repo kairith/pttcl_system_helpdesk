@@ -1,3 +1,6 @@
+// root file for the starting page
+
+
 'use client';
 
 import { useState } from 'react';
@@ -85,7 +88,7 @@ export default function LoginPage() {
         console.log('Stored default userImage in sessionStorage due to error:', '/Uploads/user_image/Default-avatar.jpg');
       }
 
-      router.push(data.user.isAdmin ? '/pages/admin/dashboard' : '/pages/Users/dashboard');
+      router.push(data.user.isAdmin ? '/frontend/pages/admin/dashboard' : '/frontend/pages/Users/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       setErrors(['An error occurred. Please try again later.']);

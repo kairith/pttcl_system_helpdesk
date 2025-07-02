@@ -1,3 +1,5 @@
+/* globals.css for the entire project and the additional css with design on tailwind css */
+
 @import "tailwindcss";
 
 body {
