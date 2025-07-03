@@ -3,15 +3,11 @@
 import { Station } from '../../../../backend/types/station';
 import mysql from 'mysql2/promise';
 import { RowDataPacket } from 'mysql2';
+import { dbConfig } from '@/app/database/db-config';
 
 export async function fetchStations() {
   try {
-    const connection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '1122',
-      database: process.env.DB_DATABASE || 'pttcl_helpdesk_nextjs',
-    });
+    const connection = await mysql.createConnection(dbConfig);
 
     const [rows] = await connection.execute<(RowDataPacket & Station)[]>('SELECT * FROM tbl_station');
 

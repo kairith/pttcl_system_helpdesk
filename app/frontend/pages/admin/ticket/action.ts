@@ -3,15 +3,11 @@
 import { Ticket } from '../../../../backend/types/ticket';
 import mysql from 'mysql2/promise';
 import { RowDataPacket } from 'mysql2';
+import { dbConfig } from '@/app/database/db-config';
 
 export async function fetchTickets() {
   try {
-    const connection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '1122',
-      database: process.env.DB_DATABASE || 'pttcl_helpdesk_nextjs',
-    });
+    const connection = await mysql.createConnection(dbConfig);
 
     const [rows] = await connection.execute<
       (RowDataPacket & Ticket & { users_name: string; creator_name: string })[]

@@ -1,18 +1,12 @@
-// app/components/Dashboard_components/DoughnutChartCard.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { Doughnut } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJS, ArcElement, Title, Tooltip, Legend } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels"; // Import the plugin
 import { fetchDashboardData } from "@/app/frontend/components/Dashboard_components/All_Ticket_Chart";
 
-ChartJS.register(ArcElement, Title, Tooltip, Legend);
+ChartJS.register(ArcElement, Title, Tooltip, Legend, ChartDataLabels); // Register the plugin
 
 interface DoughnutChartData {
   provider: string;
@@ -24,15 +18,28 @@ interface DoughnutChartCardProps {
   selectedYear: string;
 }
 
-const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({ title, selectedYear }) => {
-  const [doughnutChartData, setDoughnutChartData] = useState<DoughnutChartData[]>([]);
+const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
+  title,
+  selectedYear,
+}) => {
+  const [doughnutChartData, setDoughnutChartData] = useState<
+    DoughnutChartData[]
+  >([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const { doughnutChartData, error } = await fetchDashboardData(undefined, selectedYear);
-        console.log("DoughnutChartCard data for", selectedYear, ":", doughnutChartData);
+        const { doughnutChartData, error } = await fetchDashboardData(
+          undefined,
+          selectedYear
+        );
+        console.log(
+          "DoughnutChartCard data for",
+          selectedYear,
+          ":",
+          doughnutChartData
+        );
         if (error) {
           setError(error);
           setDoughnutChartData([]);
@@ -68,7 +75,9 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({ title, selectedYe
         {error ? (
           <p className="text-red-500 text-center">{error}</p>
         ) : doughnutChartData.length === 0 ? (
-          <p className="text-gray-500 text-center">No data for {selectedYear === "ALL" ? "all years" : selectedYear}</p>
+          <p className="text-gray-500 text-center">
+            No data for {selectedYear === "ALL" ? "all years" : selectedYear}
+          </p>
         ) : (
           <Doughnut
             data={{
@@ -76,7 +85,9 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({ title, selectedYe
               datasets: [
                 {
                   data: doughnutChartData.map((data) => data.percentage),
-                  backgroundColor: doughnutChartData.map((data) => colorMap[data.provider] || colorMap.Unknown),
+                  backgroundColor: doughnutChartData.map(
+                    (data) => colorMap[data.provider] || colorMap.Unknown
+                  ),
                   borderColor: ["rgb(255, 255, 255)"],
                   borderWidth: 1,
                 },
@@ -89,7 +100,28 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({ title, selectedYe
                 legend: { position: "bottom" },
                 title: {
                   display: true,
-                  text: `${title} - ${selectedYear === "ALL" ? "All Years" : selectedYear}`,
+                  text: `${title} - ${
+                    selectedYear === "ALL" ? "All Years" : selectedYear
+                  }`,
+                },
+                datalabels: {
+                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                  borderRadius: 9,
+                  padding: 4,
+                  color: "#fff",
+                  formatter: (value: number) => `${value}%`,
+                  font: {
+                    weight: "bold",
+                    size: 12,
+                  },
+                  anchor: "center",
+                  align: "center",
+                },
+                tooltip: {
+                  enabled: true, // Keep tooltips enabled for additional details on hover
+                  callbacks: {
+                    label: (context) => `${context.label}: ${context.raw}%`,
+                  },
                 },
               },
             }}
