@@ -528,96 +528,96 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
                       className="w-full text-sm border-collapse"
                       role="table"
                       aria-label="User Rules"
-                    >
+                  >
                       <thead>
-                        <tr className="bg-gray-200 text-gray-800 font-semibold rounded-t-lg sticky top-0">
-                          <th
-                            scope="col"
-                            className="text-left p-3 sm:p-4 first:rounded-tl-lg"
-                          >
-                            Rule ID
-                          </th>
-                          <th scope="col" className="text-left p-3 sm:p-4">
-                            Rule Name
-                          </th>
-                          {(permissions.userRules.edit || permissions.userRules.delete) && (
-                            <th
-                              scope="col"
-                              className="text-left p-3 sm:p-4 last:rounded-tr-lg"
-                            >
-                              Actions
-                            </th>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredRules.map((row, index) => (
-                          <tr
-                            key={row.rules_id}
-                            className={`border-b border-gray-200 hover:bg-blue-50 transition-all duration-150 ${
-                              index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                            }`}
-                          >
-                            <td className="p-3 sm:p-4 text-gray-700">
-                              {row.rules_id}
-                            </td>
-                            <td className="p-3 sm:p-4 text-gray-700">
-                              {row.rules_name}
-                            </td>
-                            {(permissions.userRules.edit || permissions.userRules.delete) && (
-                              <td className="p-3 sm:p-4 text-gray-700">
-                                {permissions.userRules.edit && (
-                                  <button
-                                    onClick={() => handleEdit(row)}
-                                    className="text-blue-600 hover:text-blue-800 mr-4"
-                                    aria-label={`Edit rule ${row.rules_name}`}
-                                  >
-                                    <svg
-                                      className="w-8 h-8 p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                      />
-                                    </svg>
-                                  </button>
-                                )}
-                                {permissions.userRules.delete && (
-                                  <button
-                                    onClick={() => {
-                                      setSelectedRule(row);
-                                      setIsDeleteModalOpen(true);
-                                    }}
-                                    className="text-red-600 hover:text-red-800"
-                                    aria-label={`Delete rule ${row.rules_name}`}
-                                  >
-                                    <svg
-                                      className="w-8 h-8 p-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                      />
-                                    </svg>
-                                  </button>
-                                )}
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
+  <tr className="bg-gray-200 text-gray-800 font-semibold rounded-t-lg sticky top-0">
+    <th
+      scope="col"
+      className="text-left p-3 sm:p-4 first:rounded-tl-lg"
+    >
+      No
+    </th>
+    <th scope="col" className="text-left p-3 sm:p-4">
+      Rule Name
+    </th>
+    {(permissions?.userRules?.edit || permissions?.userRules?.delete) && (
+      <th
+        scope="col"
+        className="text-left p-3 sm:p-4 last:rounded-tr-lg"
+      >
+        Actions
+      </th>
+    )}
+  </tr>
+</thead>
+<tbody>
+  {filteredRules.map((row, index) => (
+    <tr
+      key={row.rules_id}
+      className={`border-b border-gray-200 hover:bg-blue-50 transition-all duration-150 ${
+        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+      }`}
+    >
+      <td className="p-3 sm:p-4 text-gray-700" scope="row">
+        {index + 1}
+      </td>
+      <td className="p-3 sm:p-4 text-gray-700">
+        {row.rules_name}
+      </td>
+      {(permissions?.userRules?.edit || permissions?.userRules?.delete) && (
+        <td className="p-3 sm:p-4 text-gray-700">
+          {permissions?.userRules?.edit && (
+            <button
+              onClick={() => handleEdit(row)}
+              className="text-blue-600 hover:text-blue-800 mr-4"
+              aria-label={`Edit rule ${row.rules_name}`}
+            >
+              <svg
+                className="w-8 h-8 p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                />
+              </svg>
+            </button>
+          )}
+          {permissions?.userRules?.delete && (
+            <button
+              onClick={() => {
+                setSelectedRule(row);
+                setIsDeleteModalOpen(true);
+              }}
+              className="text-red-600 hover:text-red-800"
+              aria-label={`Delete rule ${row.rules_name}`}
+            >
+              <svg
+                className="w-8 h-8 p-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
+        </td>
+      )}
+    </tr>
+  ))}
+</tbody>
                     </table>
                   </div>
                 )}
