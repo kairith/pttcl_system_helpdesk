@@ -71,7 +71,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
         console.log("AdminUserPage: Permissions:", JSON.stringify(userPermissions, null, 2));
 
         if (!userPermissions.users.list) {
-          toast.error("You do not have permission to view users.");
+          toast.error("You do not have permission to view users. contact admin for access.");
           router.push("/");
           return;
         }
@@ -129,7 +129,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
 
   const handleExport = async (format: "excel" | "pdf" | "csv") => {
     if (!permissions?.users.list) {
-      toast.error("You do not have permission to export users.");
+      toast.error("You do not have permission to export users. contact admin for access.");
       return;
     }
     setIsLoading(true);
@@ -182,7 +182,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
 
   const handleEditUser = (id: number) => {
     if (!permissions?.users.edit) {
-      toast.error("You do not have permission to edit users.");
+      toast.error("You do not have permission to edit users. contact admin for access.");
       return;
     }
     const token = sessionStorage.getItem("token");
@@ -196,7 +196,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
 
   const handleDeleteUser = async () => {
     if (!deleteUserId || !permissions?.users.delete) {
-      toast.error("You do not have permission to delete users.");
+      toast.error("You do not have permission to delete users. contact admin for access.");
       return;
     }
     setIsLoading(true);

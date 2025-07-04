@@ -68,6 +68,7 @@ export async function GET(request: Request) {
       LEFT JOIN tbl_users u2 ON t.user_create_ticket = u2.users_id
       WHERE t.users_id = ?
     `;
+    
     interface TicketRow {
       ticket_id?: string;
       station_id?: string;

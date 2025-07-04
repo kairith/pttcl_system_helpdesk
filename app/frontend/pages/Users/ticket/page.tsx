@@ -112,8 +112,8 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
           setFilteredTickets(tickets || []);
           console.log("Loaded tickets:", tickets);
         } else {
-          setError("You do not have permission to view tickets.");
-          toast.error("You do not have permission to view tickets.");
+          setError("You do not have permission to view tickets. Contact Admin for access.");
+          toast.error("You do not have permission to view tickets. Contact Admin for access.");
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
@@ -135,7 +135,7 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
       return;
     }
     if (!permissions?.tickets.add) {
-      toast.error("You do not have permission to create tickets.");
+      toast.error("You do not have permission to create tickets. Contact Admin for access.");
       return;
     }
     router.push("/pages/admin/ticket/add_ticket");
@@ -143,7 +143,7 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
 
   const handleFilterToggle = () => {
     if (!permissions?.tickets.list) {
-      toast.error("You do not have permission to filter tickets.");
+      toast.error("You do not have permission to filter tickets. Contact Admin for access.");
       return;
     }
     setShowFilterInput((prev) => !prev);
@@ -240,7 +240,7 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
 
   const handleFilter = () => {
     if (!permissions?.tickets.list) {
-      toast.error("You do not have permission to filter tickets.");
+      toast.error("You do not have permission to filter tickets. Contact Admin for access.");
       return;
     }
     let result = [...tickets];
@@ -368,7 +368,7 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
 
   const handleClearFilter = () => {
     if (!permissions?.tickets.list) {
-      toast.error("You do not have permission to clear filters.");
+      toast.error("You do not have permission to clear filters. Contact Admin for access.");
       return;
     }
     setStationIdFilter("");
@@ -397,7 +397,7 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
 
   const handleExport = async (format: "xlsx" | "pdf" | "csv") => {
     if (!permissions?.tickets.list) {
-      toast.error("You do not have permission to export tickets.");
+      toast.error("You do not have permission to export tickets. Contact Admin for access.");
       return;
     }
     const token = sessionStorage.getItem("token");

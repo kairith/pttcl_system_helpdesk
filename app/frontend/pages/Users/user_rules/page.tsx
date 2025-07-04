@@ -96,7 +96,7 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
         console.log("AdminUserRulesPage: Permissions:", JSON.stringify(userPermissions, null, 2));
 
         if (!userPermissions.userRules.list) {
-          toast.error("You do not have permission to view user rules.");
+          toast.error("You do not have permission to view user rules. Contact Admin for access");
           router.push("/");
           return;
         }
@@ -147,7 +147,7 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
 
   const handleEdit = (rule: tbl_users_rules) => {
     if (!permissions?.userRules.edit) {
-      toast.error("You do not have permission to edit user rules.");
+      toast.error("You do not have permission to edit user rules. Contact Admin for access");
       return;
     }
     try {
@@ -182,7 +182,7 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
 
   const handleEditSubmit = async () => {
     if (!selectedRule || !permissions?.userRules.edit) {
-      toast.error("You do not have permission to edit user rules.");
+      toast.error("You do not have permission to edit user rules. Contact Admin for access");
       return;
     }
     try {
@@ -247,7 +247,7 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
 
   const handleDelete = async () => {
     if (!selectedRule || !permissions?.userRules.delete) {
-      toast.error("You do not have permission to delete user rules.");
+      toast.error("You do not have permission to delete user rules. Contact Admin for access");
       return;
     }
     try {
