@@ -138,7 +138,7 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
       toast.error("You do not have permission to create tickets. Contact Admin for access.");
       return;
     }
-    router.push("/pages/admin/ticket/add_ticket");
+    router.push("/pages/Users/ticket/add_ticket");
   };
 
   const handleFilterToggle = () => {

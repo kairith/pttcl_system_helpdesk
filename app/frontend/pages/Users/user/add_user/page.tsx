@@ -160,7 +160,7 @@ export default function CreateUserPage() {
         return;
       }
 
-      router.push('/pages/admin/user');
+      router.push('/pages/Users/user');
     } catch (error: any) {
       console.error('Error creating user:', error.message, error.stack);
       setErrors([`An error occurred: ${error.message || 'Unknown error'}`]);

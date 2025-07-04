@@ -191,7 +191,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
       router.push("/");
       return;
     }
-    router.push(`/pages/admin/user/edit_user/${id}`);
+    router.push(`/pages/Users/user/edit_user/${id}`);
   };
 
   const handleDeleteUser = async () => {
@@ -284,7 +284,7 @@ export default function Users({ isSidebarOpen }: UsersProps) {
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
                   {permissions.users.add && (
                     <button
-                      onClick={() => router.push("/pages/admin/user/add_user")}
+                      onClick={() => router.push("/pages/Users/user/add_user")}
                       className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex-1 sm:flex-none sm:w-40 text-sm sm:text-base flex items-center justify-center"
                       aria-label="Create new user"
                     >

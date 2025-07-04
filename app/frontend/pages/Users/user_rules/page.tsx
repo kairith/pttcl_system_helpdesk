@@ -412,7 +412,7 @@ export default function UserRules({ isSidebarOpen }: UserRulesProps) {
               Rules
             </h1>
             {permissions.userRules.add && (
-              <Link href="/pages/admin/user_rules/add_rules">
+              <Link href="/pages/Users/user_rules/add_rules">
                 <button
                   className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                   aria-label="Add new rule"

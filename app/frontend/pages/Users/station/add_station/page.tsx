@@ -70,7 +70,7 @@ export default function AddStation() {
       }
 
       toast.success("Station added successfully!");
-      router.push("/pages/admin/station");
+      router.push("/pages/Users/station");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "An unexpected error occurred"

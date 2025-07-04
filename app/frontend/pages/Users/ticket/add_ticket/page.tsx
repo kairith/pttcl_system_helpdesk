@@ -202,7 +202,7 @@ export default function AddTicket() {
         position: "top-center",
       });
       setTimeout(() => {
-        router.push("/pages/admin/ticket");
+        router.push("/pages/Users/ticket");
       }, 2000);
     // Delay redirect to match toast duration
     } catch (error: any) {

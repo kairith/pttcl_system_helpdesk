@@ -218,7 +218,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
       router.push("/");
       return;
     }
-    router.push(`/pages/admin/station/edit_station/${station_id}`);
+    router.push(`/pages/Users/station/edit_station/${station_id}`);
   };
 
   const handleCreateStation = () => {
@@ -227,7 +227,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
       router.push("/");
       return;
     }
-    router.push("/pages/admin/station/add_station");
+    router.push("/pages/Users/station/add_station");
   };
 
   const toggleExportOptions = () => {
