@@ -248,9 +248,9 @@ export default function AddTicket() {
                   <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg max-h-60 overflow-y-auto shadow-md mt-1">
                     {filteredStations().map((s) => (
                       <li
-                        key={s.station_id}
+                        key={s.station_id }
                         onMouseDown={() => {
-                          setStationId(s.station_id);
+                          setStationId(s.station_id );
                           setShowDropdown(false);
                         }}
                         className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"

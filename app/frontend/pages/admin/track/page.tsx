@@ -1,6 +1,6 @@
 "use client";
 import Header from "@/app/frontend/components/common/Header/Headerwithsidebar";
-import NavSlide from "@/app/frontend/components/navbar/navbar";
+
 import LoadingSpinner from "@/app/frontend/components/ui/loading";
 import { useState } from "react";
 

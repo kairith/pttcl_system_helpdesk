@@ -1,71 +1,99 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Header from "@/app/frontend/components/common/Header/Headerwithsidebar";
 
+interface Rule {
+  rules_id: number;
+  rules_name: string;
+}
+
+interface User {
+  users_id: number;
+  users_name: string;
+  email: string;
+  status: boolean;
+  rules_id?: number; // Store rules_id for submission
+  company?: string;
+}
+
 export default function EditUser() {
-  const [user, setUser] = useState<{ users_id: number; users_name: string; email: string; status: boolean; rules_id?: number; company?: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [rules, setRules] = useState<Rule[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { id } = useParams();
   const router = useRouter();
 
   useEffect(() => {
-    async function loadUser() {
+    async function loadData() {
       const token = sessionStorage.getItem("token");
-      console.log("Token:", token);
       if (!token) {
-        setError("Please log in as an admin.");
         router.push("/");
         return;
       }
       try {
-        const response = await fetch(`/api/data/user/${id}`, {
-          headers: { "Authorization": `Bearer ${token}` },
+        // Fetch user data
+        const userResponse = await fetch(`/api/data/user/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Fetch response status:", response.status);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        console.log("Fetched user data:", data);
-        setUser({ 
-          users_id: data.users_id, 
-          users_name: data.users_name, 
-          email: data.email, 
-          status: data.status === 1, 
-          rules_id: data.rules_id, 
-          company: data.company 
+        if (!userResponse.ok) {
+          sessionStorage.removeItem("token");
+          router.push("/");
+          return;
+        }
+        const userData = await userResponse.json();
+        setUser({
+          users_id: userData.users_id,
+          users_name: userData.users_name,
+          email: userData.email,
+          status: userData.status === 1,
+          rules_id: userData.rules_id, // Expect rules_id from API
+          company: userData.company,
         });
+
+        // Fetch rules data
+        const rulesResponse = await fetch("/api/data/rules", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!rulesResponse.ok) throw new Error("Failed to fetch rules");
+        const rulesData = await rulesResponse.json();
+        if (!Array.isArray(rulesData)) throw new Error("Invalid rules data format");
+        setRules(rulesData);
       } catch (err) {
         console.error("Fetch error:", err);
-        setError("Failed to load user");
+        setError("Failed to load user or rules");
       }
     }
-    loadUser();
-  }, [id]);
+    loadData();
+  }, [id, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
     const token = sessionStorage.getItem("token");
     if (!token) {
-      setError("Please log in as an admin.");
       router.push("/");
       return;
     }
+
     try {
       const response = await fetch(`/api/data/edit_user/${id}`, {
         method: "PUT",
-        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          users_name: user.users_name, 
-          email: user.email, 
-          rules_id: user.rules_id, 
-          company: user.company 
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          users_name: user.users_name,
+          email: user.email,
+          rules_id: user.rules_id, // Send rules_id
+          company: user.company,
+          status: user.status ? 1 : 0,
         }),
       });
-      console.log("Update response status:", response.status);
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to update user");
+        setError(data.error || "Failed to update user");
+        return;
       }
       router.push("/pages/admin/user");
     } catch (err) {
@@ -74,7 +102,6 @@ export default function EditUser() {
     }
   };
 
-  if (error) return <div className="text-red-500 text-center p-4">{error}</div>;
   if (!user) return <div className="text-center p-4">Loading...</div>;
 
   return (
@@ -117,17 +144,22 @@ export default function EditUser() {
             </div>
             <div>
               <label htmlFor="rules_id" className="block text-sm font-medium text-gray-700">
-                Rules ID
+                Role
               </label>
-              <input
+              <select
                 id="rules_id"
-                type="number"
                 value={user.rules_id || ""}
                 onChange={(e) => setUser({ ...user, rules_id: parseInt(e.target.value) || undefined })}
                 className="w-full p-2 bg-gray-100 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter Rules ID"
-                aria-label="Rules ID"
-              />
+                aria-label="Role"
+              >
+                <option value="">Select a role</option>
+                {rules.map((rule) => (
+                  <option key={rule.rules_id} value={rule.rules_id}>
+                    {rule.rules_name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label htmlFor="company" className="block text-sm font-medium text-gray-700">
