@@ -18,6 +18,13 @@ interface DoughnutChartCardProps {
   selectedYear: string;
 }
 
+
+interface TotalticketCategory {
+  Total_ticket: number;
+}
+
+
+
 const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
   title,
   selectedYear,
@@ -61,9 +68,12 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
   }, [selectedYear]);
 
   const colorMap: { [key: string]: string } = {
+
     PTT_Digital: "rgb(72, 128, 255)", // Blue
     Third_Party: "rgb(254, 197, 61)", // Yellow
     Unknown: "rgb(128, 128, 128)", // Gray
+
+
   };
 
   return (
@@ -88,8 +98,10 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
                   backgroundColor: doughnutChartData.map(
                     (data) => colorMap[data.provider] || colorMap.Unknown
                   ),
+
                   borderColor: ["rgb(255, 255, 255)"],
                   borderWidth: 1,
+
                 },
               ],
             }}
@@ -109,7 +121,8 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
                   borderRadius: 9,
                   padding: 4,
                   color: "#fff",
-                  formatter: (value: number) => `${value}%`,
+                  formatter: (value: number) => `${value} %`,
+                  
                   font: {
                     weight: "bold",
                     size: 12,
@@ -118,7 +131,7 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
                   align: "center",
                 },
                 tooltip: {
-                  enabled: true, // Keep tooltips enabled for additional details on hover
+                  enabled: true, // Keep tooltips enabled if true for additional details on hover / no hover change to false 
                   callbacks: {
                     label: (context) => `${context.label}: ${context.raw}%`,
                   },

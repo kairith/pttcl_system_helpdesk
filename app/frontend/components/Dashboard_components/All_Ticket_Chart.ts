@@ -28,6 +28,7 @@ interface BarChartData {
 }
 
 interface DoughnutChartData {
+  count: any;
   provider: string;
   percentage: number;
 }
@@ -112,6 +113,8 @@ export async function fetchDashboardData(period?: string, selectedYear?: string,
       params
     );
 
+
+    // 
     const [chartData] = await connection.execute<RowDataPacket[]>(
       `SELECT 
          DATE_FORMAT(ticket_open, '%b') AS month, 
@@ -124,6 +127,8 @@ export async function fetchDashboardData(period?: string, selectedYear?: string,
       params
     );
 
+
+    // Bar Chart with doughnut chart
     const [barChartData] = await connection.execute<RowDataPacket[]>(
       `SELECT COALESCE(issue_type, 'Unknown') AS issue_type, COUNT(*) AS count
        FROM tbl_ticket
@@ -133,6 +138,8 @@ export async function fetchDashboardData(period?: string, selectedYear?: string,
       params
     );
 
+
+    // Doughnut Chart
     const [doughnutChartData] = await connection.execute<RowDataPacket[]>(
       `SELECT 
          CASE 

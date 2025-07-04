@@ -20,9 +20,7 @@ export default function AddTicket() {
   const [stationName, setStationName] = useState("");
   const [stationType, setStationType] = useState("");
   const [province, setProvince] = useState("");
-  const [issueOn, setIssueOn] = useState<"PTT_Digital" | "Third_Party">(
-    "PTT_Digital"
-  );
+  const [issueOn, setIssueOn] = useState<"PTT_Digital" | "Third_Party">("PTT_Digital");
   const [issueType, setIssueType] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -120,7 +118,7 @@ export default function AddTicket() {
       setImage(null);
       return;
     }
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 15 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       setErrors(["File size exceeds 5MB limit."]);
       setImage(null);
@@ -358,7 +356,7 @@ export default function AddTicket() {
                   aria-label="Issue Image Upload"
                 />
                 <span className="text-sm text-gray-500 mt-2 sm:mt-0">
-                  Max 5MB (JPEG, PNG, GIF)
+                  No limit size (JPEG, PNG, GIF)
                 </span>
               </div>
             </div>

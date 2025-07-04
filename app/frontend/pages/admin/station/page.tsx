@@ -6,13 +6,15 @@ import { useRouter } from "next/navigation";
 import { TrashIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { Dialog, Transition } from "@headlessui/react";
 
-interface Station {
-  id: number;
-  station_id: string;
-  station_name: string;
-  station_type: string;
-  province: string;
-}
+import { Station } from "@/app/backend/types/station";
+
+// interface Station {
+//   id: number;
+//   station_id: string;
+//   station_name: string;
+//   station_type: string;
+//   province: string;
+// }
 
 interface Permissions {
   stations: {

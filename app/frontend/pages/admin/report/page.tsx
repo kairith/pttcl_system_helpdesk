@@ -197,10 +197,11 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
       },
     },
     plugins: {
-      legend: {
-        display: true,
-        position: "top" as const,
-      },
+      // comment for show data on barchart 
+      // legend: {
+      //   display: true,
+      //   position: "top" as const,
+      // },
     },
   };
 

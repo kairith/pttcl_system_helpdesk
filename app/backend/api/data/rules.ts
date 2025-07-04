@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import { RowDataPacket } from 'mysql2';
-import { tbl_users_rules } from '../../backend/types/rules';
+import { tbl_users_rules } from '@/app/backend/types/rules';
 import { dbConfig } from '@/app/database/db-config';
 
 export async function GET() {

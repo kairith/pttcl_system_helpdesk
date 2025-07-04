@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import { RowDataPacket } from 'mysql2';
-import { Station } from '../../backend/types/station';
+import { Station } from '@/app/backend/types/station';
 import { dbConfig } from '@/app/database/db-config';
 
 export async function GET() {

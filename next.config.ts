@@ -17,13 +17,14 @@ const nextConfig = {
     ];
   },
   serverActions: {
-    bodySizeLimit: '5mb',
+    bodySizeLimit: '15mb',
   },
   api: {
     bodyParser: {
-      sizeLimit: '5mb',
+      sizeLimit: '15mb',
     },
   },
 };
 
 export default nextConfig;
+

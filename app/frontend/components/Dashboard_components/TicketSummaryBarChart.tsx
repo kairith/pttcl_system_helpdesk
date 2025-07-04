@@ -130,7 +130,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({ title, selectedYear }) => {
                     clamp: true, // Prevent overflow
                   },
                   tooltip: {
-                    enabled: true,
+                    enabled: false, // Disable default tooltips for hover on the chart
                     callbacks: {
                       label: (context) => `${context.label}: ${context.raw} tickets`,
                     },
