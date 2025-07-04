@@ -1,4 +1,3 @@
-// app/components/common/Header/header.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,11 +6,9 @@ import ProfileDropdown from "./ProfileDropdown";
 import Header from "./head";
 import Sidebar from "./Sidebar";
 
-
 const HeaderWithSidebarInner: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
   const { user, userImage, handleLogout } = useUserData();
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
@@ -24,7 +21,6 @@ const HeaderWithSidebarInner: React.FC = () => {
       const header = document.querySelector(".header");
       const profileDropdown = document.querySelector(".profile-dropdown");
 
-      // Close sidebar if click is outside sidebar and header
       if (
         isSidebarOpen &&
         sidebar &&
@@ -35,7 +31,6 @@ const HeaderWithSidebarInner: React.FC = () => {
         setIsSidebarOpen(false);
       }
 
-      // Close profile dropdown if click is outside profile dropdown
       if (isProfileOpen && profileDropdown && !profileDropdown.contains(target)) {
         setIsProfileOpen(false);
       }
@@ -59,12 +54,14 @@ const HeaderWithSidebarInner: React.FC = () => {
         toggleSidebar={toggleSidebar}
         handleLogout={handleLogout}
       />
-      <ProfileDropdown
-        isProfileOpen={isProfileOpen}
-        user={user}
-        userImage={userImage}
-        handleLogout={handleLogout}
-      />
+      {isProfileOpen && (
+        <ProfileDropdown
+          isProfileOpen={isProfileOpen}
+          user={user}
+          userImage={userImage}
+          handleLogout={handleLogout}
+        />
+      )}
     </div>
   );
 };

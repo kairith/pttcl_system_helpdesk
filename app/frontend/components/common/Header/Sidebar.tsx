@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
@@ -137,15 +136,23 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    setIsMounted(true); // Prevent effect from running on server-side render
+    let isCancelled = false;
+
     async function loadPermissions() {
+      if (isCancelled) return;
+
       try {
         const token = sessionStorage.getItem("token");
         if (!token) {
-          router.push("/");
+          if (!isCancelled) {
+            router.push("/");
+          }
           return;
         }
 
@@ -154,44 +161,53 @@ const Sidebar: React.FC<SidebarProps> = ({
         });
         if (!response.ok) {
           const data = await response.json();
-          if (data.error?.includes("Invalid token")) {
+          if (data.error?.includes("Invalid token") && !isCancelled) {
             router.push("/");
             return;
           }
           throw new Error(data.error || "Failed to fetch permissions");
         }
         const { user, rules } = await response.json();
-        setIsAdmin(user.rules_id === 1461);
-        const perms: Permissions = {
-          add_user_status: !!rules.add_user_status,
-          edit_user_status: !!rules.edit_user_status,
-          delete_user_status: !!rules.delete_user_status,
-          list_user_status: !!rules.list_user_status,
-          add_ticket_status: !!rules.add_ticket_status,
-          edit_ticket_status: !!rules.edit_ticket_status,
-          delete_ticket_status: !!rules.delete_ticket_status,
-          list_ticket_status: !!rules.list_ticket_status,
-          list_ticket_assign: !!rules.list_ticket_assign,
-          add_user_rules: !!rules.add_user_rules,
-          edit_user_rules: !!rules.edit_user_rules,
-          delete_user_rules: !!rules.delete_user_rules,
-          list_user_rules: !!rules.list_user_rules,
-          add_station: !!rules.add_station,
-          edit_station: !!rules.edit_station,
-          delete_station: !!rules.delete_station,
-          list_station: !!rules.list_station,
-          list_dashboard: rules.list_dashboard !== undefined ? !!rules.list_dashboard : true,
-          list_track: rules.list_track !== undefined ? !!rules.list_track : true,
-          list_report: rules.list_report !== undefined ? !!rules.list_report : true,
-        };
-        setPermissions(perms);
-        console.log("Sidebar: Permissions loaded:", JSON.stringify(perms, null, 2));
+        if (!isCancelled) {
+          setIsAdmin(user.rules_id === 1461);
+          const perms: Permissions = {
+            add_user_status: !!rules.add_user_status,
+            edit_user_status: !!rules.edit_user_status,
+            delete_user_status: !!rules.delete_user_status,
+            list_user_status: !!rules.list_user_status,
+            add_ticket_status: !!rules.add_ticket_status,
+            edit_ticket_status: !!rules.edit_ticket_status,
+            delete_ticket_status: !!rules.delete_ticket_status,
+            list_ticket_status: !!rules.list_ticket_status,
+            list_ticket_assign: !!rules.list_ticket_assign,
+            add_user_rules: !!rules.add_user_rules,
+            edit_user_rules: !!rules.edit_user_rules,
+            delete_user_rules: !!rules.delete_user_rules,
+            list_user_rules: !!rules.list_user_rules,
+            add_station: !!rules.add_station,
+            edit_station: !!rules.edit_station,
+            delete_station: !!rules.delete_station,
+            list_station: !!rules.list_station,
+            list_dashboard: rules.list_dashboard !== undefined ? !!rules.list_dashboard : true,
+            list_track: rules.list_track !== undefined ? !!rules.list_track : true,
+            list_report: rules.list_report !== undefined ? !!rules.list_report : true,
+          };
+          setPermissions(perms);
+          console.log("Sidebar: Permissions loaded:", JSON.stringify(perms, null, 2));
+        }
       } catch (err) {
         console.error("Sidebar: Error fetching permissions:", err);
-        router.push("/");
+        if (!isCancelled) {
+          router.push("/");
+        }
       }
     }
+
     loadPermissions();
+
+    return () => {
+      isCancelled = true; // Cleanup to prevent setting state on unmounted component
+    };
   }, [router]);
 
   const openLogoutDialog = () => setIsLogoutDialogOpen(true);
@@ -201,6 +217,11 @@ const Sidebar: React.FC<SidebarProps> = ({
     closeLogoutDialog();
     router.push("/");
   };
+
+  // Avoid rendering until mounted to prevent hydration issues
+  if (!isMounted) {
+    return null;
+  }
 
   const filteredMenuItems = menuItems.filter((item) => {
     if (item.label === "Logout") return true;

@@ -1,13 +1,21 @@
-// app/components/common/Header/UserDataProvider.tsx
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
 
 export interface User {
   users_id?: number;
   users_name?: string;
   email?: string;
+}
+
+interface DecodedToken {
+  users_id?: number;
+  userId?: number;
+  id?: number;
+  sub?: number;
+  exp: number;
 }
 
 interface UserDataContextType {
@@ -33,56 +41,118 @@ interface UserDataProviderProps {
 const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userImage, setUserImage] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const storedUser = sessionStorage.getItem("user");
-    const storedImage = sessionStorage.getItem("userImage");
+    setIsMounted(true);
+    let isCancelled = false;
 
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
+    async function loadUserData() {
+      if (isCancelled) return;
 
-      if (storedImage) {
-        setUserImage(storedImage);
-      } else if (parsedUser.users_id) {
-        const fetchUserImage = async () => {
-          try {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        if (!isCancelled) {
+          sessionStorage.removeItem("user");
+          sessionStorage.removeItem("userImage");
+          router.push("/");
+        }
+        return;
+      }
+
+      try {
+        const decoded: DecodedToken = jwtDecode(token);
+        const userId = decoded.users_id ?? decoded.userId ?? decoded.id ?? decoded.sub;
+        if (!userId || decoded.exp * 1000 < Date.now()) {
+          if (!isCancelled) {
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("user");
+            sessionStorage.removeItem("userImage");
+            router.push("/");
+          }
+          return;
+        }
+
+        const storedUser = sessionStorage.getItem("user");
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+
+          const storedImage = sessionStorage.getItem("userImage");
+          if (storedImage) {
+            setUserImage(storedImage);
+          } else {
             const response = await fetch(`/api/data/user_image?users_id=${parsedUser.users_id}`);
             const data = await response.json();
-            if (response.ok) {
-              setUserImage(data.imagePath);
-              sessionStorage.setItem("userImage", data.imagePath);
-            } else {
-              setUserImage("/Uploads/user_image/Default-avatar.jpg");
-              sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
+            if (!isCancelled) {
+              if (response.ok) {
+                setUserImage(data.imagePath);
+                sessionStorage.setItem("userImage", data.imagePath);
+              } else {
+                setUserImage("/Uploads/user_image/Default-avatar.jpg");
+                sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
+              }
             }
-          } catch (error) {
-            setUserImage("/Uploads/user_image/Default-avatar.jpg");
-            sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
           }
-        };
-        fetchUserImage();
-      } else {
-        setUserImage("/Uploads/user_image/Default-avatar.jpg");
-        sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
+        } else {
+          const response = await fetch("/api/data/user", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!response.ok) {
+            if (!isCancelled) {
+              sessionStorage.removeItem("token");
+              sessionStorage.removeItem("user");
+              sessionStorage.removeItem("userImage");
+              router.push("/");
+            }
+            return;
+          }
+          const { user: fetchedUser } = await response.json();
+          if (!isCancelled) {
+            setUser(fetchedUser);
+            sessionStorage.setItem("user", JSON.stringify(fetchedUser));
+
+            const imageResponse = await fetch(`/api/data/user_image?users_id=${fetchedUser.users_id}`);
+            const imageData = await imageResponse.json();
+            if (!isCancelled) {
+              if (imageResponse.ok) {
+                setUserImage(imageData.imagePath);
+                sessionStorage.setItem("userImage", imageData.imagePath);
+              } else {
+                setUserImage("/Uploads/user_image/Default-avatar.jpg");
+                sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
+              }
+            }
+          }
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("user");
+          sessionStorage.removeItem("userImage");
+          router.push("/");
+        }
       }
-    } else {
-      setUserImage("/Uploads/user_image/Default-avatar.jpg");
     }
-  }, []);
+
+    loadUserData();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [router]);
 
   const handleLogout = () => {
-    const confirmed = window.confirm("Are you sure you want to logout?");
-    if (confirmed) {
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("user");
-      sessionStorage.removeItem("userImage");
-      setUser(null);
-      setUserImage(null);
-      router.push("/");
-    }
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("userImage");
+    setUser(null);
+    setUserImage(null);
+    router.push("/");
   };
+
+  if (!isMounted) return null;
 
   return (
     <UserDataContext.Provider value={{ user, userImage, setUser, setUserImage, handleLogout }}>
