@@ -4,15 +4,9 @@ import { utils, write } from "xlsx";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import jwt from "jsonwebtoken";
+import { dbConfig } from "@/app/database/db-config";
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: "pttcl_helpdesk_nextjs",
-  waitForConnections: true,
-  connectionLimit: 10,
-});
+const pool = mysql.createPool(dbConfig);
 
 export async function GET(request: Request) {
   let connection;

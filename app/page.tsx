@@ -1,6 +1,5 @@
 // root file for the starting page
 
-
 'use client';
 
 import { useState } from 'react';
