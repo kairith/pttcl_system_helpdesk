@@ -48,9 +48,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid password" }, { status: 401 });
     }
 
+    if (!user.users_name) {
+      console.log("User has no username, email:", email);
+      return NextResponse.json({ error: "User account is missing username" }, { status: 400 });
+    }
+
     const isAdmin = user.add_user_rules === 1;
     const payload = {
       users_id: String(user.users_id),
+      users_name: user.users_name, // Add users_name to JWT payload
       email: user.email,
       rules_id: user.rules_id,
       list_ticket_status: user.list_ticket_status || 0,

@@ -14,6 +14,15 @@ interface Station {
   province: string;
 }
 
+interface DecodedToken {
+  users_id?: string;
+  userId?: string;
+  id?: string;
+  sub?: string;
+  users_name?: string; // Assuming username is included in the JWT
+  exp: number;
+}
+
 export default function AddTicket() {
   const [stationId, setStationId] = useState("");
   const [stationOptions, setStationOptions] = useState<Station[]>([]);
@@ -26,6 +35,7 @@ export default function AddTicket() {
   const [issueType, setIssueType] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [usersName, setUsersName] = useState<string>(""); // New state for username
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -60,12 +70,21 @@ export default function AddTicket() {
       return;
     }
     try {
-      const decoded: any = jwtDecode(token);
+      const decoded: DecodedToken = jwtDecode(token);
       const userId =
         decoded.users_id ?? decoded.userId ?? decoded.id ?? decoded.sub;
+      const username = decoded.users_name; // Extract username from JWT
       if (!userId) {
         setErrors([
           "Invalid token: userId missing (tried users_id, userId, id, sub). Please log in again.",
+        ]);
+        sessionStorage.removeItem("token");
+        setTimeout(() => router.push("/"), 2000);
+        return;
+      }
+      if (!username) {
+        setErrors([
+          "Invalid token: username missing. Please log in again.",
         ]);
         sessionStorage.removeItem("token");
         setTimeout(() => router.push("/"), 2000);
@@ -75,7 +94,9 @@ export default function AddTicket() {
         setErrors(["Your session has expired. Please log in again."]);
         sessionStorage.removeItem("token");
         setTimeout(() => router.push("/"), 2000);
+        return;
       }
+      setUsersName(username); // Set username for form submission
     } catch (error) {
       setErrors(["Invalid token. Please log in again."]);
       sessionStorage.removeItem("token");
@@ -120,7 +141,7 @@ export default function AddTicket() {
       setImage(null);
       return;
     }
-    const maxSize = 15 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024; // 5MB (aligned with server limit)
     if (file.size > maxSize) {
       setErrors(["File size exceeds 5MB limit."]);
       setImage(null);
@@ -134,9 +155,9 @@ export default function AddTicket() {
     e.preventDefault();
     setErrors([]);
     setIsLoading(true);
-    if (!stationId || !issueType || !issueDescription) {
+    if (!stationId || !issueType || !issueDescription || !usersName) {
       setErrors([
-        "Station ID, Issue Type, and Issue Description are required.",
+        "Station ID, Issue Type, Issue Description, and Assigned User are required.",
       ]);
       setIsLoading(false);
       return;
@@ -179,6 +200,7 @@ export default function AddTicket() {
       formData.append("issue_on", issueOn);
       formData.append("issue_type", issueType);
       formData.append("issue_description", issueDescription);
+      formData.append("users_name", usersName); // Add users_name to form data
       if (imagePath) formData.append("image", imagePath);
       const response = await fetch("/api/data/tickets", {
         method: "POST",
@@ -204,7 +226,6 @@ export default function AddTicket() {
       setTimeout(() => {
         router.push("/pages/Users/ticket");
       }, 2000);
-    // Delay redirect to match toast duration
     } catch (error: any) {
       setErrors([`Error: ${error.message || "Unknown error"}`]);
       setIsLoading(false);
@@ -223,7 +244,10 @@ export default function AddTicket() {
             Add Ticket
           </h1>
           {errors.length > 0 && (
-            <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-4 mb-6 text-sm font-medium">
+            <div
+              id="error-messages"
+              className="text-red-600 bg-red-50 border border-red-200 rounded-md p-4 mb-6 text-sm font-medium"
+            >
               {errors.map((error, index) => (
                 <div key={index}>{error}</div>
               ))}
@@ -245,6 +269,7 @@ export default function AddTicket() {
                   className="w-full p-3 border border-gray-300 rounded-lg placeholder-gray-400 text-sm focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter or select station ID"
                   aria-label="Station ID"
+                  aria-describedby={errors.length > 0 ? "error-messages" : undefined}
                 />
                 {showDropdown && filteredStations().length > 0 && (
                   <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg max-h-60 overflow-y-auto shadow-md mt-1">
@@ -272,6 +297,9 @@ export default function AddTicket() {
                 </p>
                 <p>
                   <strong>Province:</strong> {province}
+                </p>
+                <p>
+                  <strong>Assigned To:</strong> {usersName || "N/A"} {/* Display username */}
                 </p>
               </div>
             </div>
@@ -358,7 +386,7 @@ export default function AddTicket() {
                   aria-label="Issue Image Upload"
                 />
                 <span className="text-sm text-gray-500 mt-2 sm:mt-0">
-                  No limited size (JPEG, PNG, GIF)
+                  Max size: 5MB (JPEG, PNG, GIF)
                 </span>
               </div>
             </div>

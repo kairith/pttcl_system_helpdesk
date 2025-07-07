@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import jwt from "jsonwebtoken";
 import { dbConfig } from "@/app/database/db-config";
-//display 
+
 export async function POST(request: Request) {
   let connection;
   try {
@@ -30,12 +30,19 @@ export async function POST(request: Request) {
 
     // Verify user exists in tbl_users
     const [userRows] = await connection.execute(
-      "SELECT users_id FROM tbl_users WHERE users_id = ?",
+      "SELECT users_id, users_name FROM tbl_users WHERE users_id = ?",
       [userId]
     );
     if ((userRows as any[]).length === 0) {
       return NextResponse.json(
         { error: "User not found: Invalid user_create_ticket ID" },
+        { status: 400 }
+      );
+    }
+    const dbUsersName = (userRows as any[])[0].users_name;
+    if (!dbUsersName) {
+      return NextResponse.json(
+        { error: "User does not have a valid username in the database" },
         { status: 400 }
       );
     }
@@ -79,38 +86,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid image path format" }, { status: 400 });
     }
 
-    // Generate ticket_id with monthly sequence (POSYYMMXXXXX)
+    // Generate ticket_id with monthly sequence (POSYYMMXXXXXX)
     const now = new Date();
-    console.log("Current Date:", now.toISOString().split("T")[0]); // Log only date (e.g., 2025-06-10)
+    console.log("Current Date:", now.toISOString().split("T")[0]);
     const year = now.getFullYear().toString().slice(-2); // YY (e.g., 25)
     const month = (now.getMonth() + 1).toString().padStart(2, "0"); // MM (e.g., 06)
-    console.log("Year:", year, "Month:", month); // Debug: Log year and month
+    console.log("Year:", year, "Month:", month);
     const prefix = `POS${year}${month}`; // e.g., POS2506
-    console.log("Prefix:", prefix); // Debug: Log the prefix
+    console.log("Prefix:", prefix);
 
-    // Find the highest sequence number for the current month, ensuring 5-digit extraction
     const [maxRows] = await connection.execute(
-      "SELECT MAX(CAST(RIGHT(ticket_id, 5) AS UNSIGNED)) as max_seq FROM tbl_ticket WHERE ticket_id LIKE ?",
+      "SELECT MAX(CAST(RIGHT(ticket_id, 6) AS UNSIGNED)) as max_seq FROM tbl_ticket WHERE ticket_id LIKE ?",
       [`${prefix}%`]
     );
     const maxSeq = (maxRows as any[])[0].max_seq || 0;
-    console.log("Max Sequence:", maxSeq); // Debug: Log the max sequence
-    const sequence = (maxSeq + 1).toString().padStart(6, "0"); // XXXXX 0-1,1-2,2-3,3-4,4-5,5-6 (e.g., 00003)
-    console.log("Sequence:", sequence); // Debug: Log the sequence
+    console.log("Max Sequence:", maxSeq);
+    const sequence = (maxSeq + 1).toString().padStart(6, "0"); // XXXXXX
+    console.log("Sequence:", sequence);
     const ticketId = `${prefix}${sequence}`; // e.g., POS2506000003
-    console.log("Generated ticketId:", ticketId); // Debug: Log the final ticketId
+    console.log("Generated ticketId:", ticketId);
 
     // Start transaction
     await connection.beginTransaction();
 
-    // Insert ticket
+    // Insert ticket with users_id (for assignment) and user_create_ticket
     const ticketQuery = `
-      INSERT INTO tbl_ticket (ticket_id, user_create_ticket, station_id, station_name, station_type, province, issue_description, issue_type, issue_type_id, ticket_open, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'Open')
+      INSERT INTO tbl_ticket (ticket_id, user_create_ticket, users_id, station_id, station_name, station_type, province, issue_description, issue_type, issue_type_id, ticket_open, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'Open')
     `;
     await connection.execute(ticketQuery, [
       ticketId,
-      userId,
+      userId, // Creator
+      userId, // Assigned user (same as creator)
       stationId,
       stationName,
       stationType,
@@ -152,7 +159,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Table not found: ${error.sqlMessage}` }, { status: 500 });
     }
     if (error.code === "ER_NO_REFERENCED_ROW_2") {
-      return NextResponse.json({ error: "Failed to create ticket: Invalid ticket_id reference" }, { status: 400 });
+      return NextResponse.json({ error: "Failed to create ticket: Invalid ticket_id or users_id reference" }, { status: 400 });
     }
     return NextResponse.json({ error: `Failed to create ticket: ${error.message}` }, { status: 500 });
   } finally {

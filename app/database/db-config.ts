@@ -1,4 +1,4 @@
-// config your db connection here base on your cridentials 
+// config your db connection here base on your cridentials and your port 
 
 export const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
