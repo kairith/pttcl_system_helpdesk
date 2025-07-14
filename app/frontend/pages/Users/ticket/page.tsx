@@ -1,17 +1,14 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Ticket } from "../../../../backend/types/ticket";
 import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
-import ControlsSection from "@/app/frontend/components/User_Ticket_Components/ControlsSection/ControlsSection";
-import FilterSection from "@/app/frontend/components/User_Ticket_Components/FilterSection/FilterSection";
-import TicketTable from "@/app/frontend/components/User_Ticket_Components/TicketTable/TicketTable";
+import ControlsSection from "@/app/frontend/components/Users/User_Ticket_Components/ControlsSection/ControlsSection";
+import FilterSection from "@/app/frontend/components/Users/User_Ticket_Components/FilterSection/FilterSection";
+import TicketTable from "@/app/frontend/components/Users/User_Ticket_Components/TicketTable/TicketTable";
 import { toast } from "react-toastify";
-
-interface MyTicketsProps {
-  isSidebarOpen: boolean;
-}
 
 interface Permissions {
   tickets: {
@@ -23,7 +20,8 @@ interface Permissions {
   };
 }
 
-export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
+export default function MyTickets() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [tickets, setTickets] = useState<(Ticket & { users_name: string; creator_name: string })[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<(Ticket & { users_name: string; creator_name: string })[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -57,25 +55,28 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
   const [issueTypeIdFilter, setIssueTypeIdFilter] = useState("");
   const [usersNameFilter, setUsersNameFilter] = useState("");
 
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
   useEffect(() => {
     async function loadData() {
       try {
         setIsLoading(true);
         const token = sessionStorage.getItem("token");
         if (!token) {
+          setError("Please log in to access your tickets.");
           toast.error("Please log in to access your tickets.");
           router.push("/");
           return;
         }
-        console.log("Token:", token); // Debug token
+        console.log("Token:", token);
 
-        // Fetch user data and permissions
         const userResponse = await fetch("/api/data/user", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!userResponse.ok) {
           const data = await userResponse.json();
           if (data.error?.includes("Invalid token")) {
+            setError("Session expired. Please log in again.");
             toast.error("Session expired. Please log in again.");
             router.push("/");
             return;
@@ -83,7 +84,7 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
           throw new Error(data.error || "Failed to fetch user data");
         }
         const { users_id, rules } = await userResponse.json();
-        console.log("User response:", { users_id, rules }); // Debug response
+        console.log("User response:", { users_id, rules });
         setUsersId(users_id);
         const userPermissions: Permissions = {
           tickets: {
@@ -98,7 +99,6 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
         console.log("Permissions loaded:", userPermissions);
         console.log("Users ID:", users_id);
 
-        // Fetch user's tickets only if list permission exists
         if (userPermissions.tickets.list) {
           const ticketResponse = await fetch("/api/data/UserPage/ticket", {
             headers: { Authorization: `Bearer ${token}` },
@@ -393,7 +393,7 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
     setUsersNameFilter("");
     setShowFilterInput(false);
     setFilteredTickets(tickets);
-};
+  };
 
   const handleExport = async (format: "xlsx" | "pdf" | "csv") => {
     if (!permissions?.tickets.list) {
@@ -464,16 +464,34 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <HeaderWithSidebar />
-        <div className="flex">
-          <main
-            className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
-              isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
-            }`}
-          >
-            <div className="text-gray-500 text-center text-sm sm:text-base">
-              Loading your tickets...
+      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex w-full">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center space-x-3">
+                <svg
+                  className="animate-spin h-8 w-8 text-blue-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
+                  />
+                </svg>
+                <span className="text-lg font-medium text-gray-600">Loading your tickets...</span>
+              </div>
             </div>
           </main>
         </div>
@@ -483,16 +501,28 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
 
   if (error || !permissions) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <HeaderWithSidebar />
-        <div className="flex">
-          <main
-            className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
-              isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
-            }`}
-          >
-            <div className="text-red-500 text-center text-sm sm:text-base">
-              {error || "Failed to load permissions"}
+      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex w-full">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+            <div className="flex items-center justify-center py-8">
+              <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md w-full">
+                <svg
+                  className="mx-auto h-12 w-12 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="mt-4 text-lg font-semibold text-red-600">{error || "Failed to load permissions"}</p>
+              </div>
             </div>
           </main>
         </div>
@@ -501,68 +531,69 @@ export default function MyTickets({ isSidebarOpen }: MyTicketsProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <HeaderWithSidebar />
-      <main
-        className={`flex-1 p-4 sm:p-6 mt-14 lg:p-8 w-full transition-all duration-300 ${
-          isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
-        }`}
-       >
-        <div className="bg-white shadow rounded-lg p-4">
-          <h1 className="text-2xl font-bold text-gray-800">My Tickets</h1>
-        </div>
-        {(permissions.tickets.add || permissions.tickets.list) && (
-          <div className="mt-4">
-            <ControlsSection
-              onCreateTicket={permissions.tickets.add ? handleCreateTicket : undefined}
-              onFilterToggle={permissions.tickets.list ? handleFilterToggle : undefined}
-              onExportToggle={
-                permissions.tickets.list ? () => setShowExportOptions((prev) => !prev) : undefined
-              }
-              showExportOptions={showExportOptions}
-              setShowExportOptions={setShowExportOptions}
-              isExporting={isExporting}
-              onExport={permissions.tickets.list ? handleExport : undefined}
-            />
-            {permissions.tickets.list && (
-              <>
-                <FilterSection
-                  showFilterInput={showFilterInput}
+    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className="flex w-full">
+        <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+          <div className="bg-white shadow rounded-lg p-4 sm:p-6 w-full max-w-full">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">My Tickets</h1>
+            {(permissions.tickets.add || permissions.tickets.list) && (
+              <div className="mt-4 w-full max-w-full">
+                <ControlsSection
+                  onCreateTicket={permissions.tickets.add ? handleCreateTicket : undefined}
+                  onFilterToggle={permissions.tickets.list ? handleFilterToggle : undefined}
+                  onExportToggle={
+                    permissions.tickets.list ? () => setShowExportOptions((prev) => !prev) : undefined
+                  }
+                  showExportOptions={showExportOptions}
+                  setShowExportOptions={setShowExportOptions}
                   isExporting={isExporting}
-                  stationIdFilter={stationIdFilter}
-                  stationNameFilter={stationNameFilter}
-                  stationTypeFilter={stationTypeFilter}
-                  provinceFilter={provinceFilter}
-                  issueDescriptionFilter={issueDescriptionFilter}
-                  issueTypeFilter={issueTypeFilter}
-                  statusFilter={statusFilter}
-                  usersIdFilter={usersIdFilter}
-                  ticketOpenFrom={ticketOpenFrom}
-                  ticketOpenTo={ticketOpenTo}
-                  ticketCloseFrom={ticketCloseFrom}
-                  ticketCloseTo={ticketCloseTo}
-                  ticketOnHoldFilter={ticketOnHoldFilter}
-                  ticketInProgressFilter={ticketInProgressFilter}
-                  ticketPendingVendorFilter={ticketPendingVendorFilter}
-                  ticketTimeFilter={ticketTimeFilter}
-                  commentFilter={commentFilter}
-                  userCreateTicketFilter={userCreateTicketFilter}
-                  issueTypeIdFilter={issueTypeIdFilter}
-                  usersNameFilter={usersNameFilter}
-                  tickets={tickets}
-                  onFilterChange={handleFilterChange}
-                  onFilter={handleFilter}
-                  onClearFilter={handleClearFilter}
+                  onExport={permissions.tickets.list ? handleExport : undefined}
+                
                 />
-                <TicketTable
-                  filteredTickets={filteredTickets}
-                  permissions={permissions.tickets}
-                />
-              </>
+                {permissions.tickets.list && (
+                  <>
+                    <FilterSection
+                      showFilterInput={showFilterInput}
+                      isExporting={isExporting}
+                      stationIdFilter={stationIdFilter}
+                      stationNameFilter={stationNameFilter}
+                      stationTypeFilter={stationTypeFilter}
+                      provinceFilter={provinceFilter}
+                      issueDescriptionFilter={issueDescriptionFilter}
+                      issueTypeFilter={issueTypeFilter}
+                      statusFilter={statusFilter}
+                      usersIdFilter={usersIdFilter}
+                      ticketOpenFrom={ticketOpenFrom}
+                      ticketOpenTo={ticketOpenTo}
+                      ticketCloseFrom={ticketCloseFrom}
+                      ticketCloseTo={ticketCloseTo}
+                      ticketOnHoldFilter={ticketOnHoldFilter}
+                      ticketInProgressFilter={ticketInProgressFilter}
+                      ticketPendingVendorFilter={ticketPendingVendorFilter}
+                      ticketTimeFilter={ticketTimeFilter}
+                      commentFilter={commentFilter}
+                      userCreateTicketFilter={userCreateTicketFilter}
+                      issueTypeIdFilter={issueTypeIdFilter}
+                      usersNameFilter={usersNameFilter}
+                      tickets={tickets}
+                      onFilterChange={handleFilterChange}
+                      onFilter={handleFilter}
+                      onClearFilter={handleClearFilter}
+                    
+                    />
+                    <TicketTable
+                      filteredTickets={filteredTickets}
+                      permissions={permissions.tickets}
+                    
+                    />
+                  </>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

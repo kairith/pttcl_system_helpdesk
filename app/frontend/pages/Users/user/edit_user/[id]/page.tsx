@@ -79,7 +79,7 @@ export default function EditUser() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      
       <div className="flex justify-center items-center min-h-[calc(100vh-64px)]">
         <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
           <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Edit User</h1>

@@ -13,7 +13,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { fetchDashboardData } from "@/app/frontend/components/Dashboard_components/All_Ticket_Chart";
+import { fetchDashboardData } from "@/app/frontend/components/Admin/Dashboard_components/All_Ticket_Chart";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 

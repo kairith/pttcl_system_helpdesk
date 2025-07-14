@@ -1,6 +1,7 @@
-// app/components/Dashboard_components/StatsCards.tsx
+"use client";
+
 import Image from "next/image";
-import Card from "@/app/frontend/components/common/Card";
+import Card from "@/app/frontend/components/common/Card/Card";
 
 interface StatsData {
   open: number;

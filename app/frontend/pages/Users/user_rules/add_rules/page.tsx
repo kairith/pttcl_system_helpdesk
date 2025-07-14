@@ -93,7 +93,7 @@ export default function AddRules({ isSidebarOpen }: AddRulesProps) {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <HeaderWithSidebar />
+    
       <div className="flex">
         {/* Sidebar */}
       

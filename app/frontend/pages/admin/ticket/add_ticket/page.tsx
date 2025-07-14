@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -15,6 +16,7 @@ interface Station {
 }
 
 export default function AddTicket() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [stationId, setStationId] = useState("");
   const [stationOptions, setStationOptions] = useState<Station[]>([]);
   const [stationName, setStationName] = useState("");
@@ -29,8 +31,11 @@ export default function AddTicket() {
   const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
 
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
   useEffect(() => {
     async function fetchStations() {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/data/stations");
         if (!response.ok) {
@@ -45,6 +50,8 @@ export default function AddTicket() {
       } catch (err) {
         setErrors([err instanceof Error ? err.message : "Unknown error"]);
         setStationOptions([]);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchStations();
@@ -118,7 +125,7 @@ export default function AddTicket() {
       setImage(null);
       return;
     }
-    const maxSize = 15 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       setErrors(["File size exceeds 5MB limit."]);
       setImage(null);
@@ -136,12 +143,14 @@ export default function AddTicket() {
       setErrors([
         "Station ID, Issue Type, and Issue Description are required.",
       ]);
+      toast.error("Station ID, Issue Type, and Issue Description are required.");
       setIsLoading(false);
       return;
     }
     const token = sessionStorage.getItem("token");
     if (!token) {
       setErrors(["Please log in to create a ticket."]);
+      toast.error("Please log in to create a ticket.");
       setIsLoading(false);
       setTimeout(() => router.push("/"), 2000);
       return;
@@ -161,8 +170,10 @@ export default function AddTicket() {
             setErrors([
               "Image size exceeds server limit (5MB). Please upload a smaller image.",
             ]);
+            toast.error("Image size exceeds server limit (5MB).");
           } else {
             setErrors([uploadData.error || "Failed to upload image."]);
+            toast.error(uploadData.error || "Failed to upload image.");
           }
           setIsLoading(false);
           return;
@@ -187,191 +198,274 @@ export default function AddTicket() {
       if (!response.ok) {
         if (data.error.includes("expired")) {
           setErrors(["Your session has expired. Please log in again."]);
+          toast.error("Your session has expired. Please log in again.");
           sessionStorage.removeItem("token");
           setTimeout(() => router.push("/"), 2000);
         } else {
           setErrors([data.error || "Failed to create ticket."]);
+          toast.error(data.error || "Failed to create ticket.");
         }
         setIsLoading(false);
         return;
       }
       toast.success("Ticket created successfully!", {
         duration: 2000,
-        position: "top-center",
+        position: "top-right",
       });
       setTimeout(() => {
         router.push("/pages/admin/ticket");
       }, 2000);
-    // Delay redirect to match toast duration
     } catch (error: any) {
-      setErrors([`Error: ${error.message || "Unknown error"}`]);
-      setIsLoading(false);
-    } finally {
+      const errorMsg = error.message || "Unknown error";
+      setErrors([`Error: ${errorMsg}`]);
+      toast.error(`Error: ${errorMsg}`);
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 flex flex-col overflow-visible">
-      <HeaderWithSidebar />
-      <div className="flex items-center justify-center flex-grow p-4">
-        <div className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 mt-19 sm:p-8 z-0">
-          <Toaster />
-          <h1 className="text-3xl sm:text-4xl font-semibold text-gray-800 mb-6">
-            Add Ticket
-          </h1>
-          {errors.length > 0 && (
-            <div className="text-red-600 bg-red-50 border border-red-200 rounded-md p-4 mb-6 text-sm font-medium">
-              {errors.map((error, index) => (
-                <div key={index}>{error}</div>
-              ))}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Station ID
-                </label>
-                <input
-                  type="text"
-                  id="stationId"
-                  value={stationId}
-                  onChange={(e) => setStationId(e.target.value)}
-                  onFocus={() => setShowDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowDropdown(false), 100)}
-                  className="w-full p-3 border border-gray-300 rounded-lg placeholder-gray-400 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter or select station ID"
-                  aria-label="Station ID"
-                />
-                {showDropdown && filteredStations().length > 0 && (
-                  <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg max-h-60 overflow-y-auto shadow-md mt-1">
-                    {filteredStations().map((s) => (
-                      <li
-                        key={s.station_id }
-                        onMouseDown={() => {
-                          setStationId(s.station_id );
-                          setShowDropdown(false);
-                        }}
-                        className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
-                      >
-                        {s.station_name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <strong>Station Name:</strong> {stationName}
-                </p>
-                <p>
-                  <strong>Station Type:</strong> {stationType}
-                </p>
-                <p>
-                  <strong>Province:</strong> {province}
-                </p>
+  if (isLoading) {
+    return (
+      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex w-full">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+            <Toaster position="top-right" />
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center space-x-3">
+                <svg
+                  className="animate-spin h-8 w-8 text-blue-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
+                  />
+                </svg>
+                <span className="text-lg font-medium text-gray-600">Loading ticket data...</span>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Issue on
-                </label>
-                <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:space-x-4 mt-2">
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      id="issueOnPTTDigital"
-                      value="PTT_Digital"
-                      checked={issueOn === "PTT_Digital"}
-                      onChange={() => setIssueOn("PTT_Digital")}
-                      className="form-radio text-blue-500 h-4 w-4 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      PTT Digital
-                    </span>
-                  </label>
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      id="issueOnThirdParty"
-                      value="Third_Party"
-                      checked={issueOn === "Third_Party"}
-                      onChange={() => setIssueOn("Third_Party")}
-                      className="form-radio text-blue-500 h-4 w-4 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      Third Party
-                    </span>
-                  </label>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (errors.length > 0 && errors.some((error) => error.includes("log in") || error.includes("token"))) {
+    return (
+      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex w-full">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+            <Toaster position="top-right" />
+            <div className="flex items-center justify-center py-8">
+              <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md w-full border border-gray-200">
+                <svg
+                  className="mx-auto h-12 w-12 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div className="mt-4 text-lg font-semibold text-red-600">
+                  {errors.map((error, index) => (
+                    <div key={index}>{error}</div>
+                  ))}
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Issue Type
-                </label>
-                <select
-                  id="issueType"
-                  value={issueType}
-                  onChange={(e) => setIssueType(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500"
-                  required
-                  aria-label="Issue Type"
-                >
-                  <option value="">Select an issue type</option>
-                  {issueTypeOptions[issueOn].map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Issue Description
-                </label>
-                <textarea
-                  id="issueDescription"
-                  value={issueDescription}
-                  onChange={(e) => setIssueDescription(e.target.value)}
-                  placeholder="Describe the issue..."
-                  className="w-full p-3 border border-gray-300 rounded-lg text-sm h-24 resize-none placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                  aria-label="Issue Description"
-                />
-              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Issue Image (Optional)
-              </label>
-              <div className="flex flex-col sm:flex-row items-center sm:space-x-4">
-                <input
-                  type="file"
-                  id="issueImage"
-                  accept="image/jpeg,image/png,image/gif"
-                  onChange={handleImageChange}
-                  className="w-full p-2 border border-gray-300 rounded-lg text-sm file:bg-gray-100 file:text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0"
-                  aria-label="Issue Image Upload"
-                />
-                <span className="text-sm text-gray-500 mt-2 sm:mt-0">
-                  No limit size (JPEG, PNG, GIF)
-                </span>
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:bg-blue-300 focus:ring-4 focus:ring-blue-200"
-                disabled={isLoading}
-                aria-label={isLoading ? "Creating Ticket" : "Create Ticket"}
-              >
-                {isLoading ? "Creating..." : "Create Ticket"}
-              </button>
-            </div>
-          </form>
+          </main>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className="flex w-full">
+        <main className="flex-1 mt-12 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+          <Toaster position="top-right" />
+          <div className="flex justify-center items-center min-h-[calc(100vh-128px)]">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md w-full max-w-md sm:max-w-2xl border border-gray-200">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">
+                Add Ticket
+              </h1>
+              {errors.length > 0 && (
+                <div className="mb-4 p-3 rounded text-sm sm:text-base bg-red-100 text-red-800 w-full max-w-full">
+                  {errors.map((error, index) => (
+                    <div key={index}>{error}</div>
+                  ))}
+                </div>
+              )}
+              <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-full min-w-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Station ID
+                    </label>
+                    <input
+                      type="text"
+                      id="stationId"
+                      value={stationId}
+                      onChange={(e) => setStationId(e.target.value)}
+                      onFocus={() => setShowDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowDropdown(false), 100)}
+                      className="w-full max-w-full min-w-0 p-2 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter or select station ID"
+                      aria-label="Station ID"
+                    />
+                    {showDropdown && filteredStations().length > 0 && (
+                      <ul className="absolute z-20 w-full max-w-full min-w-0 bg-white border border-gray-300 rounded-md max-h-60 overflow-y-auto shadow-md mt-1">
+                        {filteredStations().map((s) => (
+                          <li
+                            key={s.station_id}
+                            onMouseDown={() => {
+                              setStationId(s.station_id);
+                              setShowDropdown(false);
+                            }}
+                            className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer"
+                          >
+                            {s.station_name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <p>
+                      <strong>Station Name:</strong> {stationName || "Not selected"}
+                    </p>
+                    <p>
+                      <strong>Station Type:</strong> {stationType || "Not selected"}
+                    </p>
+                    <p>
+                      <strong>Province:</strong> {province || "Not selected"}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Issue On
+                    </label>
+                    <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:space-x-4 mt-2">
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          id="issueOnPTTDigital"
+                          value="PTT_Digital"
+                          checked={issueOn === "PTT_Digital"}
+                          onChange={() => setIssueOn("PTT_Digital")}
+                          className="form-radio text-blue-500 h-4 w-4 focus:ring-blue-500"
+                          aria-label="PTT Digital"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">
+                          PTT Digital
+                        </span>
+                      </label>
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          id="issueOnThirdParty"
+                          value="Third_Party"
+                          checked={issueOn === "Third_Party"}
+                          onChange={() => setIssueOn("Third_Party")}
+                          className="form-radio text-blue-500 h-4 w-4 focus:ring-blue-500"
+                          aria-label="Third Party"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">
+                          Third Party
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Issue Type
+                    </label>
+                    <select
+                      id="issueType"
+                      value={issueType}
+                      onChange={(e) => setIssueType(e.target.value)}
+                      className="w-full max-w-full min-w-0 p-2 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                      aria-label="Issue Type"
+                    >
+                      <option value="">Select an issue type</option>
+                      {issueTypeOptions[issueOn].map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Issue Description
+                    </label>
+                    <textarea
+                      id="issueDescription"
+                      value={issueDescription}
+                      onChange={(e) => setIssueDescription(e.target.value)}
+                      placeholder="Describe the issue..."
+                      className="w-full max-w-full min-w-0 p-2 border border-gray-300 rounded-md text-sm sm:text-base h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                      aria-label="Issue Description"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Issue Image (Optional)
+                    </label>
+                    <div className="flex flex-col sm:flex-row items-center sm:space-x-4">
+                      <input
+                        type="file"
+                        id="issueImage"
+                        accept="image/jpeg,image/png,image/gif"
+                        onChange={handleImageChange}
+                        className="w-full max-w-full min-w-0 p-2 border border-gray-300 rounded-md text-sm sm:text-base file:bg-gray-100 file:text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0"
+                        aria-label="Issue Image Upload"
+                      />
+                      <span className="text-sm text-gray-500 mt-2 sm:mt-0">
+                        Max size: 5MB (JPEG, PNG, GIF)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-center mt-4 sm:mt-6">
+                  <button
+                    type="submit"
+                    className="w-full sm:w-40 max-w-full min-w-0 bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 disabled:bg-blue-300 text-sm sm:text-base"
+                    disabled={isLoading}
+                    aria-label={isLoading ? "Creating Ticket" : "Create Ticket"}
+                  >
+                    {isLoading ? "Creating..." : "Create Ticket"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );

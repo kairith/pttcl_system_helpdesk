@@ -1,30 +1,20 @@
-// app/dashboard/page.tsx
 
-// dashboard page 
+// app/dashboard/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-
-
-// import component for the component folder for combine to dashboard
 import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
 import {
   fetchTicketsCount,
   fetchDashboardData,
-} from "@/app/frontend/components/Dashboard_components/All_Ticket_Chart";
-import StatsCards from "@/app/frontend/components/Dashboard_components/StatsCards";
-import LineChartCard from "@/app/frontend/components/Dashboard_components/LineChartCard";
-import TicketChart from "@/app/frontend/components/Dashboard_components/TotalTicketBarChart";
-import BarChartCard from "@/app/frontend/components/Dashboard_components/TicketSummaryBarChart";
-import DoughnutChartCard from "@/app/frontend/components/Dashboard_components/DoughnutChartCard";
-import TicketDetailsTable from "@/app/frontend/components/Dashboard_components/TicketDetailsTable";
-import Card from "@/app/frontend/components/common/Card";
+} from "@/app/frontend/components/Admin/Dashboard_components/All_Ticket_Chart";
+import StatsCards from "@/app/frontend/components/Admin/Dashboard_components/StatsCards";
+import LineChartCard from "@/app/frontend/components/Admin/Dashboard_components/LineChartCard";
+import BarChartCard from "@/app/frontend/components/Admin/Dashboard_components/TicketSummaryBarChart";
+import DoughnutChartCard from "@/app/frontend/components/Admin/Dashboard_components/DoughnutChartCard";
+import TicketDetailsTable from "@/app/frontend/components/Admin/Dashboard_components/TicketDetailsTable";
+import Card from "@/app/frontend/components/common/Card/Card";
 
-//============================================================================================//
-
-
-
-// fetch data from chart
 interface TicketData {
   id: number;
   ticket_id: string;
@@ -43,31 +33,21 @@ interface StatsData {
   close: number;
 }
 
-interface DashboardProps {
-  isSidebarOpen: boolean;
-}
-
-
-//  ============================== //
-const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
-
-  // loading all year for each data in chart or component 2024 by default 
+const Dashboard: React.FC = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState("2024");
   const [ticketData, setTicketData] = useState<TicketData[]>([]);
   const [stats, setStats] = useState<StatsData>({
-
-    // all status in the system for ticket  // 
     open: 0,
     on_hold: 0,
     in_progress: 0,
     close: 0,
-
-    // ===================================== // 
   });
-  const [error, setError] = useState<string | null>(null); // checking error
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   useEffect(() => {
-    // refrease data load for dashboard in page
     const loadData = async () => {
       try {
         const countResult = await fetchTicketsCount(undefined, selectedYear);
@@ -77,10 +57,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
           setStats(countResult.stats);
         }
 
-        const { ticketData, error } = await fetchDashboardData(
-          undefined,
-          selectedYear
-        );
+        const { ticketData, error } = await fetchDashboardData(undefined, selectedYear);
         if (error) {
           setError(error);
         } else {
@@ -91,30 +68,19 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
       }
     };
 
-    loadData(); // loading data
+    loadData();
   }, [selectedYear]);
-  
 
-  // handle year data for entire page
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedYear(e.target.value);
   };
- // =============================== // 
 
-
-
- // ========================================= Front-end ============================================ // 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* header for page */}
-      <HeaderWithSidebar />
-      <div className="flex">
-        <main
-          className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
-            isSidebarOpen ? "sm:ml-64" : ""
-          }`}
-        >
-          <div className="mb-6 sm:mb-8">
+    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className="flex w-full">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+          <div className="mb-6 sm:mb-8 w-full max-w-full">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
                 Dashboard
@@ -122,51 +88,30 @@ const Dashboard: React.FC<DashboardProps> = ({ isSidebarOpen }) => {
             </div>
             {error && <p className="text-red-600 mb-4">{error}</p>}
             <StatsCards stats={stats} />
-
-
-            
-
-            {/* all ticket lineChart */}
             <LineChartCard title="Ticket Trends" />
-
-            {/* all ticket barchart  */}
-            {/* <div className="mb-6 sm:mb-8 bg-white shadow-lg rounded-xl border border-gray-200 p-4 sm:p-6 mt-9">
-              
-              <TicketChart />
-            </div> */}
-            <div className="mb-6 sm:mb-8 bg-white shadow-lg rounded-xl border border-gray-200 mt-9">
-            <Card className="p-4  sm:p-6">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
-                  Ticket Summary
-                </h2>
-                <select
-                  value={selectedYear}
-                  onChange={handleYearChange}
-                  className="w-full sm:w-48 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="ALL">All Years</option>
-                  <option value="2024">2024</option>
-                  <option value="2025">2025</option>
-                  <option value="2026">2026</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
-                {/* ticket summary Barchart  */}
-                <BarChartCard
-                  title="Tickets by Issue Type"
-                  selectedYear={selectedYear}
-                />
-                {/* ticket summary Doughnut */}
-                <DoughnutChartCard
-                  title="Ticket Categories"
-                  selectedYear={selectedYear}
-                />
-              </div>
-            </Card>
+            <div className="mb-6 sm:mb-8 bg-white shadow-lg rounded-xl border border-gray-200 mt-9 w-full max-w-full">
+              <Card className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
+                    Ticket Summary
+                  </h2>
+                  <select
+                    value={selectedYear}
+                    onChange={handleYearChange}
+                    className="w-full sm:w-48 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="ALL">All Years</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                  </select>
+                </div>
+                <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 w-full">
+                  <BarChartCard title="Tickets by Issue Type" selectedYear={selectedYear} />
+                  <DoughnutChartCard title="Ticket Categories" selectedYear={selectedYear} />
+                </div>
+              </Card>
             </div>
-            {/* detail ticket each year  */}
             <TicketDetailsTable ticketData={ticketData} />
           </div>
         </main>

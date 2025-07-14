@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import Header from './common/Header/Headerwithsidebar';
-import NavSlide from './navbar/navbar';
+
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -15,7 +15,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <NavSlide onToggle={setIsSidebarOpen} />
+      
 
       {/* Main Content Area */}
       <div

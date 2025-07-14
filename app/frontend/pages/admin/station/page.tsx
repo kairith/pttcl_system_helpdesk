@@ -1,20 +1,13 @@
+
 "use client";
+
 import React, { useState, useEffect, Fragment } from "react";
 import { fetchStations } from "./action";
-import Header from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
 import { useRouter } from "next/navigation";
 import { TrashIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { Dialog, Transition } from "@headlessui/react";
-
 import { Station } from "@/app/backend/types/station";
-
-// interface Station {
-//   id: number;
-//   station_id: string;
-//   station_name: string;
-//   station_type: string;
-//   province: string;
-// }
 
 interface Permissions {
   stations: {
@@ -25,13 +18,8 @@ interface Permissions {
   };
 }
 
-interface StationsProps {
-  isSidebarOpen: boolean;
-}
-
-export default function Stations({ isSidebarOpen }: StationsProps) {
-
-
+export default function Stations() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [stations, setStations] = useState<Station[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [filterId, setFilterId] = useState("");
@@ -40,6 +28,8 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
   const [deleteStationId, setDeleteStationId] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
   const router = useRouter();
+
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   // Fetch permissions and stations on mount
   useEffect(() => {
@@ -243,24 +233,20 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
     : stations;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <div className="flex">
-        <main
-          className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
-            isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
-          }`}
-        >
-          <div className="container mx-auto">
-            <div className="mt-19 sm:mt-6 p-4 sm:p-6 bg-white rounded-lg shadow-md">
+    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className="flex w-full">
+        <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+          <div className="w-full max-w-full">
+            <div className="p-4 sm:p-6 bg-white rounded-lg shadow-md">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-8">
                 Stations
               </h1>
               {error && <p className="text-red-600 mb-4">{error}</p>}
               {(permissions?.stations.add || permissions?.stations.list) && (
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 w-full max-w-full">
                   {permissions.stations.add && (
-                    <div className="relative flex items-center gap-3">
+                    <div className="flex items-center gap-3">
                       <button
                         onClick={handleCreateStation}
                         className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex-1 sm:flex-none sm:w-40 text-sm sm:text-base flex items-center justify-center"
@@ -272,7 +258,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                   )}
                   {permissions.stations.list && (
                     <>
-                      <div className="relative flex items-center gap-3">
+                      <div className="flex items-center gap-3">
                         <button
                           onClick={handleFilterToggle}
                           className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 flex-1 sm:flex-none sm:w-32 text-sm sm:text-base flex items-center justify-center"
@@ -281,7 +267,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                           <span className="mr-2">🔍</span> Filter
                         </button>
                         {showFilterInput && (
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 w-full sm:w-auto">
                             <input
                               type="text"
                               value={filterId}
@@ -300,7 +286,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                           </div>
                         )}
                       </div>
-                      <div className="relative flex items-center gap-3">
+                      <div className="flex items-center gap-3">
                         <button
                           onClick={toggleExportOptions}
                           className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 flex-1 sm:flex-none sm:w-32 text-sm sm:text-base flex items-center justify-center"
@@ -309,7 +295,7 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                           <span className="mr-2">📄</span> Export
                         </button>
                         {showExportOptions && (
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 w-full sm:w-auto">
                             <button
                               onClick={() => handleExport("xlsx")}
                               className="bg-white border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base"
@@ -339,29 +325,29 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                 </div>
               )}
               {permissions?.stations.list && (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                <div className="overflow-x-auto w-full max-w-full">
+                  <table className="w-full text-sm table-auto">
                     <thead>
                       <tr className="bg-gray-100 rounded-xl">
-                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
+                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800 min-w-[80px]">
                           ID
                         </th>
                         {(permissions.stations.edit ||
                           permissions.stations.delete) && (
-                          <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
+                          <th className="text-left p-2 sm:p-3 font-bold text-gray-800 min-w-[100px]">
                             Action
                           </th>
                         )}
-                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
+                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800 min-w-[120px]">
                           Station ID
                         </th>
-                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
+                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800 min-w-[150px]">
                           Station Name
                         </th>
-                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
+                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800 min-w-[120px]">
                           Province
                         </th>
-                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
+                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800 min-w-[120px]">
                           Station Type
                         </th>
                       </tr>
@@ -385,14 +371,14 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                         filteredStations.map((station) => (
                           <tr
                             key={station.station_id}
-                            className={`border-b border-gray-200 hover:bg-gray-50`}
+                            className="border-b border-gray-200 hover:bg-gray-50"
                           >
-                            <td className="p-2 sm:p-3 text-gray-700">
+                            <td className="p-2 sm:p-3 text-gray-700 min-w-0">
                               {station.id}
                             </td>
                             {(permissions.stations.edit ||
                               permissions.stations.delete) && (
-                              <td className="p-2 sm:p-3 text-gray-700 flex gap-2">
+                              <td className="p-2 sm:p-3 text-gray-700 flex gap-2 min-w-0">
                                 {permissions.stations.edit && (
                                   <button
                                     onClick={() =>
@@ -417,16 +403,16 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
                                 )}
                               </td>
                             )}
-                            <td className="p-2 sm:p-3 text-gray-700">
+                            <td className="p-2 sm:p-3 text-gray-700 min-w-0">
                               {station.station_id}
                             </td>
-                            <td className="p-2 sm:p-3 text-gray-700">
+                            <td className="p-2 sm:p-3 text-gray-700 min-w-0">
                               {station.station_name}
                             </td>
-                            <td className="p-2 sm:p-3 text-gray-700">
+                            <td className="p-2 sm:p-3 text-gray-700 min-w-0">
                               {station.province}
                             </td>
-                            <td className="p-2 sm:p-3 text-gray-700">
+                            <td className="p-2 sm:p-3 text-gray-700 min-w-0">
                               {station.station_type}
                             </td>
                           </tr>
@@ -438,80 +424,79 @@ export default function Stations({ isSidebarOpen }: StationsProps) {
               )}
             </div>
           </div>
-        </main>
-      </div>
-
-      {/* Delete Confirmation Modal */}
-      {permissions?.stations.delete && (
-        <Transition appear show={deleteStationId !== null} as={Fragment}>
-          <Dialog as="div" className="relative z-10" onClose={closeDeleteModal}>
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-              >
-              <div
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                  backdropFilter: "blur(10px)",
-                  WebkitBackdropFilter: "blur(10px)",
-                }}
-              />
-            </Transition.Child>
-
-            <div className="fixed inset-0 overflow-y-auto">
-              <div className="flex min-h-full items-center justify-center p-4 text-center">
+          {/* Delete Confirmation Modal */}
+          {permissions?.stations.delete && (
+            <Transition appear show={deleteStationId !== null} as={Fragment}>
+              <Dialog as="div" className="relative z-10" onClose={closeDeleteModal}>
                 <Transition.Child
                   as={Fragment}
                   enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
                   leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
                 >
-                  <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900"
-                    >
-                      Confirm Deletion
-                    </Dialog.Title>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        Are you sure you want to delete station ID{" "}
-                        {deleteStationId}? This action cannot be undone.
-                      </p>
-                    </div>
-                    <div className="mt-4 flex justify-end gap-2">
-                      <button
-                        type="button"
-                        className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                        onClick={closeDeleteModal}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-                        onClick={confirmDeleteStation}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </Dialog.Panel>
+                  <div
+                    style={{
+                      position: "fixed",
+                      inset: 0,
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      backdropFilter: "blur(10px)",
+                      WebkitBackdropFilter: "blur(10px)",
+                    }}
+                  />
                 </Transition.Child>
-              </div>
-            </div>
-          </Dialog>
-        </Transition>
-      )}
+
+                <div className="fixed inset-0 overflow-y-auto">
+                  <div className="flex min-h-full items-center justify-center p-4 text-center">
+                    <Transition.Child
+                      as={Fragment}
+                      enter="ease-out duration-300"
+                      enterFrom="opacity-0 scale-95"
+                      enterTo="opacity-100 scale-100"
+                      leave="ease-in duration-200"
+                      leaveFrom="opacity-100 scale-100"
+                      leaveTo="opacity-0 scale-95"
+                    >
+                      <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                        <Dialog.Title
+                          as="h3"
+                          className="text-lg font-medium leading-6 text-gray-900"
+                        >
+                          Confirm Deletion
+                        </Dialog.Title>
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-500">
+                            Are you sure you want to delete station ID{" "}
+                            {deleteStationId}? This action cannot be undone.
+                          </p>
+                        </div>
+                        <div className="mt-4 flex justify-end gap-2">
+                          <button
+                            type="button"
+                            className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            onClick={closeDeleteModal}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                            onClick={confirmDeleteStation}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </Dialog.Panel>
+                    </Transition.Child>
+                  </div>
+                </div>
+              </Dialog>
+            </Transition>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

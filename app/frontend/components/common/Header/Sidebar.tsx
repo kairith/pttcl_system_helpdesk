@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, Fragment, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -12,6 +12,7 @@ import {
   LineChart,
   Calendar,
   LogOut,
+  Bell,
 } from "lucide-react";
 import { Dialog, Transition } from "@headlessui/react";
 
@@ -19,6 +20,7 @@ interface SidebarProps {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
   handleLogout: () => void;
+  onUserIdFetched: (users_id: string) => void;
 }
 
 interface MenuItem {
@@ -52,6 +54,7 @@ interface Permissions {
   list_dashboard: boolean;
   list_track: boolean;
   list_report: boolean;
+  list_alertbot: boolean;
 }
 
 const menuItems: MenuItem[] = [
@@ -60,6 +63,14 @@ const menuItems: MenuItem[] = [
     href: "/pages/admin/dashboard",
     icon: <LayoutDashboard size={20} aria-label="Dashboard" />,
     requiredPermission: "list_dashboard",
+    adminOnly: true,
+  },
+  {
+    label: "Dashboard",
+    href: "/pages/Users/dashboard",
+    icon: <LayoutDashboard size={20} aria-label="Dashboard" />,
+    requiredPermission: "list_dashboard",
+    nonAdminOnly: true,
   },
   {
     label: "Ticket",
@@ -77,23 +88,31 @@ const menuItems: MenuItem[] = [
   },
   {
     label: "Station",
-    href: "/pages/Users/station",
-    icon: <MapPin size={20} aria-label="Station" />,
-    requiredPermission: "list_station",
-    nonAdminOnly: true,
-  },
-  {
-    label: "Station",
     href: "/pages/admin/station",
     icon: <MapPin size={20} aria-label="Station" />,
     requiredPermission: "list_station",
     adminOnly: true,
   },
   {
+    label: "Station",
+    href: "/pages/Users/station",
+    icon: <MapPin size={20} aria-label="Station" />,
+    requiredPermission: "list_station",
+    nonAdminOnly: true,
+  },
+  {
     label: "Users",
     href: "/pages/admin/user",
     icon: <Users size={20} aria-label="Users" />,
     requiredPermission: "list_user_status",
+    adminOnly: true,
+  },
+  {
+    label: "Users",
+    href: "/pages/Users/user",
+    icon: <Users size={20} aria-label="Users" />,
+    requiredPermission: "list_user_status",
+    nonAdminOnly: true,
   },
   {
     label: "Users Rules",
@@ -114,12 +133,35 @@ const menuItems: MenuItem[] = [
     href: "/pages/admin/track",
     icon: <LineChart size={20} aria-label="Track" />,
     requiredPermission: "list_track",
+    adminOnly: true,
+  },
+  {
+    label: "Track",
+    href: "/pages/Users/track",
+    icon: <LineChart size={20} aria-label="Track" />,
+    requiredPermission: "list_track",
+    nonAdminOnly: true,
   },
   {
     label: "Report",
     href: "/pages/admin/report",
     icon: <Calendar size={20} aria-label="Report" />,
     requiredPermission: "list_report",
+    adminOnly: true,
+  },
+  {
+    label: "Alert Bot",
+    href: "/pages/admin/test_alert_bot",
+    icon: <Bell size={20} aria-label="Alert Bot" />,
+    requiredPermission: "list_alertbot",
+    adminOnly: true,
+  },
+  {
+    label: "Report",
+    href: "/pages/Users/report",
+    icon: <Calendar size={20} aria-label="Report" />,
+    requiredPermission: "list_report",
+    nonAdminOnly: true,
   },
   {
     label: "Logout",
@@ -132,29 +174,40 @@ const Sidebar: React.FC<SidebarProps> = ({
   isSidebarOpen,
   toggleSidebar,
   handleLogout,
+  onUserIdFetched,
 }) => {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [users_id, setUsersId] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsMounted(true); // Prevent effect from running on server-side render
+    setIsMounted(true);
     let isCancelled = false;
 
     async function loadPermissions() {
       if (isCancelled) return;
 
       try {
+        if (typeof window === "undefined") return;
         const token = sessionStorage.getItem("token");
-        if (!token) {
+        const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}"); // Renamed to sessionUser
+        const userId = sessionUser.users_id || "";
+        if (!token || !userId) {
           if (!isCancelled) {
+            setError("No token or user ID found. Please log in again.");
             router.push("/");
           }
           return;
         }
+
+        setUsersId(userId);
+        onUserIdFetched(userId);
 
         const response = await fetch("/api/data/user", {
           headers: { Authorization: `Bearer ${token}` },
@@ -162,6 +215,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         if (!response.ok) {
           const data = await response.json();
           if (data.error?.includes("Invalid token") && !isCancelled) {
+            setError("Invalid token. Please log in again.");
             router.push("/");
             return;
           }
@@ -191,13 +245,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             list_dashboard: rules.list_dashboard !== undefined ? !!rules.list_dashboard : true,
             list_track: rules.list_track !== undefined ? !!rules.list_track : true,
             list_report: rules.list_report !== undefined ? !!rules.list_report : true,
+            list_alertbot: rules.list_alertbot !== undefined ? !!rules.list_alertbot : user.rules_id === 1461,
           };
           setPermissions(perms);
-          console.log("Sidebar: Permissions loaded:", JSON.stringify(perms, null, 2));
+          console.log(`Sidebar: Permissions loaded for users_id: ${userId}`, perms);
         }
       } catch (err) {
         console.error("Sidebar: Error fetching permissions:", err);
         if (!isCancelled) {
+          setError(`Failed to load permissions: ${(err as Error).message}`);
           router.push("/");
         }
       }
@@ -206,48 +262,64 @@ const Sidebar: React.FC<SidebarProps> = ({
     loadPermissions();
 
     return () => {
-      isCancelled = true; // Cleanup to prevent setting state on unmounted component
+      isCancelled = true;
     };
-  }, [router]);
+  }, [router, onUserIdFetched]);
+
+  // useEffect(() => {
+  //   function handleClickOutside(event: MouseEvent) {
+  //     if (
+  //       isSidebarOpen &&
+  //       sidebarRef.current &&
+  //       !sidebarRef.current.contains(event.target as Node)
+  //     ) {
+  //       toggleSidebar();
+  //     }
+  //   }
+
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, [isSidebarOpen, toggleSidebar]);
 
   const openLogoutDialog = () => setIsLogoutDialogOpen(true);
   const closeLogoutDialog = () => setIsLogoutDialogOpen(false);
   const confirmLogout = () => {
     handleLogout();
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("userImage");
     closeLogoutDialog();
     router.push("/");
   };
 
-  // Avoid rendering until mounted to prevent hydration issues
   if (!isMounted) {
     return null;
   }
 
   const filteredMenuItems = menuItems.filter((item) => {
     if (item.label === "Logout") return true;
+    if (item.label === "Alert Bot") return isAdmin;
     if (!permissions || !item.requiredPermission) return false;
     if (item.adminOnly && !isAdmin) return false;
     if (item.nonAdminOnly && isAdmin) return false;
     return permissions[item.requiredPermission as keyof Permissions];
   });
 
-  console.log(
-    "Sidebar: Filtered menu items:",
-    filteredMenuItems.map((item) => `${item.label} (${item.href || item.label})`)
-  );
-
   return (
     <>
       <div
-        className={`sidebar fixed top-0 left-0 h-screen bg-white border-r border-gray-200 shadow-sm transition-transform duration-300 z-50 ${
+        ref={sidebarRef}
+        className={`fixed top-0 left-0 h-screen bg-white border-r border-gray-200 shadow-sm transition-transform duration-300 z-50 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } w-64`}
         aria-expanded={isSidebarOpen}
       >
         <div className="flex items-center gap-3 p-4">
           <Image
             src="/img/logo_Station2.png"
-            alt="Logo"
+            alt="PTT Cambodia Logo"
             width={32}
             height={32}
             className="cursor-pointer"
@@ -261,7 +333,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
         <nav className="mt-6 px-2 space-y-1 text-sm font-medium">
-          {filteredMenuItems.map((item) => (
+          {filteredMenuItems.map((item) =>
             item.href ? (
               <Link
                 key={item.href}
@@ -271,6 +343,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
+                aria-current={pathname === item.href ? "page" : undefined}
               >
                 {item.icon}
                 {isSidebarOpen && <span>{item.label}</span>}
@@ -285,7 +358,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {isSidebarOpen && <span>{item.label}</span>}
               </button>
             )
-          ))}
+          )}
         </nav>
       </div>
 
@@ -301,18 +374,14 @@ const Sidebar: React.FC<SidebarProps> = ({
             leaveTo="opacity-0"
           >
             <div
-              style={{
-                position: "fixed",
-                inset: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                backdropFilter: "blur(10px)",
-                WebkitBackdropFilter: "blur(10px)",
-              }}
+              className="fixed inset-0 bg-gray bg-opacity-50"
+              style={{ backdropFilter: "blur(10px)" }}
+              aria-hidden="true"
             />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <div className="flex min-h-full items-center justify-center p-4">
               <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-300"
@@ -322,33 +391,32 @@ const Sidebar: React.FC<SidebarProps> = ({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-md bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
+                    className="text-lg font-medium text-gray-800 sm:text-xl"
                   >
                     Confirm Logout
                   </Dialog.Title>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      Are you sure you want to logout? You will need to sign in
-                      again to access the dashboard.
+                    <p className="text-sm text-gray-600">
+                      Are you sure you want to log out? You will need to sign in again to access the dashboard.
                     </p>
                   </div>
-                  <div className="mt-4 flex justify-end gap-2">
+                  <div className="mt-6 flex justify-end gap-2">
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                      className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-gray-300 focus:ring-2 focus:ring-offset-2 text-sm font-medium shadow-sm"
                       onClick={closeLogoutDialog}
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-red-500 focus:ring-2 focus:ring-offset-2 text-sm font-medium shadow-sm"
                       onClick={confirmLogout}
                     >
-                      Confirm
+                      Log Out
                     </button>
                   </div>
                 </Dialog.Panel>
@@ -357,6 +425,22 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </Dialog>
       </Transition>
+
+      {error && (
+        <div
+          className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-md z-50"
+          role="alert"
+        >
+          {error}
+          <button
+            className="ml-4 text-red-700 hover:text-red-900"
+            onClick={() => setError(null)}
+            aria-label="Close error message"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </>
   );
 };

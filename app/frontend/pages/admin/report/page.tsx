@@ -1,6 +1,6 @@
 
-// app/pages/admin/reports/page.tsx
 "use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
@@ -31,11 +31,8 @@ interface User {
   users_name: string;
 }
 
-interface ReportsProps {
-  isSidebarOpen: boolean;
-}
-
-export default function Reports({ isSidebarOpen }: ReportsProps) {
+export default function Reports() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [reportType, setReportType] = useState<"status" | "issue_type">("status");
   const [data, setData] = useState<ReportData[]>([]);
   const [pivotData, setPivotData] = useState<PivotData>({ labels: [], datasets: [] });
@@ -54,6 +51,8 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
   const barChartRef = useRef<ChartJS<"bar", number[], unknown> | null>(null);
   const pivotChartRef = useRef<ChartJS<"bar", number[], unknown> | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
+
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   useEffect(() => {
     async function loadFilters() {
@@ -154,6 +153,8 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
   };
 
   const barChartOptions = {
+    maintainAspectRatio: false,
+    responsive: true,
     scales: {
       y: {
         beginAtZero: true,
@@ -178,6 +179,8 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
   };
 
   const pivotChartOptions = {
+    maintainAspectRatio: false,
+    responsive: true,
     indexAxis: "y" as const,
     scales: {
       x: {
@@ -197,24 +200,37 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
       },
     },
     plugins: {
-      // comment for show data on barchart 
-      // legend: {
-      //   display: true,
-      //   position: "top" as const,
-      // },
+      legend: {
+        display: false, // Disabled as per original comment
+      },
     },
   };
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="flex">
-          <main
-            className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
-              isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
-            }`}
-          >
-            <div className="text-red-500 text-center text-sm sm:text-base">{error}</div>
+      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex w-full">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+            <div className="flex items-center justify-center py-8">
+              <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md w-full">
+                <svg
+                  className="mx-auto h-12 w-12 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="mt-4 text-lg font-semibold text-red-600">{error}</p>
+              </div>
+            </div>
           </main>
         </div>
       </div>
@@ -222,34 +238,29 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <HeaderWithSidebar />
-      <div className="flex">
-        <main
-          className={`flex-1 p-4 sm:p-6 lg:p-8 w-full transition-all duration-300 ${
-            isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
-          }`}
-        >
-          <div className="container mx-auto">
-            <div className="mt-19 sm:mt-6 p-4 sm:p-6 bg-white rounded-lg shadow-md">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-8">
-                Reports
-              </h1>
-              {error && <p className="text-red-600 mb-4">{error}</p>}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
+    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
+      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className="flex w-full">
+        <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+          <div className="p-4 sm:p-6 bg-white rounded-lg shadow-md border border-gray-200 w-full max-w-full">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">Reports</h1>
+            <div className="flex flex-col sm:flex-row gap-3 mb-6 sm:mb-8 w-full max-w-full flex-wrap">
+              <div className="flex-1 min-w-0">
                 <select
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value as "status" | "issue_type")}
-                  className="w-full sm:w-40 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   aria-label="Select report type"
                 >
                   <option value="status">Ticket Count by Status</option>
                   <option value="issue_type">Ticket Count by Issue Type</option>
                 </select>
+              </div>
+              <div className="flex-1 min-w-0">
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full sm:w-40 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   aria-label="Filter by status"
                 >
                   <option value="">All Statuses</option>
@@ -259,10 +270,12 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="flex-1 min-w-0">
                 <select
                   value={filterIssueType}
                   onChange={(e) => setFilterIssueType(e.target.value)}
-                  className="w-full sm:w-40 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   aria-label="Filter by issue type"
                 >
                   <option value="">All Issue Types</option>
@@ -272,10 +285,12 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="flex-1 min-w-0">
                 <select
                   value={filterUserId}
                   onChange={(e) => setFilterUserId(e.target.value)}
-                  className="w-full sm:w-40 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   aria-label="Filter by user"
                 >
                   <option value="">All Users</option>
@@ -285,35 +300,43 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="flex-1 min-w-0">
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full sm:w-40 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   aria-label="Start date"
                 />
+              </div>
+              <div className="flex-1 min-w-0">
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full sm:w-40 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   aria-label="End date"
                 />
               </div>
-              <div className="mb-8">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">Report Visualization</h2>
-                {data.length > 0 || pivotData.labels.length > 0 ? (
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    <div className="w-full lg:w-1/2 h-96">
-                      <h3 className="text-md font-medium text-gray-600 mb-2">Bar Chart</h3>
+            </div>
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">Report Visualization</h2>
+              {data.length > 0 || pivotData.labels.length > 0 ? (
+                <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full">
+                  <div className="w-full lg:w-1/2 h-[40vh] min-w-0">
+                    <h3 className="text-md font-medium text-gray-600 mb-2">Bar Chart</h3>
+                    <div className="relative w-full h-full">
                       <Bar
                         ref={barChartRef}
                         data={barChartData}
                         options={barChartOptions}
                       />
                     </div>
-                    <div className="w-full lg:w-1/2 h-96">
-                      <h3 className="text-md font-medium text-gray-600 mb-2">Pivot Chart</h3>
+                  </div>
+                  <div className="w-full lg:w-1/2 h-[40vh] min-w-0">
+                    <h3 className="text-md font-medium text-gray-600 mb-2">Pivot Chart</h3>
+                    <div className="relative w-full h-full">
                       <Bar
                         ref={pivotChartRef}
                         data={pivotData}
@@ -321,43 +344,45 @@ export default function Reports({ isSidebarOpen }: ReportsProps) {
                       />
                     </div>
                   </div>
-                ) : (
-                  <p className="text-gray-500 text-center">No data available</p>
-                )}
-              </div>
-              <div ref={tableRef}>
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">Report Data</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-100 rounded-xl">
-                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800">
-                          {reportType === "status" ? "Status" : "Issue Type"}
-                        </th>
-                        <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.length === 0 ? (
-                        <tr>
-                          <td colSpan={2} className="p-4 text-center text-gray-500">
-                            No data found.
-                          </td>
-                        </tr>
-                      ) : (
-                        data.map((item) => (
-                          <tr
-                            key={item.label}
-                            className="border-b border-gray-200 hover:bg-gray-50"
-                          >
-                            <td className="p-2 sm:p-3 text-gray-700">{item.label}</td>
-                            <td className="p-2 sm:p-3 text-gray-700">{item.count}</td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
                 </div>
+              ) : (
+                <p className="text-gray-500 text-center">No data available</p>
+              )}
+            </div>
+            <div ref={tableRef}>
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">Report Data</h2>
+              <div className="overflow-x-auto w-full max-w-full">
+                <table className="w-full text-sm table-auto border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100 rounded-xl">
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800 min-w-[120px]">
+                        {reportType === "status" ? "Status" : "Issue Type"}
+                      </th>
+                      <th className="text-left p-2 sm:p-3 font-bold text-gray-800 min-w-[80px]">
+                        Count
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.length === 0 ? (
+                      <tr>
+                        <td colSpan={2} className="p-4 text-center text-gray-500">
+                          No data found.
+                        </td>
+                      </tr>
+                    ) : (
+                      data.map((item) => (
+                        <tr
+                          key={item.label}
+                          className="border-b border-gray-200 hover:bg-gray-50"
+                        >
+                          <td className="p-2 sm:p-3 text-gray-700 min-w-0">{item.label}</td>
+                          <td className="p-2 sm:p-3 text-gray-700 min-w-0">{item.count}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

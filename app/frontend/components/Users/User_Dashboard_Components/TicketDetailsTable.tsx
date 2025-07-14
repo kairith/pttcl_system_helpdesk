@@ -1,15 +1,20 @@
 "use client";
+
 import { useState } from "react";
-import Card from "@/app/frontend/components/common/Card";
+import Card from "@/app/frontend/components/common/Card/Card";
 
 interface TicketData {
   id: number;
   ticket_id: string;
+  province: string;
   status?: string;
   station_id: string;
+  station_name: string;
   station_type: string;
   issue_description: string;
   issue_type: string;
+  ticket_open?: string;
+  users_name: string;
 }
 
 interface TicketDetailsTableProps {
@@ -18,7 +23,7 @@ interface TicketDetailsTableProps {
 
 const TicketDetailsTable: React.FC<TicketDetailsTableProps> = ({ ticketData }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10); // default 10
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const totalPages = Math.ceil(ticketData.length / itemsPerPage);
 
@@ -32,7 +37,7 @@ const TicketDetailsTable: React.FC<TicketDetailsTableProps> = ({ ticketData }) =
 
   const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing rows per page
+    setCurrentPage(1);
   };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -42,7 +47,6 @@ const TicketDetailsTable: React.FC<TicketDetailsTableProps> = ({ ticketData }) =
     <Card className="mt-6 sm:mt-8 p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800">New Ticket</h2>
-        {/* Rows Per Page Dropdown */}
         <div className="flex items-center space-x-2">
           <label htmlFor="rowsPerPage" className="text-gray-600 text-sm">
             Rows per page:
@@ -69,10 +73,12 @@ const TicketDetailsTable: React.FC<TicketDetailsTableProps> = ({ ticketData }) =
               <th className="text-left p-2 sm:p-3 font-bold text-gray-800">No</th>
               <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Ticket ID</th>
               <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station ID</th>
+              <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station Name</th>
               <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Station Type</th>
               <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Issue Description</th>
               <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Issue Type</th>
               <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Status</th>
+              <th className="text-left p-2 sm:p-3 font-bold text-gray-800">User</th>
             </tr>
           </thead>
           <tbody>
@@ -81,17 +87,18 @@ const TicketDetailsTable: React.FC<TicketDetailsTableProps> = ({ ticketData }) =
                 <td className="p-2 sm:p-3 text-gray-700">{startIndex + index + 1}</td>
                 <td className="p-2 sm:p-3 text-gray-700">{ticket.ticket_id}</td>
                 <td className="p-2 sm:p-3 text-gray-700">{ticket.station_id}</td>
+                <td className="p-2 sm:p-3 text-gray-700">{ticket.station_name}</td>
                 <td className="p-2 sm:p-3 text-gray-700">{ticket.station_type}</td>
                 <td className="p-2 sm:p-3 text-gray-700">{ticket.issue_description}</td>
                 <td className="p-2 sm:p-3 text-gray-700">{ticket.issue_type}</td>
                 <td className="p-2 sm:p-3 text-gray-700">{ticket.status}</td>
+                <td className="p-2 sm:p-3 text-gray-700">{ticket.users_name}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination Buttons */}
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={handlePrevious}

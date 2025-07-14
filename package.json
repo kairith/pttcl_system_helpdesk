@@ -1,6 +1,4 @@
-
 {
-  
   "name": "test",
   "version": "0.1.0",
   "private": true,
@@ -10,7 +8,6 @@
     "start": "next start",
     "lint": "next lint"
   },
-
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
@@ -50,7 +47,6 @@
     "uuid": "^11.1.0",
     "xlsx": "^0.18.5"
   },
-
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/archiver": "^6.0.3",
@@ -68,6 +64,4 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   }
-
 }
-

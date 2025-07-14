@@ -236,7 +236,7 @@ export default function AddTicket() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 flex flex-col overflow-visible">
-      <HeaderWithSidebar />
+      
       <div className="flex items-center justify-center flex-grow p-4">
         <div className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 mt-19 sm:p-8 z-0">
           <Toaster />
