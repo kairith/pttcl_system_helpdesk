@@ -3,9 +3,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import { jwtDecode } from "jwt-decode";
 import toast, { Toaster } from "react-hot-toast";
+import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 interface Station {
   id?: number;
@@ -16,7 +17,6 @@ interface Station {
 }
 
 export default function AddTicket() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [stationId, setStationId] = useState("");
   const [stationOptions, setStationOptions] = useState<Station[]>([]);
   const [stationName, setStationName] = useState("");
@@ -31,7 +31,7 @@ export default function AddTicket() {
   const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+ 
 
   useEffect(() => {
     async function fetchStations() {
@@ -125,7 +125,7 @@ export default function AddTicket() {
       setImage(null);
       return;
     }
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 15 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       setErrors(["File size exceeds 5MB limit."]);
       setImage(null);
@@ -225,46 +225,15 @@ export default function AddTicket() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className="flex w-full">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
-            <Toaster position="top-right" />
-            <div className="flex items-center justify-center py-8">
-              <div className="flex items-center space-x-3">
-                <svg
-                  className="animate-spin h-8 w-8 text-blue-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
-                  />
-                </svg>
-                <span className="text-lg font-medium text-gray-600">Loading ticket data...</span>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
+      <HeaderResponsive>
+        <LoadingScreen></LoadingScreen>
+     </HeaderResponsive>
     );
   }
 
   if (errors.length > 0 && errors.some((error) => error.includes("log in") || error.includes("token"))) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <Toaster position="top-right" />
@@ -293,13 +262,12 @@ export default function AddTicket() {
             </div>
           </main>
         </div>
-      </div>
+     </HeaderResponsive>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 mt-12 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <Toaster position="top-right" />
@@ -447,7 +415,7 @@ export default function AddTicket() {
                         aria-label="Issue Image Upload"
                       />
                       <span className="text-sm text-gray-500 mt-2 sm:mt-0">
-                        Max size: 5MB (JPEG, PNG, GIF)
+                         (JPEG, PNG, GIF)
                       </span>
                     </div>
                   </div>
@@ -467,6 +435,6 @@ export default function AddTicket() {
           </div>
         </main>
       </div>
-    </div>
+    </HeaderResponsive>
   );
 }

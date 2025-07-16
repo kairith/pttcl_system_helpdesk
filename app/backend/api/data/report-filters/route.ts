@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   `SELECT u.users_id, u.users_name
    FROM tbl_users u
    ORDER BY u.users_name`
-);
+ );
 
     // const [userRows] = await connection.execute(
     //   `SELECT DISTINCT u.users_id, u.users_name

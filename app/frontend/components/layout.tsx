@@ -24,7 +24,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }`}
       >
         {/* Header */}
-        <Header />
+        
 
         {/* Main Content */}
         <main className="pt-16">

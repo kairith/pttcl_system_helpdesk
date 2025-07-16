@@ -170,6 +170,7 @@ const menuItems: MenuItem[] = [
   },
 ];
 
+
 const Sidebar: React.FC<SidebarProps> = ({
   isSidebarOpen,
   toggleSidebar,
@@ -181,77 +182,81 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [isAdmin, setIsAdmin] = useState(false);
   const [users_id, setUsersId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsMounted(true);
     let isCancelled = false;
 
     async function loadPermissions() {
-      if (isCancelled) return;
-
       try {
         if (typeof window === "undefined") return;
+
+        const cached = sessionStorage.getItem("permissions");
         const token = sessionStorage.getItem("token");
-        const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}"); // Renamed to sessionUser
+        const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}");
         const userId = sessionUser.users_id || "";
+
         if (!token || !userId) {
-          if (!isCancelled) {
-            setError("No token or user ID found. Please log in again.");
-            router.push("/");
-          }
+          setError("No token or user ID found. Please log in again.");
+          router.push("/");
           return;
         }
 
         setUsersId(userId);
         onUserIdFetched(userId);
 
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setPermissions(parsed.permissions);
+          setIsAdmin(parsed.isAdmin);
+          return;
+        }
+
         const response = await fetch("/api/data/user", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
           const data = await response.json();
-          if (data.error?.includes("Invalid token") && !isCancelled) {
-            setError("Invalid token. Please log in again.");
-            router.push("/");
-            return;
-          }
           throw new Error(data.error || "Failed to fetch permissions");
         }
+
         const { user, rules } = await response.json();
+        const perms: Permissions = {
+          add_user_status: !!rules.add_user_status,
+          edit_user_status: !!rules.edit_user_status,
+          delete_user_status: !!rules.delete_user_status,
+          list_user_status: !!rules.list_user_status,
+          add_ticket_status: !!rules.add_ticket_status,
+          edit_ticket_status: !!rules.edit_ticket_status,
+          delete_ticket_status: !!rules.delete_ticket_status,
+          list_ticket_status: !!rules.list_ticket_status,
+          list_ticket_assign: !!rules.list_ticket_assign,
+          add_user_rules: !!rules.add_user_rules,
+          edit_user_rules: !!rules.edit_user_rules,
+          delete_user_rules: !!rules.delete_user_rules,
+          list_user_rules: !!rules.list_user_rules,
+          add_station: !!rules.add_station,
+          edit_station: !!rules.edit_station,
+          delete_station: !!rules.delete_station,
+          list_station: !!rules.list_station,
+          list_dashboard: rules.list_dashboard !== undefined ? !!rules.list_dashboard : true,
+          list_track: rules.list_track !== undefined ? !!rules.list_track : true,
+          list_report: rules.list_report !== undefined ? !!rules.list_report : true,
+          list_alertbot: rules.list_alertbot !== undefined ? !!rules.list_alertbot : user.rules_id === 1461,
+        };
+
         if (!isCancelled) {
-          setIsAdmin(user.rules_id === 1461);
-          const perms: Permissions = {
-            add_user_status: !!rules.add_user_status,
-            edit_user_status: !!rules.edit_user_status,
-            delete_user_status: !!rules.delete_user_status,
-            list_user_status: !!rules.list_user_status,
-            add_ticket_status: !!rules.add_ticket_status,
-            edit_ticket_status: !!rules.edit_ticket_status,
-            delete_ticket_status: !!rules.delete_ticket_status,
-            list_ticket_status: !!rules.list_ticket_status,
-            list_ticket_assign: !!rules.list_ticket_assign,
-            add_user_rules: !!rules.add_user_rules,
-            edit_user_rules: !!rules.edit_user_rules,
-            delete_user_rules: !!rules.delete_user_rules,
-            list_user_rules: !!rules.list_user_rules,
-            add_station: !!rules.add_station,
-            edit_station: !!rules.edit_station,
-            delete_station: !!rules.delete_station,
-            list_station: !!rules.list_station,
-            list_dashboard: rules.list_dashboard !== undefined ? !!rules.list_dashboard : true,
-            list_track: rules.list_track !== undefined ? !!rules.list_track : true,
-            list_report: rules.list_report !== undefined ? !!rules.list_report : true,
-            list_alertbot: rules.list_alertbot !== undefined ? !!rules.list_alertbot : user.rules_id === 1461,
-          };
           setPermissions(perms);
-          console.log(`Sidebar: Permissions loaded for users_id: ${userId}`, perms);
+          setIsAdmin(user.rules_id === 1461);
+          sessionStorage.setItem(
+            "permissions",
+            JSON.stringify({ permissions: perms, isAdmin: user.rules_id === 1461 })
+          );
         }
       } catch (err) {
-        console.error("Sidebar: Error fetching permissions:", err);
+        console.error("Error fetching permissions:", err);
         if (!isCancelled) {
           setError(`Failed to load permissions: ${(err as Error).message}`);
           router.push("/");
@@ -260,48 +265,33 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
 
     loadPermissions();
-
     return () => {
       isCancelled = true;
     };
   }, [router, onUserIdFetched]);
 
-  // useEffect(() => {
-  //   function handleClickOutside(event: MouseEvent) {
-  //     if (
-  //       isSidebarOpen &&
-  //       sidebarRef.current &&
-  //       !sidebarRef.current.contains(event.target as Node)
-  //     ) {
-  //       toggleSidebar();
-  //     }
-  //   }
-
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, [isSidebarOpen, toggleSidebar]);
-
   const openLogoutDialog = () => setIsLogoutDialogOpen(true);
   const closeLogoutDialog = () => setIsLogoutDialogOpen(false);
   const confirmLogout = () => {
     handleLogout();
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("userImage");
+    sessionStorage.clear();
     closeLogoutDialog();
     router.push("/");
   };
 
-  if (!isMounted) {
-    return null;
+  // While permissions are loading, show a spinner
+  if (!permissions) {
+    return (
+      <div className="fixed top-0 left-0 h-screen w-64 bg-white  flex items-center justify-center">
+        <span className="text-gray-500 text-sm">Loading menu...</span>
+      </div>
+    );
   }
 
   const filteredMenuItems = menuItems.filter((item) => {
     if (item.label === "Logout") return true;
     if (item.label === "Alert Bot") return isAdmin;
-    if (!permissions || !item.requiredPermission) return false;
+    if (!item.requiredPermission) return false;
     if (item.adminOnly && !isAdmin) return false;
     if (item.nonAdminOnly && isAdmin) return false;
     return permissions[item.requiredPermission as keyof Permissions];
@@ -309,22 +299,21 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
+      {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`fixed top-0 left-0 h-screen bg-white border-r border-gray-200 shadow-sm transition-transform duration-300 z-50 ${
+        className={`fixed top-0 left-0 h-screen bg-white  shadow-sm transition-transform duration-300 z-50 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } w-64`}
-        aria-expanded={isSidebarOpen}
       >
         <div className="flex items-center gap-3 p-4">
           <Image
             src="/img/logo_Station2.png"
-            alt="PTT Cambodia Logo"
+            alt="Logo"
             width={32}
             height={32}
             className="cursor-pointer"
             onClick={toggleSidebar}
-            aria-label="Toggle sidebar"
           />
           {isSidebarOpen && (
             <span className="text-blue-700 text-sm font-semibold">
@@ -343,7 +332,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
-                aria-current={pathname === item.href ? "page" : undefined}
               >
                 {item.icon}
                 {isSidebarOpen && <span>{item.label}</span>}
@@ -362,6 +350,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
+      {/* Logout Dialog */}
       <Transition appear show={isLogoutDialogOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={closeLogoutDialog}>
           <Transition.Child
@@ -374,68 +363,54 @@ const Sidebar: React.FC<SidebarProps> = ({
             leaveTo="opacity-0"
           >
             <div
-              className="fixed inset-0 bg-gray bg-opacity-50"
-              style={{ backdropFilter: "blur(10px)" }}
-              aria-hidden="true"
+              className="fixed inset-0 bg-gray-500 bg-opacity-50"
+              style={{ backdropFilter: "blur(6px)" }}
             />
           </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium text-gray-800 sm:text-xl"
+          <div className="fixed inset-0 overflow-y-auto flex items-center justify-center p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-md bg-white rounded-2xl p-6 shadow-lg">
+                <Dialog.Title className="text-lg font-medium text-gray-800">
+                  Confirm Logout
+                </Dialog.Title>
+                <p className="mt-2 text-sm text-gray-600">
+                  Are you sure you want to log out?
+                </p>
+                <div className="mt-6 flex justify-end gap-2">
+                  <button
+                    onClick={closeLogoutDialog}
+                    className="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100"
                   >
-                    Confirm Logout
-                  </Dialog.Title>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-600">
-                      Are you sure you want to log out? You will need to sign in again to access the dashboard.
-                    </p>
-                  </div>
-                  <div className="mt-6 flex justify-end gap-2">
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-gray-300 focus:ring-2 focus:ring-offset-2 text-sm font-medium shadow-sm"
-                      onClick={closeLogoutDialog}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-red-500 focus:ring-2 focus:ring-offset-2 text-sm font-medium shadow-sm"
-                      onClick={confirmLogout}
-                    >
-                      Log Out
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmLogout}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Log Out
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
         </Dialog>
       </Transition>
 
+      {/* Error Message */}
       {error && (
-        <div
-          className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-md z-50"
-          role="alert"
-        >
+        <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
           {error}
           <button
-            className="ml-4 text-red-700 hover:text-red-900"
+            className="ml-4 hover:text-red-900"
             onClick={() => setError(null)}
-            aria-label="Close error message"
           >
             ×
           </button>

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 import Image from "next/image";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 
 interface User {
   users_id: number;
@@ -263,7 +264,8 @@ export default function EditUserProfilePage() {
   const isBase64 = imagePreview && imagePreview.startsWith("data:image/");
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <HeaderResponsive>
+     <div className="min-h-screen bg-gray-100 p-4">
       <Toaster position="top-right" />
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
         <h1 className="text-2xl font-bold mb-6 text-gray-800">Edit Profile</h1>
@@ -474,6 +476,7 @@ export default function EditUserProfilePage() {
           </>
         )}
       </div>
-    </div>
+     </div>
+    </HeaderResponsive>
   );
 }

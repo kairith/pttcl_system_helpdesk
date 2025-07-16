@@ -3,12 +3,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function EditStation() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [station, setStation] = useState<{
     station_id: string;
     station_name: string;
@@ -22,7 +22,7 @@ export default function EditStation() {
   const { station_id } = useParams();
   const router = useRouter();
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
 
   useEffect(() => {
     async function loadStation() {
@@ -110,8 +110,7 @@ export default function EditStation() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <ToastContainer position="top-right" autoClose={3000} />
@@ -142,14 +141,13 @@ export default function EditStation() {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   if (error) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <ToastContainer position="top-right" autoClose={3000} />
@@ -174,13 +172,12 @@ export default function EditStation() {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <ToastContainer position="top-right" autoClose={3000} />
@@ -287,6 +284,6 @@ export default function EditStation() {
           </div>
         </main>
       </div>
-    </div>
+  </HeaderResponsive>
   );
 }

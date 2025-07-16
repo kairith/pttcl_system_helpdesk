@@ -8,7 +8,8 @@ import Link from "next/link";
 import { Dialog, Transition } from "@headlessui/react";
 import { Toaster, toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
+import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 interface Permissions {
   users: { add: boolean; edit: boolean; delete: boolean; list: boolean };
@@ -361,46 +362,15 @@ export default function UserRules() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className="flex w-full">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
-            <Toaster position="top-right" />
-            <div className="flex items-center justify-center py-8">
-              <div className="flex items-center space-x-3">
-                <svg
-                  className="animate-spin h-8 w-8 text-blue-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
-                  />
-                </svg>
-                <span className="text-lg font-medium text-gray-600">Loading rules...</span>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
+      <HeaderResponsive>
+        <LoadingScreen></LoadingScreen>
+      </HeaderResponsive>
     );
   }
 
   if (!permissions?.userRules.list || error) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <Toaster position="top-right" />
@@ -427,13 +397,12 @@ export default function UserRules() {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <Toaster position="top-right" />
@@ -897,6 +866,6 @@ export default function UserRules() {
           )}
         </main>
       </div>
-    </div>
+   </HeaderResponsive>
   );
 }

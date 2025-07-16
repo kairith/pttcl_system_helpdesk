@@ -82,13 +82,13 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             </button>
           </div>
           <div className="px-6 py-2 flex flex-col space-y-1">
-            <button
+            {/* <button
               onClick={handleLogout}
               className="w-full text-left text-sm text-red-600 hover:bg-gray-100 rounded-md px-3 py-3"
               aria-label="Sign out"
             >
               Sign out
-            </button>
+            </button> */}
           </div>
         </div>
       )}

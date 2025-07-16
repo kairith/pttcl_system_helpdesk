@@ -1,0 +1,32 @@
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<feb4b15c-613b-0476-a139-25b1f495c946@gmail.com>","messageLength":20,"smtpResponse":"250 2.0.0 OK  1752635665 d9443c01a7336-23de4287268sm117590745ad.19 - gsmtp","timestamp":"2025-07-16T03:14:25.941Z"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to hannagaming770@gmail.com","messageId":"<edaa1d6a-c33a-2ef2-65c4-fa45775011e9@gmail.com>","messageLength":30,"smtpResponse":"250 2.0.0 OK  1752636580 d2e1a72fcca58-74eb9e061a6sm13667021b3a.50 - gsmtp","timestamp":"2025-07-16T03:29:40.007Z"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to rith1280acc@gmail.com","messageId":"<b5f24dd1-dc0b-8c76-d5b7-206190d8b5cb@gmail.com>","messageLength":10,"smtpResponse":"250 2.0.0 OK  1752679592 d2e1a72fcca58-74eb9f49f8bsm14120428b3a.113 - gsmtp","timestamp":"2025-07-16T15:26:32.485Z"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<67889836-9792-2d18-8e38-e2abd437914f@gmail.com>","messageLength":20,"smtpResponse":"250 2.0.0 OK  1752681196 d2e1a72fcca58-74eb9dd73b7sm14445700b3a.1 - gsmtp","timestamp":"2025-07-16T15:53:16.450Z"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<b4dc41fd-1cf4-291e-6938-abf885dddf57@gmail.com>","messageLength":29,"smtpResponse":"250 2.0.0 OK  1752685791 d2e1a72fcca58-74eb9f1b708sm14809199b3a.75 - gsmtp","timestamp":"2025-07-16T17:09:51.842Z"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"error":"getaddrinfo ENOTFOUND smtp.gmail.com","level":"error","message":"SMTP connection verification failed"}
+{"error":"getaddrinfo ENOTFOUND smtp.gmail.com","level":"error","message":"SMTP connection verification failed"}
+{"errorCode":"EDNS","errorResponse":"No response","level":"error","message":"Failed to send Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com: getaddrinfo ENOTFOUND smtp.gmail.com","smtpDetails":"CONN","timestamp":"2025-07-16T17:50:11.243Z"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<76872fa3-60aa-0f8c-4faa-18011e9cce02@gmail.com>","messageLength":29,"smtpResponse":"250 2.0.0 OK  1752689151 41be03b00d2f7-b3bbe71a40csm14218703a12.64 - gsmtp","timestamp":"2025-07-16T18:05:51.538Z"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<a6749c45-8c7f-fa25-ed8d-7e1669e9d252@gmail.com>","messageLength":29,"smtpResponse":"250 2.0.0 OK  1752690438 d9443c01a7336-23de4322a8bsm133941555ad.95 - gsmtp","timestamp":"2025-07-16T18:27:18.642Z"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<ad553e1a-1fab-9c48-a753-595db45ee5c5@gmail.com>","messageLength":21,"smtpResponse":"250 2.0.0 OK  1752690840 d2e1a72fcca58-74eb9f22d93sm14470366b3a.89 - gsmtp","timestamp":"2025-07-16T18:34:00.481Z"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<9e8479d5-daa9-3b2e-b6d6-006852ba19dd@gmail.com>","messageLength":37,"smtpResponse":"250 2.0.0 OK  1752691401 d2e1a72fcca58-74eb9f53903sm13555577b3a.128 - gsmtp","timestamp":"2025-07-16T18:43:21.663Z"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<ed800648-3d98-dfb7-403e-902da0d89ca1@gmail.com>","messageLength":4,"smtpResponse":"250 2.0.0 OK  1752692110 d2e1a72fcca58-74eb9e068b1sm15022043b3a.58 - gsmtp","timestamp":"2025-07-16T18:55:10.203Z"}

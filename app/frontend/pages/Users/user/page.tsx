@@ -6,12 +6,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { User } from "@/app/backend/types/user";
 import { fetchUsers } from "./action";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import UsersHeader from "@/app/frontend/components/Admin/AllUser_components/UserHeader";
 import FilterControls from "@/app/frontend/components/Admin/AllUser_components/FilterControls";
 import ExportOptions from "@/app/frontend/components/Admin/AllUser_components/ExportOptions";
 import UsersTable from "@/app/frontend/components/Admin/AllUser_components/UsersTables";
 import DeleteModal from "@/app/frontend/components/Admin/AllUser_components/DeleteModel";
+import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 interface Permissions {
   users: {
@@ -23,7 +24,7 @@ interface Permissions {
 }
 
 export default function UsersPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [users, setUsers] = useState<(User & { rules_name: string })[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [filterId, setFilterId] = useState("");
@@ -36,7 +37,7 @@ export default function UsersPage() {
   const [permissions, setPermissions] = useState<Permissions | null>(null);
   const router = useRouter();
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
 
   useEffect(() => {
     async function loadData() {
@@ -256,23 +257,15 @@ export default function UsersPage() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className="flex w-full">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
-            <div className="text-gray-500 text-center text-sm sm:text-base">
-              Loading users...
-            </div>
-          </main>
-        </div>
-      </div>
+      <HeaderResponsive>
+        <LoadingScreen></LoadingScreen>
+      </HeaderResponsive>
     );
   }
 
   if (!permissions?.users.list || error) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <div className="text-red-600 text-center text-sm sm:text-base">
@@ -280,13 +273,12 @@ export default function UsersPage() {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="p-4 sm:p-6 bg-white rounded-lg shadow-md w-full max-w-full">
@@ -329,6 +321,6 @@ export default function UsersPage() {
           </div>
         </main>
       </div>
-    </div>
+    </HeaderResponsive>
   );
 }

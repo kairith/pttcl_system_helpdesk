@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -13,6 +13,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -45,6 +46,7 @@ export default function Reports() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   // Refs for chart and table elements
@@ -55,6 +57,7 @@ export default function Reports() {
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   useEffect(() => {
+    setIsLoading(true);
     async function loadFilters() {
       const token = sessionStorage.getItem("token");
       if (!token) {
@@ -120,6 +123,9 @@ export default function Reports() {
         setPivotData(pivotResult.data || { labels: [], datasets: [] });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load report");
+      }
+      finally{
+        setIsLoading(false);
       }
     }
     loadReports();
@@ -208,8 +214,7 @@ export default function Reports() {
 
   if (error) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <div className="flex items-center justify-center py-8">
@@ -233,13 +238,21 @@ export default function Reports() {
             </div>
           </main>
         </div>
-      </div>
+      
+      </HeaderResponsive>
     );
   }
 
+    if (isLoading) {
+      return (
+        <HeaderResponsive>
+          <LoadingScreen></LoadingScreen>
+        </HeaderResponsive>
+      );
+    }
+
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="p-4 sm:p-6 bg-white rounded-lg shadow-md border border-gray-200 w-full max-w-full">
@@ -388,6 +401,6 @@ export default function Reports() {
           </div>
         </main>
       </div>
-    </div>
+    </HeaderResponsive>
   );
 }

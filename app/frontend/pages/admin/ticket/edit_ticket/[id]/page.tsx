@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Ticket } from "@/app/backend/types/ticket";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import { Toaster, toast } from "react-hot-toast";
 
 export default function EditTicketPage() {
@@ -119,8 +119,7 @@ export default function EditTicketPage() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <Toaster position="top-right" />
@@ -151,14 +150,13 @@ export default function EditTicketPage() {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   if (error) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+     <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <Toaster position="top-right" />
@@ -183,15 +181,14 @@ export default function EditTicketPage() {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   if (!ticket) return null;
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <Toaster position="top-right" />
@@ -342,6 +339,6 @@ export default function EditTicketPage() {
           </div>
         </main>
       </div>
-    </div>
+   </HeaderResponsive>
   );
 }

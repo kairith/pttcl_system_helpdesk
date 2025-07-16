@@ -2,8 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
 
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 // Assuming Ticket type based on usage
 interface Ticket {
   ticket_id: string;
@@ -28,13 +28,13 @@ interface Ticket {
 }
 
 export default function TrackTicketPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [ticketId, setTicketId] = useState<string>("");
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,8 +71,7 @@ export default function TrackTicketPage() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <div className="flex items-center justify-center py-8">
@@ -102,13 +101,12 @@ export default function TrackTicketPage() {
             </div>
           </main>
         </div>
-      </div>
+     </HeaderResponsive>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="p-6 bg-white shadow-md rounded-lg w-full max-w-full">
@@ -230,6 +228,6 @@ export default function TrackTicketPage() {
           )}
         </main>
       </div>
-    </div>
+    </HeaderResponsive>
   );
 }

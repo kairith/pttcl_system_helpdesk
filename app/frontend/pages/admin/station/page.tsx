@@ -3,11 +3,12 @@
 
 import React, { useState, useEffect, Fragment } from "react";
 import { fetchStations } from "./action";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import { useRouter } from "next/navigation";
 import { TrashIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { Dialog, Transition } from "@headlessui/react";
 import { Station } from "@/app/backend/types/station";
+import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 interface Permissions {
   stations: {
@@ -19,7 +20,7 @@ interface Permissions {
 }
 
 export default function Stations() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+ 
   const [stations, setStations] = useState<Station[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [filterId, setFilterId] = useState("");
@@ -28,11 +29,13 @@ export default function Stations() {
   const [deleteStationId, setDeleteStationId] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  
 
   // Fetch permissions and stations on mount
   useEffect(() => {
+    setIsLoading(true);
     async function loadData() {
       try {
         // Get token
@@ -80,6 +83,9 @@ export default function Stations() {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred."
         );
+      }
+      finally{
+        setIsLoading(false);
       }
     }
     loadData();
@@ -232,9 +238,16 @@ export default function Stations() {
       )
     : stations;
 
+  if(isLoading){
+    <HeaderResponsive>
+      <LoadingScreen>
+        
+      </LoadingScreen>
+    </HeaderResponsive>
+  }
+
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="w-full max-w-full">
@@ -497,6 +510,6 @@ export default function Stations() {
           )}
         </main>
       </div>
-    </div>
+    </HeaderResponsive>
   );
 }

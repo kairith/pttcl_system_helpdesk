@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+
 import {
   fetchTicketsCount,
   fetchDashboardData,
@@ -14,6 +14,8 @@ import BarChartCard from "@/app/frontend/components/Users/User_Dashboard_Compone
 import DoughnutChartCard from "@/app/frontend/components/Users/User_Dashboard_Components/DoughnutChartCard";
 import TicketDetailsTable from "@/app/frontend/components/Users/User_Dashboard_Components/TicketDetailsTable";
 import Card from "@/app/frontend/components/common/Card/Card";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
+import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 interface TicketData {
   id: number;
@@ -53,8 +55,9 @@ interface StatsData {
 }
 
 const Dashboard: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   const [selectedYear, setSelectedYear] = useState("ALL");
+  const [isLoading, setIsLoading] = useState(true);
   const [ticketData, setTicketData] = useState<TicketData[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [barChartData, setBarChartData] = useState<BarChartData[]>([]);
@@ -69,9 +72,10 @@ const Dashboard: React.FC = () => {
   const [users_id, setUsersId] = useState<string>("");
   const router = useRouter();
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
 
   useEffect(() => {
+    setIsLoading(true);
     if (typeof window !== "undefined") {
       const user = JSON.parse(sessionStorage.getItem("user") || "{}");
       const userId = user.users_id || "";
@@ -112,6 +116,9 @@ const Dashboard: React.FC = () => {
           setError(`Failed to load dashboard data: ${(err as Error).message}`);
           console.error(`Dashboard: Error loading data:`, err);
         }
+        finally {
+        setIsLoading(false);
+       }
       };
 
       loadData();
@@ -121,11 +128,16 @@ const Dashboard: React.FC = () => {
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedYear(e.target.value);
   };
-
+  if (isLoading) {
+    return (
+      <HeaderResponsive>
+        <LoadingScreen></LoadingScreen>
+      </HeaderResponsive>
+    );
+  }
   if (error) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <div className="flex items-center justify-center py-8">
@@ -149,13 +161,12 @@ const Dashboard: React.FC = () => {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="w-full max-w-full">
@@ -204,7 +215,7 @@ const Dashboard: React.FC = () => {
           </div>
         </main>
       </div>
-    </div>
+    </HeaderResponsive>
   );
 };
 

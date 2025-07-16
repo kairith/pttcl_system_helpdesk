@@ -4,11 +4,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Ticket } from "../../../../backend/types/ticket";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+
 import ControlsSection from "@/app/frontend/components/Users/User_Ticket_Components/ControlsSection/ControlsSection";
 import FilterSection from "@/app/frontend/components/Users/User_Ticket_Components/FilterSection/FilterSection";
 import TicketTable from "@/app/frontend/components/Users/User_Ticket_Components/TicketTable/TicketTable";
 import { toast } from "react-toastify";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
+import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 interface Permissions {
   tickets: {
@@ -21,7 +23,7 @@ interface Permissions {
 }
 
 export default function MyTickets() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   const [tickets, setTickets] = useState<(Ticket & { users_name: string; creator_name: string })[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<(Ticket & { users_name: string; creator_name: string })[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export default function MyTickets() {
   const [issueTypeIdFilter, setIssueTypeIdFilter] = useState("");
   const [usersNameFilter, setUsersNameFilter] = useState("");
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
 
   useEffect(() => {
     async function loadData() {
@@ -462,47 +464,17 @@ export default function MyTickets() {
     }
   };
 
-  if (isLoading) {
+ if (isLoading) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className="flex w-full">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
-            <div className="flex items-center justify-center py-8">
-              <div className="flex items-center space-x-3">
-                <svg
-                  className="animate-spin h-8 w-8 text-blue-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
-                  />
-                </svg>
-                <span className="text-lg font-medium text-gray-600">Loading your tickets...</span>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
+      <HeaderResponsive>
+        <LoadingScreen></LoadingScreen>
+      </HeaderResponsive>
     );
   }
 
   if (error || !permissions) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <div className="flex items-center justify-center py-8">
@@ -526,13 +498,12 @@ export default function MyTickets() {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="bg-white shadow rounded-lg p-4 sm:p-6 w-full max-w-full">
@@ -594,6 +565,6 @@ export default function MyTickets() {
           </div>
         </main>
       </div>
-    </div>
+   </HeaderResponsive>
   );
 }

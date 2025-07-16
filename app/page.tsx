@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import LoadingScreen from './frontend/components/ui/loadingScreen';
 
 interface LoginResponse {
   token: string;
@@ -42,6 +43,9 @@ export default function LoginPage() {
       setErrors(['Password must be at least 6 characters.']);
       setIsLoading(false);
       return;
+    }
+    if (isLoading){
+      <LoadingScreen/>
     }
 
     try {
@@ -174,7 +178,7 @@ export default function LoginPage() {
                     Remember Me
                   </label>
                 </div>
-                <Link href="/forgot-password" className="text-blue-600 hover:underline">
+                <Link href="/pages/Users/forgot-password" className="text-blue-600 hover:underline">
                   I forgot my password
                 </Link>
               </div>

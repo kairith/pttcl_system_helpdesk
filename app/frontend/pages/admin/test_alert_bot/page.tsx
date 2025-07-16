@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -18,14 +17,14 @@ const constructTelegramMessage = (telegramInputs: {
   issueDescription: string;
 }) => {
   const {
-    username,
-    status,
-    assigner,
-    stationId,
-    stationName,
-    ticketId,
-    issueType,
-    issueDescription,
+    username = "Unknown",
+    status = "New",
+    assigner = "",
+    stationId = "N/A",
+    stationName = "N/A",
+    ticketId = "N/A",
+    issueType = "N/A",
+    issueDescription = "No description provided",
   } = telegramInputs;
 
   if (status === "Assigned") {
@@ -78,7 +77,7 @@ const constructPlainTextTelegramMessage = (telegramInputs: {
   const {
     username,
     status,
-    assigner,
+    assigner = "", // Fix TypeScript error
     stationId,
     stationName,
     ticketId,
@@ -86,34 +85,65 @@ const constructPlainTextTelegramMessage = (telegramInputs: {
     issueDescription,
   } = telegramInputs;
 
-  if (status === "Assigned") {
-    return `Dear Mr @${username}
-Receive Ticket
-Status: Assign from Mr/Ms: @${assigner}
+  if (
+    !username?.trim() ||
+    !status?.trim() ||
+    !stationId?.trim() ||
+    !stationName?.trim() ||
+    !ticketId?.trim() ||
+    !issueType?.trim() ||
+    !issueDescription?.trim()
+  ) {
+    throw new Error(
+      "All required fields (Username, Status, Station ID, Station Name, Ticket ID, Issue Type, Issue Description) must be non-empty"
+    );
+  }
+  if (status === "Assigned" && !assigner.trim()) {
+    throw new Error("Assigner is required for Assigned status");
+  }
 
-Station ID: ${stationId}
-Station Name: ${stationName}
-Ticket ID: ${ticketId}
-Issue Type: ${issueType}
-Issue Description: ${issueDescription}
+  // Escape special characters for Telegram Markdown
+  const escapeMarkdown = (text: string) => text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
+
+  if (status === "Assigned") {
+    return `Dear Mr @${escapeMarkdown(username)}
+Receive Ticket
+Status: Assign from Mr/Ms: @${escapeMarkdown(assigner)}
+
+Station ID: ${escapeMarkdown(stationId)}
+Station Name: ${escapeMarkdown(stationName)}
+Ticket ID: ${escapeMarkdown(ticketId)}
+Issue Type: ${escapeMarkdown(issueType)}
+Issue Description: ${escapeMarkdown(issueDescription)}
 
 at your earliest convenience. Thank you so much for your attention!
 ===================================================================`;
   } else {
-    return `Dear Mr @${username}
+    return `Dear Mr @${escapeMarkdown(username)}
 
 Status: New Ticket
 
-Station ID: ${stationId}
-Station Name: ${stationName}
-Ticket ID: ${ticketId}
-Issue Type: ${issueType}
-Issue Description: ${issueDescription}
+Station ID: ${escapeMarkdown(stationId)}
+Station Name: ${escapeMarkdown(stationName)}
+Ticket ID: ${escapeMarkdown(ticketId)}
+Issue Type: ${escapeMarkdown(issueType)}
+Issue Description: ${escapeMarkdown(issueDescription)}
 
 at your earliest convenience. Thank you so much for your attention!
 ===================================================================`;
   }
 };
+
+// Function to generate Gmail message preview
+const constructGmailMessage = ({ email, gmailMessage }: { email: string; gmailMessage: string }) => `
+  <div class="w-full max-w-full min-w-0 p-4 bg-white rounded-lg shadow-md font-sans sm:p-6">
+    <p class="text-sm sm:text-base text-gray-700">To: ${email}</p>
+    <p class="text-sm sm:text-base text-gray-700">From: PTT POS System <pttpos.system@gmail.com></p>
+    <p class="text-sm sm:text-base text-gray-700">Subject: New Ticket Alert</p>
+    <div class="border-t border-gray-200 my-3 sm:my-4"></div>
+    <p class="text-sm sm:text-base text-gray-700">${gmailMessage}</p>
+  </div>
+`;
 
 const AlertBotPage: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -164,6 +194,7 @@ const AlertBotPage: React.FC = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Add token
           },
         });
         if (!botsResponse.ok) {
@@ -192,13 +223,19 @@ const AlertBotPage: React.FC = () => {
         const usernames = users.map(
           (user: { id: string; users_name: string }) => user.users_name
         );
+        console.log("Fetched usernames:", usernames); // Debug
         setUsernames(usernames);
-        setStatuses(
-          Array.isArray(filtersData.statuses) ? filtersData.statuses : []
-        );
-        setIssueTypes(
-          Array.isArray(filtersData.issueTypes) ? filtersData.issueTypes : []
-        );
+        setStatuses(Array.isArray(filtersData.statuses) ? filtersData.statuses : []);
+        setIssueTypes(Array.isArray(filtersData.issueTypes) ? filtersData.issueTypes : []);
+        if (usernames.length > 0) {
+          setTelegramInputs((prev) => ({
+            ...prev,
+            username: usernames[0], // Set default username
+            assigner: usernames[0], // Set default assigner
+          }));
+        } else {
+          setFeedback("No usernames available. Please check the report-filters API or database.");
+        }
       } catch (error) {
         setFeedback(
           error instanceof Error ? error.message : "Failed to load data"
@@ -216,6 +253,7 @@ const AlertBotPage: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setTelegramInputs((prev) => ({ ...prev, [name]: value }));
+    console.log(`Input changed: ${name} = ${value}`); // Debug
   };
 
   const handleGmailInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -231,22 +269,32 @@ const AlertBotPage: React.FC = () => {
   const handleTelegramSubmit = async () => {
     setFeedback(null);
     try {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please log in to send alerts.");
+      }
+      if (!telegramInputs.username.trim()) {
+        throw new Error("Username is required");
+      }
       const message = constructPlainTextTelegramMessage(telegramInputs);
+      const payload = {
+        platform: "telegram",
+        botName: telegramInputs.botName,
+        username: telegramInputs.username,
+        chatId: telegramInputs.chatId,
+        threadId: telegramInputs.threadId,
+        message,
+        assigner: telegramInputs.assigner,
+      };
+      console.log("Sending Telegram alert with payload:", payload); // Debug
       const response = await fetch("/api/data/alert_bot", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          platform: "telegram",
-          botName: telegramInputs.botName,
-          username: telegramInputs.username,
-          chatId: telegramInputs.chatId,
-          threadId: telegramInputs.threadId,
-          message,
-        }),
+        body: JSON.stringify(payload),
       });
-
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Failed to send Telegram alert");
@@ -254,11 +302,11 @@ const AlertBotPage: React.FC = () => {
       setFeedback(data.message || "Telegram alert sent successfully");
       setTelegramInputs({
         botName: "",
-        username: "",
+        username: usernames.length > 0 ? usernames[0] : "",
         chatId: "",
         threadId: "",
         status: "",
-        assigner: "",
+        assigner: usernames.length > 0 ? usernames[0] : "",
         stationId: "",
         stationName: "",
         ticketId: "",
@@ -266,25 +314,35 @@ const AlertBotPage: React.FC = () => {
         issueDescription: "",
       });
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "An error occurred");
+      setFeedback(
+        error instanceof Error ? error.message : "An error occurred while sending Telegram alert"
+      );
     }
   };
 
   const handleGmailSubmit = async () => {
     setFeedback(null);
     try {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please log in to send alerts.");
+      }
+      if (!gmailInputs.email.trim() || !gmailInputs.gmailMessage.trim()) {
+        throw new Error("Email and Message are required for Gmail");
+      }
       const response = await fetch("/api/data/alert_bot", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           platform: "gmail",
           email: gmailInputs.email,
           message: gmailInputs.gmailMessage,
+          subject: "New Ticket Alert",
         }),
       });
-
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Failed to send Gmail alert");
@@ -292,24 +350,33 @@ const AlertBotPage: React.FC = () => {
       setFeedback(data.message || "Gmail alert sent successfully");
       setGmailInputs({ email: "", gmailMessage: "" });
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "An error occurred");
+      setFeedback(
+        error instanceof Error ? error.message : "An error occurred while sending Gmail alert"
+      );
     }
   };
 
   const handleAddBotSubmit = async () => {
     setFeedback(null);
     try {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please log in to add a bot.");
+      }
+      if (!addBotInputs.botName.trim() || !addBotInputs.botToken.trim()) {
+        throw new Error("Bot Name and Bot Token are required");
+      }
       const response = await fetch("/api/data/alert_bot/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           botName: addBotInputs.botName,
           botToken: addBotInputs.botToken,
         }),
       });
-
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Failed to add bot");
@@ -317,7 +384,10 @@ const AlertBotPage: React.FC = () => {
       setFeedback(data.message || "Bot added successfully");
       const botsResponse = await fetch("/api/data/fetchbot", {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (botsResponse.ok) {
         const botsData = await botsResponse.json();
@@ -326,21 +396,25 @@ const AlertBotPage: React.FC = () => {
       setAddBotInputs({ botName: "", botToken: "" });
       setIsAddBotModalOpen(false);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "An error occurred");
+      setFeedback(
+        error instanceof Error ? error.message : "An error occurred while adding bot"
+      );
     }
   };
 
   const isTelegramSubmitDisabled =
-    !telegramInputs.botName ||
-    !telegramInputs.username ||
-    !telegramInputs.chatId ||
-    !telegramInputs.status ||
-    !telegramInputs.stationId ||
-    !telegramInputs.stationName ||
-    !telegramInputs.ticketId ||
-    !telegramInputs.issueType ||
-    !telegramInputs.issueDescription ||
-    (telegramInputs.status === "Assigned" && !telegramInputs.assigner);
+    !telegramInputs.botName.trim() ||
+    !telegramInputs.username.trim() ||
+    telegramInputs.username === "Select Username" ||
+    !telegramInputs.chatId.trim() ||
+    !telegramInputs.status.trim() ||
+    !telegramInputs.stationId.trim() ||
+    !telegramInputs.stationName.trim() ||
+    !telegramInputs.ticketId.trim() ||
+    !telegramInputs.issueType.trim() ||
+    !telegramInputs.issueDescription.trim() ||
+    (telegramInputs.status === "Assigned" && !telegramInputs.assigner.trim()) ||
+    usernames.length === 0; // Disable if no usernames available
 
   if (isLoading) {
     return (
@@ -421,7 +495,7 @@ const AlertBotPage: React.FC = () => {
             {feedback && (
               <div
                 className={`mb-4 p-3 rounded text-sm sm:text-base w-full max-w-full ${
-                  feedback.includes("successfully")
+                  feedback.includes("successfully") || feedback.includes("Message ID")
                     ? "bg-green-100 text-green-800"
                     : "bg-red-100 text-red-800"
                 }`}
@@ -473,7 +547,7 @@ const AlertBotPage: React.FC = () => {
                       <button
                         onClick={handleAddBotSubmit}
                         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 w-full sm:w-auto text-sm sm:text-base"
-                        disabled={!addBotInputs.botName || !addBotInputs.botToken}
+                        disabled={!addBotInputs.botName.trim() || !addBotInputs.botToken.trim()}
                       >
                         Add Bot
                       </button>
@@ -685,11 +759,18 @@ const AlertBotPage: React.FC = () => {
                 </div>
                 <button
                   onClick={handleGmailSubmit}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full sm:w-auto disabled:bg-gray-400 text-sm sm:text-base"
-                  disabled={!gmailInputs.email || !gmailInputs.gmailMessage}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 w-full sm:w-auto text-sm sm:text-base"
+                  disabled={!gmailInputs.email.trim() || !gmailInputs.gmailMessage.trim()}
                 >
                   Send
                 </button>
+              </div>
+              <div className="mt-6">
+                <h3 className="text-base sm:text-lg font-semibold mb-2">Gmail Message Preview</h3>
+                <div
+                  className="w-full max-w-full min-w-0"
+                  dangerouslySetInnerHTML={{ __html: constructGmailMessage(gmailInputs) }}
+                />
               </div>
             </section>
           </div>

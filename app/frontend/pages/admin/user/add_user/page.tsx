@@ -3,11 +3,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import { tbl_users_rules } from "@/app/backend/types/rules";
 
 export default function CreateUserPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+ 
   const [usersName, setUsersName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +21,7 @@ export default function CreateUserPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  
 
   useEffect(() => {
     async function initialize() {
@@ -165,8 +165,7 @@ export default function CreateUserPage() {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <div className="flex items-center justify-center py-8">
@@ -196,14 +195,13 @@ export default function CreateUserPage() {
             </div>
           </main>
         </div>
-      </div>
+     </HeaderResponsive>
     );
   }
 
   if (errors.length > 0 && errors.some((error) => error.includes("log in"))) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <div className="flex items-center justify-center py-8">
@@ -231,13 +229,12 @@ export default function CreateUserPage() {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="flex justify-center items-center min-h-[calc(100vh-128px)]">
@@ -381,6 +378,6 @@ export default function CreateUserPage() {
           </div>
         </main>
       </div>
-    </div>
+    </HeaderResponsive>
   );
 }

@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+
 import {
   fetchTicketsCount,
   fetchDashboardData,
@@ -14,6 +14,9 @@ import BarChartCard from "@/app/frontend/components/Admin/Dashboard_components/T
 import DoughnutChartCard from "@/app/frontend/components/Admin/Dashboard_components/DoughnutChartCard";
 import TicketDetailsTable from "@/app/frontend/components/Admin/Dashboard_components/TicketDetailsTable";
 import Card from "@/app/frontend/components/common/Card/Card";
+
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
+import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 interface TicketData {
   id: number;
@@ -34,8 +37,9 @@ interface StatsData {
 }
 
 const Dashboard: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   const [selectedYear, setSelectedYear] = useState("2024");
+  const [isLoading, setIsLoading] = useState(true);
   const [ticketData, setTicketData] = useState<TicketData[]>([]);
   const [stats, setStats] = useState<StatsData>({
     open: 0,
@@ -45,9 +49,10 @@ const Dashboard: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  
 
   useEffect(() => {
+    setIsLoading(true);
     const loadData = async () => {
       try {
         const countResult = await fetchTicketsCount(undefined, selectedYear);
@@ -65,6 +70,8 @@ const Dashboard: React.FC = () => {
         }
       } catch (err) {
         setError(`Failed to load dashboard data: ${(err as Error).message}`);
+      }finally{
+        setIsLoading(false);
       }
     };
 
@@ -75,9 +82,16 @@ const Dashboard: React.FC = () => {
     setSelectedYear(e.target.value);
   };
 
+    if (isLoading) {
+      return (
+        <HeaderResponsive>
+          <LoadingScreen></LoadingScreen>
+        </HeaderResponsive>
+      );
+    }
+
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="mb-6 sm:mb-8 w-full max-w-full">
@@ -116,7 +130,7 @@ const Dashboard: React.FC = () => {
           </div>
         </main>
       </div>
-    </div>
+   </HeaderResponsive>
   );
 };
 
