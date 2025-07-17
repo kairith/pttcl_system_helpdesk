@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, Plus } from "lucide-react";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
+import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 // Function to generate HTML-formatted message for preview
 const constructTelegramMessage = (telegramInputs: {
@@ -40,7 +42,7 @@ const constructTelegramMessage = (telegramInputs: {
         <p class="text-sm sm:text-base text-gray-700">Issue Type: ${issueType}</p>
         <p class="text-sm sm:text-base text-gray-700">Issue Description: ${issueDescription}</p>
         <div class="border-t border-gray-200 my-3 sm:my-4"></div>
-        <p class="text-sm sm:text-base text-gray-600 italic">at your earliest convenience. Thank you so much for your attention!</p>
+        <p class="text-sm sm:text-base text-gray-600 italic">at your earliest convenience check your helpdesk. Thank you so much for your attention!</p>
         <p class="text-sm sm:text-base text-gray-400">===================================================================</p>
       </div>
     `;
@@ -56,7 +58,7 @@ const constructTelegramMessage = (telegramInputs: {
         <p class="text-sm sm:text-base text-gray-700">Issue Type: ${issueType}</p>
         <p class="text-sm sm:text-base text-gray-700">Issue Description: ${issueDescription}</p>
         <div class="border-t border-gray-200 my-3 sm:my-4"></div>
-        <p class="text-sm sm:text-base text-gray-600 italic">at your earliest convenience. Thank you so much for your attention!</p>
+        <p class="text-sm sm:text-base text-gray-600 italic">at your earliest convenience check your helpdesk. Thank you so much for your attention!</p>
         <p class="text-sm sm:text-base text-gray-400">===================================================================</p>
       </div>
     `;
@@ -106,7 +108,8 @@ const constructPlainTextTelegramMessage = (telegramInputs: {
   const escapeMarkdown = (text: string) => text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
 
   if (status === "Assigned") {
-    return `Dear Mr @${escapeMarkdown(username)}
+    return `========================================================
+Dear Mr @${escapeMarkdown(username)}
 Receive Ticket
 Status: Assign from Mr/Ms: @${escapeMarkdown(assigner)}
 
@@ -116,10 +119,11 @@ Ticket ID: ${escapeMarkdown(ticketId)}
 Issue Type: ${escapeMarkdown(issueType)}
 Issue Description: ${escapeMarkdown(issueDescription)}
 
-at your earliest convenience. Thank you so much for your attention!
-===================================================================`;
+at your earliest convenience check your helpdesk. Thank you so much for your attention!
+========================================================`;
   } else {
-    return `Dear Mr @${escapeMarkdown(username)}
+    return `========================================================
+Dear Mr @${escapeMarkdown(username)}
 
 Status: New Ticket
 
@@ -129,8 +133,8 @@ Ticket ID: ${escapeMarkdown(ticketId)}
 Issue Type: ${escapeMarkdown(issueType)}
 Issue Description: ${escapeMarkdown(issueDescription)}
 
-at your earliest convenience. Thank you so much for your attention!
-===================================================================`;
+at your earliest convenience check your helpdesk. Thank you so much for your attention!
+========================================================`;
   }
 };
 
@@ -138,7 +142,7 @@ at your earliest convenience. Thank you so much for your attention!
 const constructGmailMessage = ({ email, gmailMessage }: { email: string; gmailMessage: string }) => `
   <div class="w-full max-w-full min-w-0 p-4 bg-white rounded-lg shadow-md font-sans sm:p-6">
     <p class="text-sm sm:text-base text-gray-700">To: ${email}</p>
-    <p class="text-sm sm:text-base text-gray-700">From: PTT POS System <pttpos.system@gmail.com></p>
+    <p class="text-sm sm:text-base text-gray-700">From: PTT Helpdesk System <pttpos.system@gmail.com></p>
     <p class="text-sm sm:text-base text-gray-700">Subject: New Ticket Alert</p>
     <div class="border-t border-gray-200 my-3 sm:my-4"></div>
     <p class="text-sm sm:text-base text-gray-700">${gmailMessage}</p>
@@ -146,7 +150,7 @@ const constructGmailMessage = ({ email, gmailMessage }: { email: string; gmailMe
 `;
 
 const AlertBotPage: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   const [telegramInputs, setTelegramInputs] = useState({
     botName: "",
     username: "",
@@ -177,7 +181,7 @@ const AlertBotPage: React.FC = () => {
   const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
   const router = useRouter();
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -418,45 +422,15 @@ const AlertBotPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className="flex w-full">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
-            <div className="flex items-center justify-center py-8">
-              <div className="flex items-center space-x-3">
-                <svg
-                  className="animate-spin h-8 w-8 text-blue-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
-                  />
-                </svg>
-                <span className="text-lg font-medium text-gray-600">Loading data...</span>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
+      <HeaderResponsive>
+        <LoadingScreen></LoadingScreen>
+      </HeaderResponsive>
     );
   }
 
   if (feedback && feedback.includes("log in")) {
     return (
-      <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-        <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <HeaderResponsive>
         <div className="flex w-full">
           <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
             <div className="flex items-center justify-center py-8">
@@ -480,13 +454,12 @@ const AlertBotPage: React.FC = () => {
             </div>
           </main>
         </div>
-      </div>
+      </HeaderResponsive>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300 overflow-x-hidden box-border`}>
-      <HeaderWithSidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+    <HeaderResponsive>
       <div className="flex w-full">
         <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="p-4 sm:p-6 bg-white rounded-lg shadow-md border border-gray-200 w-full max-w-full">
@@ -776,7 +749,7 @@ const AlertBotPage: React.FC = () => {
           </div>
         </main>
       </div>
-    </div>
+    </HeaderResponsive>
   );
 };
 

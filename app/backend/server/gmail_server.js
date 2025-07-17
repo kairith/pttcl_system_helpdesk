@@ -62,7 +62,7 @@ async function sendGmailAlert(recipientEmail, message, subject = "New Ticket Ale
     });
 
     const mailOptions = {
-      from: `"PTT POS System" <${GMAIL_SENDER}>`,
+      from: `"PTT Helpdesk System" <${GMAIL_SENDER}>`,
       to: recipientEmail,
       subject,
       text: sanitizedMessage,

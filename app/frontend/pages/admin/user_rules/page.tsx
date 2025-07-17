@@ -404,7 +404,7 @@ export default function UserRules() {
   return (
     <HeaderResponsive>
       <div className="flex w-full">
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+        <main className="flex-1 mt-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <Toaster position="top-right" />
           <div className="flex justify-center items-center min-h-[calc(100vh-128px)]">
             <div className="bg-white p-4 sm:p-6 rounded-md shadow-md w-full max-w-md sm:max-w-full border border-gray-200">

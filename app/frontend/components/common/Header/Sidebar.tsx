@@ -280,13 +280,32 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   // While permissions are loading, show a spinner
-  if (!permissions) {
-    return (
-      <div className="fixed top-0 left-0 h-screen w-64 bg-white  flex items-center justify-center">
-        <span className="text-gray-500 text-sm">Loading menu...</span>
+  // While permissions are loading, show a skeleton placeholder
+if (!permissions) {
+  return (
+    <div className="fixed top-0 left-0 h-screen w-64 bg-white p-6 flex flex-col justify-between shadow-md">
+      <div className="space-y-6 animate-pulse">
+        {/* Logo placeholder */}
+        <div className="h-8 bg-gray-300 rounded w-3/4" />
+
+        {/* Menu items */}
+        <div className="space-y-4">
+          {[...Array(7)].map((_, index) => (
+            <div key={index} className="flex items-center space-x-4">
+              <div className="w-6 h-6 bg-gray-300 rounded-md" /> {/* icon */}
+              <div className="h-4 bg-gray-300 rounded w-2/3" /> {/* label */}
+            </div>
+          ))}
+        </div>
       </div>
-    );
-  }
+
+      {/* User profile placeholder at the bottom */}
+      
+    </div>
+  );
+}
+
+
 
   const filteredMenuItems = menuItems.filter((item) => {
     if (item.label === "Logout") return true;
@@ -363,7 +382,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             leaveTo="opacity-0"
           >
             <div
-              className="fixed inset-0 bg-gray-500 bg-opacity-50"
+              className="fixed inset-0 bg-white-100 bg-opacity-50"
               style={{ backdropFilter: "blur(6px)" }}
             />
           </Transition.Child>

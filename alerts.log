@@ -88,3 +88,23 @@
 {"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-07-16T18:54:53.744Z","username":"Chhoy Too"}
 {"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: tito","platform":"gmail","subject":"New Ticket Alert"}
 {"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<ed800648-3d98-dfb7-403e-902da0d89ca1@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-07-16T18:55:10.203Z"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Sending alert with: Dear Mr @kai\n\nStatus: New Ticket\n\nStation ID: F603","platform":"telegram","threadId":"4","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Calling sendTelegramMessage","messageLength":281,"threadId":"4","timestamp":"2025-07-17T00:55:09.323Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-07-17T00:55:10.723Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Sending alert with: ==================================================","platform":"telegram","threadId":"4","username":"Ratana"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Calling sendTelegramMessage","messageLength":333,"threadId":"4","timestamp":"2025-07-17T00:56:48.018Z","username":"Ratana"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-07-17T00:56:49.121Z","username":"Ratana"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Sending alert with: ==================================================","platform":"telegram","threadId":"0","username":"admin"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Calling sendTelegramMessage","messageLength":332,"threadId":"0","timestamp":"2025-07-17T00:57:41.973Z","username":"admin"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-07-17T00:57:43.045Z","username":"admin"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: thank you for your collab","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<e99dab8c-8f77-67ed-4499-f477a67680ef@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-07-17T01:19:29.176Z"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: rank your enermy","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<84c6d5bc-9e28-febc-84d0-481b98289eec@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-07-17T03:00:43.506Z"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: this message is for ticket ","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<6d94c24d-478b-038d-f6e3-076c3a9e4455@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-07-17T03:02:43.296Z"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: we are the once who are decepticons","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<01c8ee5f-c91e-b029-bb93-ee3d5315d93a@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-07-17T03:04:34.471Z"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Sending alert with: ==================================================","platform":"telegram","threadId":"4","username":"Madina"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Calling sendTelegramMessage","messageLength":345,"threadId":"4","timestamp":"2025-07-17T03:06:14.363Z","username":"Madina"}
+{"botName":"Helpdesk bots","chatId":"-1002819438719","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-07-17T03:06:15.630Z","username":"Madina"}

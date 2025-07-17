@@ -1,8 +1,7 @@
-// root file for the starting page
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -29,23 +28,29 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Prefetch dashboard routes to reduce flicker
+  useEffect(() => {
+    router.prefetch('/pages/admin/dashboard');
+    router.prefetch('/pages/Users/dashboard');
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors([]);
     setIsLoading(true);
 
+    // Validate email
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setErrors(['Please enter a valid email address.']);
       setIsLoading(false);
       return;
     }
+
+    // Validate password
     if (password.length < 6) {
       setErrors(['Password must be at least 6 characters.']);
       setIsLoading(false);
       return;
-    }
-    if (isLoading){
-      <LoadingScreen/>
     }
 
     try {
@@ -59,15 +64,22 @@ export default function LoginPage() {
       console.log('Login response data:', data);
 
       if (!response.ok) {
-        setErrors([data.error || 'Login failed. Please try again.']);
-        if (response.status === 401) setErrors(['Invalid credentials.']);
-        else if (response.status >= 500) setErrors(['Server error. Try again later.']);
+        if (response.status === 401) {
+          setErrors(['Invalid credentials.']);
+        } else if (response.status >= 500) {
+          setErrors(['Server error. Try again later.']);
+        } else {
+          setErrors([data.error || 'Login failed. Please try again.']);
+        }
         setIsLoading(false);
         return;
       }
 
-      sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('user', JSON.stringify(data.user));
+      // Batch sessionStorage updates
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+      }
 
       // Fetch user image
       try {
@@ -78,19 +90,26 @@ export default function LoginPage() {
 
         if (imageResponse.ok && imageData.imagePath) {
           const imagePath = imageData.imagePath.toLowerCase();
-          sessionStorage.setItem('userImage', imagePath);
-          console.log('Stored userImage in sessionStorage:', imagePath);
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('userImage', imagePath);
+            console.log('Stored userImage in sessionStorage:', imagePath);
+          }
         } else {
           console.error('Image fetch failed:', imageData.error || 'No image path returned');
-          sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
-          console.log('Stored default userImage in sessionStorage:', '/Uploads/user_image/Default-avatar.jpg');
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
+            console.log('Stored default userImage in sessionStorage:', '/Uploads/user_image/Default-avatar.jpg');
+          }
         }
       } catch (imageError) {
         console.error('Failed to fetch user image:', imageError);
-        sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
-        console.log('Stored default userImage in sessionStorage due to error:', '/Uploads/user_image/Default-avatar.jpg');
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
+          console.log('Stored default userImage in sessionStorage due to error:', '/Uploads/user_image/Default-avatar.jpg');
+        }
       }
 
+      // Navigate to dashboard
       router.push(data.user.isAdmin ? '/pages/admin/dashboard' : '/pages/Users/dashboard');
     } catch (error) {
       console.error('Login error:', error);
@@ -101,6 +120,7 @@ export default function LoginPage() {
 
   return (
     <div className="login-page flex items-center justify-center min-h-screen bg-gray-100">
+      {isLoading}
       <div className="login-box w-full max-w-sm">
         <div className="card bg-white rounded-2xl shadow-lg">
           <div className="card-header bg-gray-500 text-white text-center flex flex-col items-center py-4 rounded-t-2xl">
@@ -118,9 +138,11 @@ export default function LoginPage() {
               Login with your email and password.
             </p>
             {errors.length > 0 && (
-              <div className="alert alert-danger text-center mb-4" role="alert" aria-live="polite">
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center" role="alert" aria-live="polite">
                 {errors.map((error, index) => (
-                  <div key={index}>{error}</div>
+                  <div key={index} className={error === 'Invalid credentials.' ? 'font-semibold' : ''}>
+                    {error}
+                  </div>
                 ))}
               </div>
             )}
@@ -128,7 +150,9 @@ export default function LoginPage() {
               <div className="input-group mb-4 flex">
                 <input
                   type="email"
-                  className="form-control flex-1 p-2 border border-r-0 border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`form-control flex-1 p-2 border border-r-0 border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.includes('Please enter a valid email address.') ? 'border-red-500' : ''
+                  }`}
                   placeholder="Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -142,7 +166,11 @@ export default function LoginPage() {
               <div className="input-group mb-4 flex">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  className="form-control flex-1 p-2 border border-r-0 border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`form-control flex-1 p-2 border border-r-0 border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.includes('Password must be at least 6 characters.') || errors.includes('Invalid credentials.')
+                      ? 'border-red-500'
+                      : ''
+                  }`}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -184,7 +212,7 @@ export default function LoginPage() {
               </div>
               <button
                 type="submit"
-                className="btn btn-primary w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+                className="btn btn-primary w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 disabled:bg-blue-300"
                 disabled={isLoading}
               >
                 {isLoading ? 'Logging in...' : 'Login'}
