@@ -150,9 +150,9 @@ const menuItems: MenuItem[] = [
     adminOnly: true,
   },
   {
-    label: "Alert Bot",
+    label: "Config Alert",
     href: "/pages/admin/test_alert_bot",
-    icon: <Bell size={20} aria-label="Alert Bot" />,
+    icon: <Bell size={20} aria-label="Config Alert" />,
     requiredPermission: "list_alertbot",
     adminOnly: true,
   },
@@ -192,14 +192,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     async function loadPermissions() {
       try {
         if (typeof window === "undefined") return;
-
         const cached = sessionStorage.getItem("permissions");
         const token = sessionStorage.getItem("token");
         const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}");
         const userId = sessionUser.users_id || "";
 
-        if (!token || !userId) {
-          setError("No token or user ID found. Please log in again.");
+        if (!token && !userId) {
+          // setError(" Please log in again.");
           router.push("/");
           return;
         }
@@ -309,7 +308,7 @@ if (!permissions) {
 
   const filteredMenuItems = menuItems.filter((item) => {
     if (item.label === "Logout") return true;
-    if (item.label === "Alert Bot") return isAdmin;
+    if (item.label === "Config Alert") return isAdmin;
     if (!item.requiredPermission) return false;
     if (item.adminOnly && !isAdmin) return false;
     if (item.nonAdminOnly && isAdmin) return false;

@@ -1,9 +1,8 @@
-
 // server/telegramserver.js
 const mysql = require("mysql2/promise");
 const { dbConfig } = require("@/app/database/db-config");
 
-async function sendTelegramMessage(botName, chatId, message, threadId) {
+async function sendTelegramMessage(botName, chatId, message) {
   let connection;
   try {
     // Create MySQL connection
@@ -21,12 +20,12 @@ async function sendTelegramMessage(botName, chatId, message, threadId) {
     
     const botToken = rows[0].bot_token;
 
-    // Construct Telegram API URL
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${encodeURIComponent(message)}${threadId ? `&message_thread_id=${encodeURIComponent(threadId)}` : ""}`;
+    // Construct Telegram API URL (no thread ID)
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${encodeURIComponent(message)}`;
 
     // Make request to Telegram API
     const response = await fetch(url, {
-      method: "GET", // Telegram's sendMessage supports GET
+      method: "GET",
     });
 
     const data = await response.json();

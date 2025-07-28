@@ -1,9 +1,7 @@
-
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -13,9 +11,11 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels"; // Import the datalabels plugin
 import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ChartDataLabels); // Register datalabels
 
 interface ReportData {
   label: string;
@@ -28,12 +28,11 @@ interface PivotData {
 }
 
 interface User {
-  id: string;
+  users_id: string;
   users_name: string;
 }
 
 export default function Reports() {
-  
   const [reportType, setReportType] = useState<"status" | "issue_type">("status");
   const [data, setData] = useState<ReportData[]>([]);
   const [pivotData, setPivotData] = useState<PivotData>({ labels: [], datasets: [] });
@@ -47,44 +46,42 @@ export default function Reports() {
   const [endDate, setEndDate] = useState("");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-   const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Refs for chart and table elements
   const barChartRef = useRef<ChartJS<"bar", number[], unknown> | null>(null);
   const pivotChartRef = useRef<ChartJS<"bar", number[], unknown> | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
 
-  
+  const loadFilters = useCallback(async () => {
+    setIsLoading(true);
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+      setError("Please log in as an admin.");
+      router.push("/");
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const response = await fetch("/api/data/report-filters", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const { statuses, issueTypes, users } = await response.json();
+      setStatuses(statuses || []);
+      setIssueTypes(issueTypes || []);
+      setUsers(users || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load filters");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
 
   useEffect(() => {
-    setIsLoading(true);
-    async function loadFilters() {
-      const token = sessionStorage.getItem("token");
-      if (!token) {
-        setError("Please log in as an admin.");
-        router.push("/");
-        return;
-      }
-      try {
-        const response = await fetch("/api/data/report-filters", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const { statuses, issueTypes, users } = await response.json();
-        setStatuses(statuses || []);
-        setIssueTypes(issueTypes || []);
-        setUsers(users || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load filters");
-      }
-      finally{
-        setIsLoading(false);
-      }
-    }
     loadFilters();
-  }, [router]);
+  }, [loadFilters]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -93,6 +90,7 @@ export default function Reports() {
       if (!token) {
         setError("Please log in as an admin.");
         router.push("/");
+        setIsLoading(false);
         return;
       }
       try {
@@ -104,7 +102,6 @@ export default function Reports() {
         if (startDate) params.append("startDate", startDate);
         if (endDate) params.append("endDate", endDate);
 
-        // Fetch bar chart data
         console.log(`Fetching report: ${reportType}, params: ${params.toString()}`);
         const barResponse = await fetch(`/api/data/reports?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -115,7 +112,6 @@ export default function Reports() {
         const barData = await barResponse.json();
         setData(barData.data || []);
 
-        // Fetch pivot chart data
         console.log(`Fetching pivot report: ${reportType}, params: ${params.toString()}`);
         const pivotResponse = await fetch(`/api/data/reports-pivot?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -127,9 +123,8 @@ export default function Reports() {
         setPivotData(pivotResult.data || { labels: [], datasets: [] });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load report");
-      }
-      finally{
-        setIsLoading(false);  
+      } finally {
+        setIsLoading(false);
       }
     }
     loadReports();
@@ -142,18 +137,18 @@ export default function Reports() {
         label: reportType === "status" ? "Tickets by Status" : "Tickets by Issue Type",
         data: data.map((item) => item.count),
         backgroundColor: [
-          "rgb(59, 130, 246)", // Blue
-          "rgb(16, 185, 129)", // Green
-          "rgb(245, 158, 11)", // Orange
-          "rgb(239, 68, 68)",  // Red
-          "rgb(139, 92, 246)", // Purple
+          "rgb(59, 130, 246)",
+          "rgb(16, 185, 129)",
+          "rgb(245, 158, 11)",
+          "rgb(239, 68, 68)",
+          "rgb(139, 92, 246)",
         ],
         borderColor: [
-          "rgb(37, 99, 235)",  // Dark Blue
-          "rgb(5, 150, 105)",  // Dark Green
-          "rgb(217, 119, 6)",  // Dark Orange
-          "rgb(220, 38, 38)",  // Dark Red
-          "rgb(124, 58, 237)", // Dark Purple
+          "rgb(37, 99, 235)",
+          "rgb(5, 150, 105)",
+          "rgb(217, 119, 6)",
+          "rgb(220, 38, 38)",
+          "rgb(124, 58, 237)",
         ],
         borderWidth: 0.5,
         borderRadius: 4,
@@ -185,6 +180,16 @@ export default function Reports() {
         display: true,
         position: "top" as const,
       },
+      datalabels: {
+        anchor: "end" as const,
+        align: "top" as const,
+        color: "#000",
+        font: {
+          weight: "bold" as const,
+          size: 12,
+        },
+        formatter: (value: number) => value, // Display the raw value
+      },
     },
   };
 
@@ -211,7 +216,17 @@ export default function Reports() {
     },
     plugins: {
       legend: {
-        display: false, // Disabled as per original comment
+        display: false,
+      },
+      datalabels: {
+        anchor: "end" as const,
+        align: "right" as const, // Adjusted for horizontal bars
+        color: "#000",
+        font: {
+          weight: "bold" as const,
+          size: 12,
+        },
+        formatter: (value: number) => value, // Display the raw value
       },
     },
   };
@@ -238,19 +253,26 @@ export default function Reports() {
                   />
                 </svg>
                 <p className="mt-4 text-lg font-semibold text-red-600">{error}</p>
+                <button
+                  onClick={() => loadFilters()} // Fixed to use `loadFilters`
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                >
+                  Retry
+                </button>
               </div>
             </div>
           </main>
         </div>
       </HeaderResponsive>
-      
     );
   }
 
-  if(isLoading){
-    <HeaderResponsive>
-      <LoadingScreen></LoadingScreen>
-    </HeaderResponsive>
+  if (isLoading) {
+    return (
+      <HeaderResponsive>
+        <LoadingScreen />
+      </HeaderResponsive>
+    );
   }
 
   return (
@@ -310,7 +332,7 @@ export default function Reports() {
                 >
                   <option value="">All Users</option>
                   {users.map((user) => (
-                    <option key={user.id} value={user.id}>
+                    <option key={user.users_id} value={user.users_id}>
                       {user.users_name}
                     </option>
                   ))}

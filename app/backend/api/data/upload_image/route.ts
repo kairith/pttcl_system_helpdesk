@@ -1,32 +1,20 @@
+// app/api/data/upload_image/route.ts
 import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { ensureDirectoryExistence } from '@/app/backend/lib/utils';
-// Ticket uplaod image
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get('image') as File | null;
-
     if (!file) {
-      return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
-    }
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Invalid file type. Only JPEG, PNG, JPG  or GIF allowed.' }, { status: 400 });
-    }
-
-    
-
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      return NextResponse.json({ error: 'File size exceeds 5MB limit.' }, { status: 400 });
+      console.error('No file uploaded');
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
     const timestamp = Date.now();
     const fileExtension = file.name.split('.').pop();
-    const fileName = `ticket_${timestamp}.${fileExtension}`; // Use 'ticket_' prefix for tickets
+    const fileName = `ticket_${timestamp}.${fileExtension}`;
     const uploadDir = join(process.cwd(), 'public/uploads/ticket_image');
     const filePath = join(uploadDir, fileName);
 
@@ -35,9 +23,15 @@ export async function POST(request: Request) {
     await writeFile(filePath, buffer);
 
     const relativePath = `/uploads/ticket_image/${fileName}`;
+    console.log('Uploaded image:', relativePath);
     return NextResponse.json({ imagePath: relativePath }, { status: 200 });
   } catch (error) {
     console.error('Image upload error:', error);
-    return NextResponse.json({ error: 'Failed to upload image.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
   }
+}
+
+async function ensureDirectoryExistence(dirPath: string) {
+  const { mkdir } = await import('fs/promises');
+  await mkdir(dirPath, { recursive: true });
 }

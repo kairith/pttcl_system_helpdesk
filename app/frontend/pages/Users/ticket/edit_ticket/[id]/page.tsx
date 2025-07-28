@@ -120,7 +120,7 @@ export default function EditTicketPage() {
         duration: 2000,
         position: "top-right",
       });
-      setTimeout(() => router.push("/pages/users/ticket"), 2000);
+      setTimeout(() => router.push("/pages/Users/ticket"), 2000);
     } catch (err: any) {
       const errorMsg = err.message || "Unknown error";
       setError(errorMsg);
@@ -168,7 +168,6 @@ export default function EditTicketPage() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className={`min-h-screen bg-gray-50 ${isSidebarOpen ? "sm:ml-64" : ""} transition-all duration-300`}>
@@ -342,12 +341,12 @@ export default function EditTicketPage() {
                     type="button"
                     onClick={() => {
                       console.log("EditTicketPage: Cancel button clicked");
-                      router.push("/pages/users/ticket");
+                      router.push("/pages/Users/ticket");
                     }}
                     className="w-full sm:w-32 max-w-full min-w-0 px-4 sm:px-6 py-2 text-sm sm:text-base font-medium text-white bg-gray-400 rounded-md hover:bg-gray-500 disabled:bg-gray-300 focus:ring-4 focus:ring-gray-200 pointer-events-auto"
                     disabled={loading}
                     aria-label="Cancel edit"
-                  >
+                     >
                     Cancel
                   </button>
                   <button
@@ -356,7 +355,7 @@ export default function EditTicketPage() {
                     disabled={loading}
                     onClick={() => console.log("EditTicketPage: Update Ticket button clicked")}
                     aria-label={loading ? "Updating Ticket" : "Update Ticket"}
-                  >
+                    >
                     {loading ? "Updating..." : "Update Ticket"}
                   </button>
                 </div>

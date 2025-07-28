@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, Fragment } from "react";
@@ -8,23 +7,94 @@ import { useRouter } from "next/navigation";
 import { Dialog, Transition } from "@headlessui/react";
 import { toast } from "react-toastify";
 
+interface TicketImage {
+  id: string;
+  ticket_id: string;
+  image_path: string;
+}
 interface TicketTableProps {
-  filteredTickets: (Ticket & { users_name: string; creator_name: string })[];
+  filteredTickets: (Ticket & { users_name: string; creator_name: string; images?: TicketImage[] })[];
   permissions: { add: boolean; edit: boolean; delete: boolean; list: boolean; listAssign: boolean };
 }
 
 export default function TicketTable({ filteredTickets, permissions }: TicketTableProps) {
   const router = useRouter();
   const [selectedTicket, setSelectedTicket] = useState<
-    (Ticket & { users_name: string; creator_name: string }) | null
+    (Ticket & { users_name: string; creator_name: string; images?: TicketImage[] }) | null
   >(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [deleteTicketId, setDeleteTicketId] = useState<string | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
+  const [ticketImages, setTicketImages] = useState<{ [key: string]: TicketImage[] }>({});
+  // Add new state for enlarged image
+const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
 
+// Function to open enlarged image
+const openEnlargedImage = (imagePath: string) => {
+  setEnlargedImage(imagePath);
+};
+
+// Function to close enlarged image
+const closeEnlargedImage = () => {
+  setEnlargedImage(null);
+};
   console.log("TicketTable props:", { permissions, ticketCount: filteredTickets.length });
 
-  // Restrict table display to users with list permission
+  // Fetch ticket images for all tickets on mount
+// components/TicketTable.tsx
+useEffect(() => {
+  const fetchImages = async () => {
+    const token = sessionStorage.getItem("token");
+    console.log("Token for image fetch:", token ? "Present" : "Missing");
+    if (!token) {
+      console.error("No token found, redirecting to login");
+      toast.error("Please log in to view ticket images.");
+      router.push("/");
+      return;
+    }
+
+    if (filteredTickets.length === 0) {
+      setTicketImages({});
+      return;
+    }
+
+    console.log(`Fetching images for ${filteredTickets.length} tickets`);
+    try {
+      const ticketIds = filteredTickets.map((ticket) => ticket.ticket_id);
+      const response = await fetch('/api/data/ticket_images/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ticket_ids: ticketIds }),
+      });
+      console.log('Bulk fetch response status:', response.status);
+      if (response.ok) {
+        const images: TicketImage[] = await response.json();
+        console.log('Bulk fetched images:', images);
+        const imageMap = images.reduce((acc, image) => {
+          acc[image.ticket_id] = acc[image.ticket_id] || [];
+          acc[image.ticket_id].push(image);
+          return acc;
+        }, {} as { [key: string]: TicketImage[] });
+        setTicketImages(imageMap);
+      } else {
+        const errorData = await response.json();
+        console.error('Bulk fetch error:', errorData);
+        setTicketImages({});
+      }
+    } catch (error) {
+      console.error('Failed to fetch images:', error);
+      setTicketImages({});
+    }
+  };
+
+  if (permissions.list) {
+    fetchImages();
+  }
+}, [filteredTickets, permissions.list]);
+
   if (!permissions.list) {
     return (
       <div className="w-full p-4 text-center text-gray-500 bg-white shadow-lg rounded-lg border border-gray-200">
@@ -52,9 +122,7 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
   };
 
   const handleDelete = (ticketId: string) => {
-    const ticketToDelete = filteredTickets.find(
-      (t) => t.id.toString() === ticketId
-    );
+    const ticketToDelete = filteredTickets.find((t) => t.id.toString() === ticketId);
     if (!ticketToDelete) {
       console.error("Ticket not found for ID:", ticketId);
       toast.error("Ticket not found.");
@@ -76,23 +144,19 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
 
     try {
       const ticketToDelete =
-        selectedTicket ||
-        filteredTickets.find((t) => t.id.toString() === deleteTicketId);
+        selectedTicket || filteredTickets.find((t) => t.id.toString() === deleteTicketId);
 
       if (!ticketToDelete) throw new Error("Ticket data unavailable");
 
       console.log("Deleting ticket:", { ticket_id: ticketToDelete.ticket_id });
 
-      const response = await fetch(
-        `/api/data/delete_ticket/${ticketToDelete.ticket_id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`/api/data/delete_ticket/${ticketToDelete.ticket_id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -104,7 +168,6 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
       }
 
       toast.success("✅ Ticket deleted successfully");
-
       setTimeout(() => {
         window.location.reload();
       }, 2000);
@@ -121,11 +184,9 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
     setSelectedTicket(null);
   };
 
-  const handleView = (
-    ticket: Ticket & { users_name: string; creator_name: string }
-  ) => {
+  const handleView = (ticket: Ticket & { users_name: string; creator_name: string; images?: TicketImage[] }) => {
     console.log("Viewing ticket:", { ticket_id: ticket.ticket_id });
-    setSelectedTicket(ticket);
+    setSelectedTicket({ ...ticket, images: ticketImages[ticket.ticket_id] || [] });
     setIsViewModalOpen(true);
   };
 
@@ -140,8 +201,7 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
     if (isViewModalOpen && tableElement) {
       tableElement.style.filter = "blur(5px)";
       tableElement.style.opacity = "0.4";
-      tableElement.style.transition =
-        "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
+      tableElement.style.transition = "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
 
       const modal = document.querySelector(".modal-content");
       if (modal) {
@@ -149,8 +209,7 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
         (modal as HTMLElement).style.opacity = "0";
         timeout = setTimeout(() => {
           if (modal) {
-            (modal as HTMLElement).style.transition =
-              "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
+            (modal as HTMLElement).style.transition = "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
             (modal as HTMLElement).style.transform = "translateY(0) scale(1)";
             (modal as HTMLElement).style.opacity = "1";
           }
@@ -159,8 +218,7 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
     } else if (deleteTicketId && tableElement) {
       tableElement.style.filter = "blur(5px)";
       tableElement.style.opacity = "0.4";
-      tableElement.style.transition =
-        "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
+      tableElement.style.transition = "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
 
       const modal = document.querySelector(".delete-modal-content");
       if (modal) {
@@ -168,8 +226,7 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
         (modal as HTMLElement).style.opacity = "0";
         timeout = setTimeout(() => {
           if (modal) {
-            (modal as HTMLElement).style.transition =
-              "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
+            (modal as HTMLElement).style.transition = "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
             (modal as HTMLElement).style.transform = "translateY(0) scale(1)";
             (modal as HTMLElement).style.opacity = "1";
           }
@@ -178,15 +235,11 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
     } else if (tableElement) {
       tableElement.style.filter = "none";
       tableElement.style.opacity = "1";
-      tableElement.style.transition =
-        "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
+      tableElement.style.transition = "filter 0.3s ease-in-out, opacity 0.3s ease-in-out";
 
-      const modal =
-        document.querySelector(".modal-content") ||
-        document.querySelector(".delete-modal-content");
+      const modal = document.querySelector(".modal-content") || document.querySelector(".delete-modal-content");
       if (modal) {
-        (modal as HTMLElement).style.transition =
-          "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
+        (modal as HTMLElement).style.transition = "transform 0.3s ease-in-out, opacity 0.3s ease-in-out";
         (modal as HTMLElement).style.transform = "translateY(20px) scale(0.95)";
         (modal as HTMLElement).style.opacity = "0";
         timeout = setTimeout(() => {
@@ -196,65 +249,36 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
     }
     return () => clearTimeout(timeout);
   }, [isViewModalOpen, deleteTicketId]);
-
+ 
   return (
     <div className="w-full overflow-x-auto">
-      <div
-        ref={tableRef}
-        className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200"
-      >
+      <div ref={tableRef} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200 hidden md:table">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                No
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Action
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Ticket ID
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Station ID
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Station Name
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Assign
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Issue
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Status
-              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ticket ID</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Station ID</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Station Name</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Assign</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Issue</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Images</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {filteredTickets.length === 0 ? (
               <tr>
-                <td
-                  colSpan={8}
-                  className="px-4 py-4 text-center text-gray-500"
-                >
-                  No tickets found.
-                </td>
+                <td colSpan={9} className="px-4 py-4 text-center text-gray-500">No tickets found.</td>
               </tr>
             ) : (
               filteredTickets.map((ticket, index) => (
-                <tr
-                  key={ticket.id}
-                  className="hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">
-                    {index + 1}
-                  </td>
+                <tr key={ticket.id} className="hover:bg-gray-50 transition-colors duration-200">
+                  <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{index + 1}</td>
                   {permissions.list && (
                     <td className="px-4 py-3">
                       <div className="flex justify-center gap-2">
-                        {/* {console.log("Rendering Action column for ticket:", ticket.ticket_id, { viewButton: true, editButton: permissions.edit, deleteButton: permissions.delete })} */}
                         {permissions.edit && (
                           <button
                             onClick={() => handleEdit(ticket.id.toString())}
@@ -283,29 +307,22 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
                       </div>
                     </td>
                   )}
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {ticket.ticket_id}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {ticket.station_id}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {ticket.station_name || "N/A"}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {ticket.users_name || "Not Assigned"}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {ticket.issue_type || "N/A"}
-                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.ticket_id}</td>
+                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.station_id}</td>
+                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.station_name || "N/A"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.users_name || "Not Assigned"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.issue_type || "N/A"}</td>
                   <td className="px-4 py-3 text-sm">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium ${getStatusBadge(
-                        ticket.status.toString()
-                      )}`}
-                    >
+                    <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>
                       {ticket.status || "N/A"}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800">
+                    {ticketImages[ticket.ticket_id]?.length > 0 ? (
+                      <span>{ticketImages[ticket.ticket_id].length} image(s)</span>
+                    ) : (
+                      "No images"
+                    )}
                   </td>
                 </tr>
               ))
@@ -316,43 +333,24 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
         {/* Mobile Responsive Cards */}
         <div className="md:hidden divide-y divide-gray-200">
           {filteredTickets.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              No tickets found.
-            </div>
+            <div className="p-4 text-center text-gray-500">No tickets found.</div>
           ) : (
             filteredTickets.map((ticket, index) => (
               <div key={ticket.id} className="p-4">
-                <div className="mb-2 text-sm text-gray-800 font-medium">
-                  No: {index + 1}
-                </div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">
-                  Ticket ID: {ticket.ticket_id}
-                </div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">
-                  Station ID: {ticket.station_id}
-                </div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">
-                  Station Name: {ticket.station_name || "N/A"}
-                </div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">
-                  Assign: {ticket.users_name || "Not Assigned"}
-                </div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">
-                  Issue Type: {ticket.issue_type || "N/A"}
-                </div>
+                <div className="mb-2 text-sm text-gray-800 font-medium">No: {index + 1}</div>
+                <div className="mb-2 text-sm text-gray-800 font-medium">Ticket ID: {ticket.ticket_id}</div>
+                <div className="mb-2 text-sm text-gray-800 font-medium">Station ID: {ticket.station_id}</div>
+                <div className="mb-2 text-sm text-gray-800 font-medium">Station Name: {ticket.station_name || "N/A"}</div>
+                <div className="mb-2 text-sm text-gray-800 font-medium">Assign: {ticket.users_name || "Not Assigned"}</div>
+                <div className="mb-2 text-sm text-gray-800 font-medium">Issue Type: {ticket.issue_type || "N/A"}</div>
                 <div className="mb-2 text-sm font-medium">
-                  Status:{" "}
-                  <span
-                    className={`px-2 py-1 text-xs font-medium ${getStatusBadge(
-                      ticket.status.toString()
-                    )}`}
-                  >
-                    {ticket.status || "N/A"}
-                  </span>
+                  Status: <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>{ticket.status || "N/A"}</span>
+                </div>
+                <div className="mb-2 text-sm text-gray-800 font-medium">
+                  Images: {ticketImages[ticket.ticket_id]?.length > 0 ? `${ticketImages[ticket.ticket_id].length} image(s)` : "No images"}
                 </div>
                 {permissions.list && (
                   <div className="flex justify-start gap-2 mt-3">
-                    {/* {console.log("Rendering Action column for ticket (mobile):", ticket.ticket_id, { viewButton: true, editButton: permissions.edit, deleteButton: permissions.delete })} */}
                     {permissions.edit && (
                       <button
                         onClick={() => handleEdit(ticket.id.toString())}
@@ -387,116 +385,118 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
       </div>
 
       {/* View Ticket Modal */}
-      {isViewModalOpen && selectedTicket && (
+   
+    {isViewModalOpen && selectedTicket && (
+      <div
+        className="fixed inset-0 flex items-center justify-center z-[2000] bg-black/50 supports-[backdrop-filter]:backdrop-blur-lg"
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+          paddingLeft: "env(safe-area-inset-left)",
+          paddingRight: "env(safe-area-inset-right)",
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
         <div
-          className="fixed inset-0 flex items-center justify-center z-[2000] bg-black/50 supports-[backdrop-filter]:backdrop-blur-lg"
-          style={{
-            paddingTop: "env(safe-area-inset-top)",
-            paddingBottom: "env(safe-area-inset-bottom)",
-            paddingLeft: "env(safe-area-inset-left)",
-            paddingRight: "env(safe-area-inset-right)",
-          }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
+          className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-[calc(100vw-16px)] max-w-md sm:max-w-lg lg:max-w-4xl modal-content"
+          style={{ transition: "transform 0.3s ease-in-out, opacity 0.3s ease-in-out" }}
         >
-          <div
-            className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-[calc(100vw-16px)] max-w-md sm:max-w-lg lg:max-w-4xl modal-content"
-            style={{
-              transition:
-                "transform 0.3s ease-in-out, opacity 0.3s ease-in-out",
-            }}
-          >
-            <h2
-              id="modal-title"
-              className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6"
-            >
-              Ticket Details:{" "}
-              <span className="text-blue-600">{selectedTicket.ticket_id}</span>
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Ticket ID: {selectedTicket.ticket_id}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Station ID: {selectedTicket.station_id}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Station Name: {selectedTicket.station_name || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Station Type: {selectedTicket.station_type || "N/A"}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Province: {selectedTicket.province || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-800 break-words max-h-20 overflow-y-auto">
-                    Issue Description: {selectedTicket.issue_description || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Issue Type: {selectedTicket.issue_type || "N/A"}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Status: {selectedTicket.status || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Assign: {selectedTicket.users_name || "Not Assigned"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-800 break-words max-h-20 overflow-y-auto">
-                    Comment: {selectedTicket.comment || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Ticket Time: {selectedTicket.ticket_time
-                      ? new Date(selectedTicket.ticket_time).toLocaleString()
-                      : "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-800 break-words truncate">
-                    Created By User ID: {selectedTicket.user_create_ticket || "N/A"}
-                  </p>
-                </div>
-              </div>
+          <h2 id="modal-title" className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6">
+            Ticket Details: <span className="text-blue-600">{selectedTicket.ticket_id}</span>
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-4">
+              <div><p className="text-gray-800 break-words truncate">Ticket ID: {selectedTicket.ticket_id}</p></div>
+              <div><p className="text-gray-800 break-words truncate">Station ID: {selectedTicket.station_id}</p></div>
+              <div><p className="text-gray-800 break-words truncate">Station Name: {selectedTicket.station_name || "N/A"}</p></div>
+              <div><p className="text-gray-800 break-words truncate">Station Type: {selectedTicket.station_type || "N/A"}</p></div>
             </div>
-            <button
-              onClick={closeViewModal}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") closeViewModal();
-              }}
-              className="mt-4 sm:mt-6 w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors focus:ring-4 focus:ring-blue-200"
-              aria-label="Close modal"
-            >
-              Close
-            </button>
+            <div className="space-y-4">
+              <div><p className="text-gray-800 break-words truncate">Province: {selectedTicket.province || "N/A"}</p></div>
+              <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Issue Description: {selectedTicket.issue_description || "N/A"}</p></div>
+              <div><p className="text-gray-800 break-words truncate">Issue Type: {selectedTicket.issue_type || "N/A"}</p></div>
+            </div>
+            <div className="space-y-4">
+              <div><p className="text-gray-800 break-words truncate">Status: {selectedTicket.status || "N/A"}</p></div>
+              <div><p className="text-gray-800 break-words truncate">Assign: {selectedTicket.users_name || "Not Assigned"}</p></div>
+              <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Comment: {selectedTicket.comment || "N/A"}</p></div>
+              <div><p className="text-gray-800 break-words truncate">Ticket Time: {selectedTicket.ticket_time ? new Date(selectedTicket.ticket_time).toLocaleString() : "N/A"}</p></div>
+              <div><p className="text-gray-800 break-words truncate">Created By User ID: {selectedTicket.user_create_ticket || "N/A"}</p></div>
+            </div>
           </div>
+          {/* Image Gallery */}
+          <div className="mt-6">
+            <h3 className="text-md font-semibold text-gray-800 mb-2">Ticket Images</h3>
+            {selectedTicket.images && selectedTicket.images.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {selectedTicket.images.map((image) => (
+                  <div key={image.id} className="relative">
+                    <img
+                      src={image.image_path}
+                      alt={`Ticket ${selectedTicket.ticket_id} image`}
+                      className="w-full h-32 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => openEnlargedImage(image.image_path)}
+                      onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")} // Fallback image
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          openEnlargedImage(image.image_path);
+                        }
+                      }}
+                      aria-label={`View larger image for ticket ${selectedTicket.ticket_id}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">Ticket has no images when created.</p>
+            )}
+          </div>
+          <button
+            onClick={closeViewModal}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") closeViewModal();
+            }}
+            className="mt-4 sm:mt-6 w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors focus:ring-4 focus:ring-blue-200"
+            aria-label="Close modal"
+          >
+            Close
+          </button>
         </div>
-      )}
+      </div>
+    )}
+
+    {/* Enlarged Image Modal */}
+    {enlargedImage && (
+      <div
+        className="fixed inset-0 flex items-center justify-center z-[3000] bg-black/70 supports-[backdrop-filter]:backdrop-blur-lg"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Enlarged image view"
+        onClick={closeEnlargedImage}
+      >
+        <div className="relative max-w-[90vw] max-h-[90vh] p-4">
+          <img
+            src={enlargedImage}
+            alt="Enlarged ticket image"
+            className="max-w-full max-h-[80vh] object-contain rounded-md"
+            onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")} // Fallback image
+          />
+          <button
+            onClick={closeEnlargedImage}
+            className="absolute top-2 right-2 p-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
+            aria-label="Close enlarged image"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    )}
 
       {/* Delete Confirmation Modal */}
       {permissions.delete && (
@@ -521,7 +521,6 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
                 }}
               />
             </Transition.Child>
-
             <div className="fixed inset-0 overflow-y-auto">
               <div className="flex min-h-full items-center justify-center p-4 text-center">
                 <Transition.Child
@@ -534,17 +533,13 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
                   leaveTo="opacity-0 scale-95"
                 >
                   <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all delete-modal-content">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900"
-                    >
+                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
                       Confirm Deletion
                     </Dialog.Title>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
                         Are you sure you want to delete ticket with Ticket ID{" "}
-                        {selectedTicket?.ticket_id || deleteTicketId}? This action
-                        cannot be undone.
+                        {selectedTicket?.ticket_id || deleteTicketId}? This action cannot be undone.
                       </p>
                     </div>
                     <div className="mt-4 flex justify-end gap-2">

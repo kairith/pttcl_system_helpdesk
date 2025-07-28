@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
       email,
       messageLength: message?.length,
       subject,
-      rawUsername: username, // Debug raw username
-      usernameTrimmed: username?.trim() || "EMPTY", // Debug trimmed username
-      requestBody: JSON.stringify(body), // Debug full payload
+      rawUsername: username,
+      usernameTrimmed: username?.trim() || "EMPTY",
+      requestBody: JSON.stringify(body),
     });
 
     if (!platform?.trim() || !message?.trim()) {
@@ -68,9 +68,17 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      if (isNaN(Number(chatId)) || (threadId && isNaN(Number(threadId)))) {
+      // Validate chatId as a string representing an integer (positive or negative)
+      if (!/^-?\d+$/.test(chatId)) {
         return NextResponse.json(
-          { error: "Chat ID and Thread ID must be numeric" },
+          { error: "Chat ID must be a valid integer (positive or negative)" },
+          { status: 400 }
+        );
+      }
+      // Validate threadId as numeric if provided
+      if (threadId && isNaN(Number(threadId))) {
+        return NextResponse.json(
+          { error: "Thread ID must be numeric" },
           { status: 400 }
         );
       }
@@ -92,8 +100,8 @@ export async function POST(request: NextRequest) {
     const result = await sendAlert(platform, {
       botName,
       username,
-      chatId,
-      threadId,
+      chatId, // Passed as string
+      threadId, // Passed as string (numeric value)
       email,
       message,
       subject,

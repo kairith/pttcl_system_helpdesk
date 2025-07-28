@@ -1,3 +1,4 @@
+
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
@@ -17,12 +18,9 @@ const nextConfig = {
       },
     ];
   },
-  serverActions: {
-    bodySizeLimit: '15mb',
-  },
-  api: {
-    bodyParser: {
-      sizeLimit: '15mb',
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '15mb',
     },
   },
 };

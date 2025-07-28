@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
-
+// fetch user by ID with permission for user rules 
 export async function GET(request: Request) {
   let connection;
   try {
