@@ -6,12 +6,14 @@ import { PencilIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
 import { Dialog, Transition } from "@headlessui/react";
 import { toast } from "react-toastify";
+import Card from "@/app/frontend/components/common/Card/Card";
 
 interface TicketImage {
   id: string;
   ticket_id: string;
   image_path: string;
 }
+
 interface TicketTableProps {
   filteredTickets: (Ticket & { users_name: string; creator_name: string; images?: TicketImage[] })[];
   permissions: { add: boolean; edit: boolean; delete: boolean; list: boolean; listAssign: boolean };
@@ -24,84 +26,83 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
   >(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [deleteTicketId, setDeleteTicketId] = useState<string | null>(null);
-  const tableRef = useRef<HTMLDivElement>(null);
   const [ticketImages, setTicketImages] = useState<{ [key: string]: TicketImage[] }>({});
-  // Add new state for enlarged image
-const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Default to 10 rows
+  const [currentPage, setCurrentPage] = useState(1); // Default to page 1
+  const tableRef = useRef<HTMLDivElement>(null);
 
-// Function to open enlarged image
-const openEnlargedImage = (imagePath: string) => {
-  setEnlargedImage(imagePath);
-};
+  // Reset currentPage to 1 when filteredTickets changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredTickets]);
 
-// Function to close enlarged image
-const closeEnlargedImage = () => {
-  setEnlargedImage(null);
-};
-  console.log("TicketTable props:", { permissions, ticketCount: filteredTickets.length });
-
-  // Fetch ticket images for all tickets on mount
-// components/TicketTable.tsx
-useEffect(() => {
-  const fetchImages = async () => {
-    const token = sessionStorage.getItem("token");
-    console.log("Token for image fetch:", token ? "Present" : "Missing");
-    if (!token) {
-      console.error("No token found, redirecting to login");
-      toast.error("Please log in to view ticket images.");
-      router.push("/");
-      return;
-    }
-
-    if (filteredTickets.length === 0) {
-      setTicketImages({});
-      return;
-    }
-
-    console.log(`Fetching images for ${filteredTickets.length} tickets`);
-    try {
-      const ticketIds = filteredTickets.map((ticket) => ticket.ticket_id);
-      const response = await fetch('/api/data/ticket_images/bulk', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ticket_ids: ticketIds }),
-      });
-      console.log('Bulk fetch response status:', response.status);
-      if (response.ok) {
-        const images: TicketImage[] = await response.json();
-        console.log('Bulk fetched images:', images);
-        const imageMap = images.reduce((acc, image) => {
-          acc[image.ticket_id] = acc[image.ticket_id] || [];
-          acc[image.ticket_id].push(image);
-          return acc;
-        }, {} as { [key: string]: TicketImage[] });
-        setTicketImages(imageMap);
-      } else {
-        const errorData = await response.json();
-        console.error('Bulk fetch error:', errorData);
-        setTicketImages({});
+  // Fetch ticket images for all tickets
+  useEffect(() => {
+    const fetchImages = async () => {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        toast.error("Please log in to view ticket images.");
+        router.push("/");
+        return;
       }
-    } catch (error) {
-      console.error('Failed to fetch images:', error);
-      setTicketImages({});
+
+      if (filteredTickets.length === 0) {
+        setTicketImages({});
+        return;
+      }
+
+      try {
+        const ticketIds = filteredTickets.map((ticket) => ticket.ticket_id);
+        const response = await fetch("/api/data/ticket_images/bulk", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ticket_ids: ticketIds }),
+        });
+        if (response.ok) {
+          const images: TicketImage[] = await response.json();
+          const imageMap = images.reduce((acc, image) => {
+            acc[image.ticket_id] = acc[image.ticket_id] || [];
+            acc[image.ticket_id].push(image);
+            return acc;
+          }, {} as { [key: string]: TicketImage[] });
+          setTicketImages(imageMap);
+        } else {
+          const errorData = await response.json();
+          setTicketImages({});
+          toast.error(errorData.error || "Failed to fetch ticket images");
+        }
+      } catch (error) {
+        setTicketImages({});
+        toast.error("Failed to fetch ticket images");
+      }
+    };
+
+    if (permissions.list) {
+      fetchImages();
     }
+  }, [filteredTickets, permissions.list, router]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredTickets.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const paginatedTickets = filteredTickets.slice(startIndex, startIndex + rowsPerPage);
+
+  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page
   };
 
-  if (permissions.list) {
-    fetchImages();
-  }
-}, [filteredTickets, permissions.list]);
+  const handlePrevious = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
 
-  if (!permissions.list) {
-    return (
-      <div className="w-full p-4 text-center text-gray-500 bg-white shadow-lg rounded-lg border border-gray-200">
-        You do not have permission to view tickets.
-      </div>
-    );
-  }
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
 
   const getStatusBadge = (status: string) => {
     const normalizedStatus = status.trim().toLowerCase();
@@ -124,7 +125,6 @@ useEffect(() => {
   const handleDelete = (ticketId: string) => {
     const ticketToDelete = filteredTickets.find((t) => t.id.toString() === ticketId);
     if (!ticketToDelete) {
-      console.error("Ticket not found for ID:", ticketId);
       toast.error("Ticket not found.");
       return;
     }
@@ -148,8 +148,6 @@ useEffect(() => {
 
       if (!ticketToDelete) throw new Error("Ticket data unavailable");
 
-      console.log("Deleting ticket:", { ticket_id: ticketToDelete.ticket_id });
-
       const response = await fetch(`/api/data/delete_ticket/${ticketToDelete.ticket_id}`, {
         method: "DELETE",
         headers: {
@@ -172,7 +170,6 @@ useEffect(() => {
         window.location.reload();
       }, 2000);
     } catch (err: any) {
-      console.error("Delete error:", err.message);
       toast.error(err.message);
     } finally {
       closeDeleteModal();
@@ -185,9 +182,16 @@ useEffect(() => {
   };
 
   const handleView = (ticket: Ticket & { users_name: string; creator_name: string; images?: TicketImage[] }) => {
-    console.log("Viewing ticket:", { ticket_id: ticket.ticket_id });
     setSelectedTicket({ ...ticket, images: ticketImages[ticket.ticket_id] || [] });
     setIsViewModalOpen(true);
+  };
+
+  const openEnlargedImage = (imagePath: string) => {
+    setEnlargedImage(imagePath);
+  };
+
+  const closeEnlargedImage = () => {
+    setEnlargedImage(null);
   };
 
   const closeViewModal = () => {
@@ -249,254 +253,323 @@ useEffect(() => {
     }
     return () => clearTimeout(timeout);
   }, [isViewModalOpen, deleteTicketId]);
- 
+
+  if (!permissions.list) {
+    return (
+      <Card className="mt-6 sm:mt-8 p-4 sm:p-6">
+        <div className="w-full p-4 text-center text-gray-500 bg-white shadow-lg rounded-lg border border-gray-200">
+          You do not have permission to view tickets.
+        </div>
+      </Card>
+    );
+  }
+
   return (
-    <div className="w-full overflow-x-auto">
-      <div ref={tableRef} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200 hidden md:table">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ticket ID</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Station ID</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Station Name</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Assign</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Issue</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Images</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredTickets.length === 0 ? (
+    <Card className="mt-6 sm:mt-1 p-4 sm:p-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800"></h2>
+        <div className="flex items-center space-x-2">
+          <label htmlFor="rowsPerPage" className="text-gray-600 text-sm">
+            Rows per page:
+          </label>
+          <select
+            id="rowsPerPage"
+            value={rowsPerPage}
+            onChange={handleRowsPerPageChange}
+            className="border border-gray-300 rounded px-2 py-1 text-sm"
+            aria-label="Select rows per page"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+      </div>
+      <div className="w-full overflow-x-auto">
+        <div ref={tableRef} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 hidden md:table">
+            <thead className="bg-gray-100 rounded-xl">
               <tr>
-                <td colSpan={9} className="px-4 py-4 text-center text-gray-500">No tickets found.</td>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ticket ID</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Station ID</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Station Name</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Assign</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Issue</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Images</th> */}
               </tr>
-            ) : (
-              filteredTickets.map((ticket, index) => (
-                <tr key={ticket.id} className="hover:bg-gray-50 transition-colors duration-200">
-                  <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{index + 1}</td>
-                  {permissions.list && (
-                    <td className="px-4 py-3">
-                      <div className="flex justify-center gap-2">
-                        {permissions.edit && (
-                          <button
-                            onClick={() => handleEdit(ticket.id.toString())}
-                            className="p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                            aria-label={`Edit ticket ${ticket.ticket_id}`}
-                          >
-                            <PencilIcon className="w-4 h-4" />
-                          </button>
-                        )}
-                        {permissions.delete && (
-                          <button
-                            onClick={() => handleDelete(ticket.id.toString())}
-                            className="p-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors"
-                            aria-label={`Delete ticket ${ticket.ticket_id}`}
-                          >
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleView(ticket)}
-                          className="p-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
-                          aria-label={`View ticket ${ticket.ticket_id}`}
-                        >
-                          <EyeIcon className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.ticket_id}</td>
-                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.station_id}</td>
-                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.station_name || "N/A"}</td>
-                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.users_name || "Not Assigned"}</td>
-                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.issue_type || "N/A"}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>
-                      {ticket.status || "N/A"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
-                    {ticketImages[ticket.ticket_id]?.length > 0 ? (
-                      <span>{ticketImages[ticket.ticket_id].length} image(s)</span>
-                    ) : (
-                      "No images"
-                    )}
-                  </td>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {paginatedTickets.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-4 py-4 text-center text-gray-500">No tickets found.</td>
                 </tr>
+              ) : (
+                paginatedTickets.map((ticket, index) => (
+                  <tr key={ticket.id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{startIndex + index + 1}</td>
+                    {permissions.list && (
+                      <td className="px-4 py-3">
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleView(ticket)}
+                            className="p-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
+                            aria-label={`View ticket ${ticket.ticket_id}`}
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                          </button>
+                          {permissions.edit && (
+                            <button
+                              onClick={() => handleEdit(ticket.id.toString())}
+                              className="p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                              aria-label={`Edit ticket ${ticket.ticket_id}`}
+                            >
+                              <PencilIcon className="w-4 h-4" />
+                            </button>
+                          )}
+                          {permissions.delete && (
+                            <button
+                              onClick={() => handleDelete(ticket.id.toString())}
+                              className="p-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors"
+                              aria-label={`Delete ticket ${ticket.ticket_id}`}
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          )}
+                          {/* <button
+                            onClick={() => handleView(ticket)}
+                            className="p-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
+                            aria-label={`View ticket ${ticket.ticket_id}`}
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                          </button> */}
+                        </div>
+                      </td>
+                    )}
+                    <td className="px-4 py-3 text-sm text-gray-800">{ticket.ticket_id}</td>
+                    <td className="px-4 py-3 text-sm text-gray-800">{ticket.station_id}</td>
+                    <td className="px-4 py-3 text-sm text-gray-800">{ticket.station_name || "N/A"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-800">{ticket.users_name || "Not Assigned"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-800">{ticket.issue_type || "N/A"}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>
+                        {ticket.status || "N/A"}
+                      </span>
+                    </td>
+                    {/* <td className="px-4 py-3 text-sm text-gray-800">
+                      {ticketImages[ticket.ticket_id]?.length > 0 ? (
+                        <span>{ticketImages[ticket.ticket_id].length} image(s)</span>
+                      ) : (
+                        "No images"
+                      )}
+                    </td> */}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+
+          {/* Mobile Responsive Cards */}
+          <div className="md:hidden divide-y divide-gray-200">
+            {paginatedTickets.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">No tickets found.</div>
+            ) : (
+              paginatedTickets.map((ticket, index) => (
+                <div key={ticket.id} className="p-4">
+                  <div className="mb-2 text-sm text-gray-800 font-medium">No: {startIndex + index + 1}</div>
+                  <div className="mb-2 text-sm text-gray-800 font-medium">Ticket ID: {ticket.ticket_id}</div>
+                  <div className="mb-2 text-sm text-gray-800 font-medium">Station ID: {ticket.station_id}</div>
+                  <div className="mb-2 text-sm text-gray-800 font-medium">Station Name: {ticket.station_name || "N/A"}</div>
+                  <div className="mb-2 text-sm text-gray-800 font-medium">Assign: {ticket.users_name || "Not Assigned"}</div>
+                  <div className="mb-2 text-sm text-gray-800 font-medium">Issue Type: {ticket.issue_type || "N/A"}</div>
+                  <div className="mb-2 text-sm font-medium">
+                    Status: <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>{ticket.status || "N/A"}</span>
+                  </div>
+                  {/* <div className="mb-2 text-sm text-gray-800 font-medium">
+                    Images: {ticketImages[ticket.ticket_id]?.length > 0 ? `${ticketImages[ticket.ticket_id].length} image(s)` : "No images"}
+                  </div> */}
+                  {permissions.list && (
+                    <div className="flex justify-start gap-2 mt-3">
+                      {permissions.edit && (
+                        <button
+                          onClick={() => handleEdit(ticket.id.toString())}
+                          className="p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                          aria-label={`Edit ticket ${ticket.ticket_id}`}
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                      {permissions.delete && (
+                        <button
+                          onClick={() => handleDelete(ticket.id.toString())}
+                          className="p-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors"
+                          aria-label={`Delete ticket ${ticket.ticket_id}`}
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleView(ticket)}
+                        className="p-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
+                        aria-label={`View ticket ${ticket.ticket_id}`}
+                      >
+                        <EyeIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               ))
             )}
-          </tbody>
-        </table>
-
-        {/* Mobile Responsive Cards */}
-        <div className="md:hidden divide-y divide-gray-200">
-          {filteredTickets.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">No tickets found.</div>
-          ) : (
-            filteredTickets.map((ticket, index) => (
-              <div key={ticket.id} className="p-4">
-                <div className="mb-2 text-sm text-gray-800 font-medium">No: {index + 1}</div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">Ticket ID: {ticket.ticket_id}</div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">Station ID: {ticket.station_id}</div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">Station Name: {ticket.station_name || "N/A"}</div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">Assign: {ticket.users_name || "Not Assigned"}</div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">Issue Type: {ticket.issue_type || "N/A"}</div>
-                <div className="mb-2 text-sm font-medium">
-                  Status: <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>{ticket.status || "N/A"}</span>
-                </div>
-                <div className="mb-2 text-sm text-gray-800 font-medium">
-                  Images: {ticketImages[ticket.ticket_id]?.length > 0 ? `${ticketImages[ticket.ticket_id].length} image(s)` : "No images"}
-                </div>
-                {permissions.list && (
-                  <div className="flex justify-start gap-2 mt-3">
-                    {permissions.edit && (
-                      <button
-                        onClick={() => handleEdit(ticket.id.toString())}
-                        className="p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                        aria-label={`Edit ticket ${ticket.ticket_id}`}
-                      >
-                        <PencilIcon className="w-4 h-4" />
-                      </button>
-                    )}
-                    {permissions.delete && (
-                      <button
-                        onClick={() => handleDelete(ticket.id.toString())}
-                        className="p-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors"
-                        aria-label={`Delete ticket ${ticket.ticket_id}`}
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleView(ticket)}
-                      className="p-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
-                      aria-label={`View ticket ${ticket.ticket_id}`}
-                    >
-                      <EyeIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+          </div>
         </div>
+        {paginatedTickets.length > 0 && (
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={handlePrevious}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded ${
+                currentPage === 1
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
+              aria-label="Previous page"
+            >
+              Previous
+            </button>
+            <span className="text-gray-700">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded ${
+                currentPage === totalPages
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
+              aria-label="Next page"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {/* View Ticket Modal */}
-   
-    {isViewModalOpen && selectedTicket && (
-      <div
-        className="fixed inset-0 flex items-center justify-center z-[2000] bg-black/50 supports-[backdrop-filter]:backdrop-blur-lg"
-        style={{
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "env(safe-area-inset-bottom)",
-          paddingLeft: "env(safe-area-inset-left)",
-          paddingRight: "env(safe-area-inset-right)",
-        }}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-      >
+      {isViewModalOpen && selectedTicket && (
         <div
-          className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-[calc(100vw-16px)] max-w-md sm:max-w-lg lg:max-w-4xl modal-content"
-          style={{ transition: "transform 0.3s ease-in-out, opacity 0.3s ease-in-out" }}
+          className="fixed inset-0 flex items-center justify-center z-[2000] bg-black/50 supports-[backdrop-filter]:backdrop-blur-lg"
+          style={{
+            paddingTop: "env(safe-area-inset-top)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+            paddingLeft: "env(safe-area-inset-left)",
+            paddingRight: "env(safe-area-inset-right)",
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
         >
-          <h2 id="modal-title" className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6">
-            Ticket Details: <span className="text-blue-600">{selectedTicket.ticket_id}</span>
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-4">
-              <div><p className="text-gray-800 break-words truncate">Ticket ID: {selectedTicket.ticket_id}</p></div>
-              <div><p className="text-gray-800 break-words truncate">Station ID: {selectedTicket.station_id}</p></div>
-              <div><p className="text-gray-800 break-words truncate">Station Name: {selectedTicket.station_name || "N/A"}</p></div>
-              <div><p className="text-gray-800 break-words truncate">Station Type: {selectedTicket.station_type || "N/A"}</p></div>
-            </div>
-            <div className="space-y-4">
-              <div><p className="text-gray-800 break-words truncate">Province: {selectedTicket.province || "N/A"}</p></div>
-              <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Issue Description: {selectedTicket.issue_description || "N/A"}</p></div>
-              <div><p className="text-gray-800 break-words truncate">Issue Type: {selectedTicket.issue_type || "N/A"}</p></div>
-            </div>
-            <div className="space-y-4">
-              <div><p className="text-gray-800 break-words truncate">Status: {selectedTicket.status || "N/A"}</p></div>
-              <div><p className="text-gray-800 break-words truncate">Assign: {selectedTicket.users_name || "Not Assigned"}</p></div>
-              <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Comment: {selectedTicket.comment || "N/A"}</p></div>
-              <div><p className="text-gray-800 break-words truncate">Ticket Time: {selectedTicket.ticket_time ? new Date(selectedTicket.ticket_time).toLocaleString() : "N/A"}</p></div>
-              <div><p className="text-gray-800 break-words truncate">Created By User ID: {selectedTicket.user_create_ticket || "N/A"}</p></div>
-            </div>
-          </div>
-          {/* Image Gallery */}
-          <div className="mt-6">
-            <h3 className="text-md font-semibold text-gray-800 mb-2">Ticket Images</h3>
-            {selectedTicket.images && selectedTicket.images.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {selectedTicket.images.map((image) => (
-                  <div key={image.id} className="relative">
-                    <img
-                      src={image.image_path}
-                      alt={`Ticket ${selectedTicket.ticket_id} image`}
-                      className="w-full h-32 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => openEnlargedImage(image.image_path)}
-                      onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")} // Fallback image
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          openEnlargedImage(image.image_path);
-                        }
-                      }}
-                      aria-label={`View larger image for ticket ${selectedTicket.ticket_id}`}
-                    />
-                  </div>
-                ))}
+          <div
+            className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-[calc(100vw-16px)] max-w-md sm:max-w-lg lg:max-w-4xl modal-content"
+            style={{ transition: "transform 0.3s ease-in-out, opacity 0.3s ease-in-out" }}
+          >
+            <h2 id="modal-title" className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6">
+              Ticket Details: <span className="text-blue-600">{selectedTicket.ticket_id}</span>
+            </h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="space-y-4">
+                <div><p className="text-gray-800 break-words truncate">Ticket ID: {selectedTicket.ticket_id}</p></div>
+                <div><p className="text-gray-800 break-words truncate">Station ID: {selectedTicket.station_id}</p></div>
+                <div><p className="text-gray-800 break-words truncate">Station Name: {selectedTicket.station_name || "N/A"}</p></div>
+                <div><p className="text-gray-800 break-words truncate">Station Type: {selectedTicket.station_type || "N/A"}</p></div>
               </div>
-            ) : (
-              <p className="text-gray-500">Ticket has no images when created.</p>
-            )}
+              <div className="space-y-4">
+                <div><p className="text-gray-800 break-words truncate">Province: {selectedTicket.province || "N/A"}</p></div>
+                <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Issue Description: {selectedTicket.issue_description || "N/A"}</p></div>
+                <div><p className="text-gray-800 break-words truncate">Issue Type: {selectedTicket.issue_type || "N/A"}</p></div>
+              </div>
+              <div className="space-y-4">
+                <div><p className="text-gray-800 break-words truncate">Status: {selectedTicket.status || "N/A"}</p></div>
+                <div><p className="text-gray-800 break-words truncate">Assign: {selectedTicket.users_name || "Not Assigned"}</p></div>
+                <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Comment: {selectedTicket.comment || "N/A"}</p></div>
+                <div><p className="text-gray-800 break-words truncate">Ticket Time: {selectedTicket.ticket_time ? new Date(selectedTicket.ticket_time).toLocaleString() : "N/A"}</p></div>
+                <div><p className="text-gray-800 break-words truncate">Created By User ID: {selectedTicket.user_create_ticket || "N/A"}</p></div>
+              </div>
+            </div>
+            <div className="mt-6">
+              <h3 className="text-md font-semibold text-gray-800 mb-2">Ticket Images</h3>
+              {selectedTicket.images && selectedTicket.images.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {selectedTicket.images.map((image) => (
+                    <div key={image.id} className="relative">
+                      <img
+                        src={image.image_path}
+                        alt={`Ticket ${selectedTicket.ticket_id} image`}
+                        className="w-full h-32 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => openEnlargedImage(image.image_path)}
+                        onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            openEnlargedImage(image.image_path);
+                          }
+                        }}
+                        aria-label={`View larger image for ticket ${selectedTicket.ticket_id}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">Ticket has no images when created.</p>
+              )}
+            </div>
+            <button
+              onClick={closeViewModal}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") closeViewModal();
+              }}
+              className="mt-4 sm:mt-6 w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors focus:ring-4 focus:ring-blue-200"
+              aria-label="Close modal"
+            >
+              Close
+            </button>
           </div>
-          <button
-            onClick={closeViewModal}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") closeViewModal();
-            }}
-            className="mt-4 sm:mt-6 w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors focus:ring-4 focus:ring-blue-200"
-            aria-label="Close modal"
-          >
-            Close
-          </button>
         </div>
-      </div>
-    )}
+      )}
 
-    {/* Enlarged Image Modal */}
-    {enlargedImage && (
-      <div
-        className="fixed inset-0 flex items-center justify-center z-[3000] bg-black/70 supports-[backdrop-filter]:backdrop-blur-lg"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Enlarged image view"
-        onClick={closeEnlargedImage}
-      >
-        <div className="relative max-w-[90vw] max-h-[90vh] p-4">
-          <img
-            src={enlargedImage}
-            alt="Enlarged ticket image"
-            className="max-w-full max-h-[80vh] object-contain rounded-md"
-            onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")} // Fallback image
-          />
-          <button
-            onClick={closeEnlargedImage}
-            className="absolute top-2 right-2 p-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
-            aria-label="Close enlarged image"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+      {/* Enlarged Image Modal */}
+      {enlargedImage && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-[3000] bg-black/70 supports-[backdrop-filter]:backdrop-blur-lg"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Enlarged image view"
+          onClick={closeEnlargedImage}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh] p-4">
+            <img
+              src={enlargedImage}
+              alt="Enlarged ticket image"
+              className="max-w-full max-h-[80vh] object-contain rounded-md"
+              onError={(e) => (e.currentTarget.src = "/placeholder-image.jpg")}
+            />
+            <button
+              onClick={closeEnlargedImage}
+              className="absolute top-2 right-2 p-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
+              aria-label="Close enlarged image"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
       {/* Delete Confirmation Modal */}
       {permissions.delete && (
@@ -565,6 +638,6 @@ useEffect(() => {
           </Dialog>
         </Transition>
       )}
-    </div>
+    </Card>
   );
 }

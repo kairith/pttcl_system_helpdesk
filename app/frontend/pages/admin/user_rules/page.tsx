@@ -61,7 +61,7 @@ export default function UserRules() {
           setTimeout(() => router.push("/"), 2000);
           return;
         }
-        console.log("UserRules: Fetching with token:", token.substring(0, 10) + "...");
+        // console.log("UserRules: Fetching with token:", token.substring(0, 10) + "...");
 
         const response = await fetch("/api/data/user", {
           headers: { Authorization: `Bearer ${token}` },
@@ -99,7 +99,7 @@ export default function UserRules() {
           },
         };
         setPermissions(userPermissions);
-        console.log("UserRules: Permissions:", JSON.stringify(userPermissions, null, 2));
+        // console.log("UserRules: Permissions:", JSON.stringify(userPermissions, null, 2));
 
         if (!userPermissions.userRules.list) {
           setError("You do not have permission to view user rules.");
@@ -108,7 +108,7 @@ export default function UserRules() {
         }
 
         const { rules, error } = await fetchUserRules();
-        console.log("UserRules: Fetched rules:", JSON.stringify(rules, null, 2));
+        // console.log("UserRules: Fetched rules:", JSON.stringify(rules, null, 2));
         setRules(rules || []);
         if (error) {
           setError(error);
@@ -167,7 +167,7 @@ export default function UserRules() {
     setEditRuleName(rule.rules_name || ""); // Ensure non-empty string
     setEditPermissions(mapRuleToPermissions(rule));
     setIsEditModalOpen(true);
-    console.log("UserRules: Opening edit modal for rule:", rule.rules_id);
+    // console.log("UserRules: Opening edit modal for rule:", rule.rules_id);
   };
 
   type PermissionKey =
@@ -218,7 +218,7 @@ export default function UserRules() {
         }),
       });
       const data = await response.json();
-      console.log("UserRules: Edit response:", JSON.stringify(data, null, 2));
+      // console.log("UserRules: Edit response:", JSON.stringify(data, null, 2));
       if (response.ok) {
         setRules(
           rules.map((r) =>
@@ -295,7 +295,7 @@ export default function UserRules() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-      console.log("UserRules: Delete response:", JSON.stringify(data, null, 2));
+      // console.log("UserRules: Delete response:", JSON.stringify(data, null, 2));
       if (response.ok) {
         setRules(rules.filter((r) => r.rules_id !== selectedRule.rules_id));
         setIsDeleteModalOpen(false);
@@ -325,13 +325,13 @@ export default function UserRules() {
       setFilterIdError(null);
       setFilterId(value);
     }
-    console.log("UserRules: Filter ID updated:", value);
+    // console.log("UserRules: Filter ID updated:", value);
   };
 
   const handleFilterNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFilterName(value);
-    console.log("UserRules: Filter Name updated:", value);
+    // console.log("UserRules: Filter Name updated:", value);
   };
 
   const handleFilterToggle = () => {
@@ -341,7 +341,7 @@ export default function UserRules() {
       setFilterName("");
       setFilterIdError(null);
     }
-    console.log("UserRules: Filter input toggled:", !showFilterInput);
+    // console.log("UserRules: Filter input toggled:", !showFilterInput);
   };
 
   const handleClearFilter = () => {
@@ -349,7 +349,7 @@ export default function UserRules() {
     setFilterName("");
     setFilterIdError(null);
     setShowFilterInput(false);
-    console.log("UserRules: Filters cleared");
+    // console.log("UserRules: Filters cleared");
   };
 
   const filteredRules = rules.filter((rule) => {
@@ -426,13 +426,13 @@ export default function UserRules() {
               {permissions.userRules.list && (
                 <div className="flex flex-col gap-4 mb-4 sm:mb-6 w-full max-w-full">
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <button
+                    {/* <button
                       onClick={handleFilterToggle}
                       className="w-full sm:w-32 max-w-full min-w-0 bg-white border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-100 text-sm sm:text-base flex items-center justify-center pointer-events-auto"
                       aria-label="Toggle filter input"
                     >
                       <span className="mr-2">🔍</span> Filter
-                    </button>
+                    </button> */}
                     {showFilterInput && (
                       <div className="flex flex-col sm:flex-row gap-2 w-full max-w-full min-w-0">
                         <div className="flex-1 min-w-0">
@@ -528,7 +528,7 @@ export default function UserRules() {
                                     <button
                                       onClick={() => {
                                         handleEdit(row);
-                                        console.log("UserRules: Edit button clicked for rule:", row.rules_id);
+                                        // console.log("UserRules: Edit button clicked for rule:", row.rules_id);
                                       }}
                                       className="w-8 h-8 p-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors pointer-events-auto"
                                       aria-label={`Edit rule ${row.rules_name}`}
@@ -555,7 +555,7 @@ export default function UserRules() {
                                       onClick={() => {
                                         setSelectedRule(row);
                                         setIsDeleteModalOpen(true);
-                                        console.log("UserRules: Delete button clicked for rule:", row.rules_id);
+                                        // console.log("UserRules: Delete button clicked for rule:", row.rules_id);
                                       }}
                                       className="w-8 h-8 p-1 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors pointer-events-auto"
                                       aria-label={`Delete rule ${row.rules_name}`}
@@ -605,7 +605,7 @@ export default function UserRules() {
                     stations: { add: false, edit: false, delete: false, list: false },
                     userRules: { add: false, edit: false, delete: false, list: false },
                   });
-                  console.log("UserRules: Edit modal closed");
+                  // console.log("UserRules: Edit modal closed");
                 }}
               >
                 <Transition.Child
@@ -763,7 +763,7 @@ export default function UserRules() {
                               stations: { add: false, edit: false, delete: false, list: false },
                               userRules: { add: false, edit: false, delete: false, list: false },
                             });
-                            console.log("UserRules: Edit modal Cancel clicked");
+                            // console.log("UserRules: Edit modal Cancel clicked");
                           }}
                           className="w-full sm:w-32 max-w-full min-w-0 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:bg-gray-100 pointer-events-auto"
                           aria-label="Cancel edit"
@@ -774,7 +774,7 @@ export default function UserRules() {
                         <button
                           type="button"
                           onClick={() => {
-                            console.log("UserRules: Edit modal Save clicked");
+                            // console.log("UserRules: Edit modal Save clicked");
                             handleEditSubmit();
                           }}
                           className="w-full sm:w-32 max-w-full min-w-0 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-300 pointer-events-auto"
@@ -799,7 +799,7 @@ export default function UserRules() {
                 onClose={() => {
                   setIsDeleteModalOpen(false);
                   setSelectedRule(null);
-                  console.log("UserRules: Delete modal closed");
+                  // console.log("UserRules: Delete modal closed");
                 }}
               >
                 <Transition.Child
@@ -838,7 +838,7 @@ export default function UserRules() {
                           onClick={() => {
                             setIsDeleteModalOpen(false);
                             setSelectedRule(null);
-                            console.log("UserRules: Delete modal Cancel clicked");
+                            // console.log("UserRules: Delete modal Cancel clicked");
                           }}
                           className="w-full sm:w-32 max-w-full min-w-0 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:bg-gray-100 pointer-events-auto"
                           aria-label="Cancel deletion"
@@ -848,7 +848,7 @@ export default function UserRules() {
                         </button>
                         <button
                           onClick={() => {
-                            console.log("UserRules: Delete modal Delete clicked");
+                            // console.log("UserRules: Delete modal Delete clicked");
                             handleDelete();
                           }}
                           className="w-full sm:w-32 max-w-full min-w-0 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:bg-red-300 pointer-events-auto"

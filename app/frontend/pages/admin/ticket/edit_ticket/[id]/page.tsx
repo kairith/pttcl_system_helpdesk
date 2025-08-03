@@ -95,7 +95,7 @@ const constructPlainTextTelegramMessage = (ticketData: {
   return `============================================\nDear ${escapeMarkdown(username)}\nTicket Assign\nAssign From ${assignedFrom || "Unknown"}\nStation ID: ${escapeMarkdown(stationId)}\nStation Name: ${escapeMarkdown(stationName)}\nTicket ID: ${escapeMarkdown(ticketId || "Not Available")}\nIssue Description: ${escapeMarkdown(issueDescription)}\n\nPlease log in to your helpdesk to review.\n=============================================`;
 };
 
-const fetchWithTimeout = async (url: string, options: RequestInit, timeout = 10000) => {
+const fetchWithTimeout = async (url: string, options: RequestInit, timeout = 60000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
@@ -196,9 +196,9 @@ export default function EditTicketPage() {
           throw new Error(errorData.error || "Failed to fetch ticket");
         }
         const data = await ticketResponse.json();
-        console.log("Ticket Data:", data);
-        console.log("Ticket ID from URL:", id);
-        console.log("Ticket ID from Response:", data.ticket?.ticket_id);
+        // console.log("Ticket Data:", data);
+        // console.log("Ticket ID from URL:", id);
+        // console.log("Ticket ID from Response:", data.ticket?.ticket_id);
         setTicket(data.ticket);
         setFormData({
           station_id: data.ticket.station_id || "",
@@ -217,7 +217,7 @@ export default function EditTicketPage() {
           throw new Error(errorData.error || `Failed to fetch users: ${usersResponse.status}`);
         }
         const usersData = await usersResponse.json();
-        console.log("Users Data from /api/data/users:", usersData);
+        // console.log("Users Data from /api/data/users:", usersData);
         const formattedUsers: DbUser[] = Array.isArray(usersData)
           ? usersData
               .filter((user: any) => user.status === 1 && user.code === 0)
@@ -231,7 +231,7 @@ export default function EditTicketPage() {
                 company: user.company || undefined,
               }))
           : [];
-        console.log("Formatted Users (dbUsers):", formattedUsers);
+        // console.log("Formatted Users (dbUsers):", formattedUsers);
         setDbUsers(formattedUsers);
         setAvailableUsers(
           formattedUsers.map((u: DbUser) => ({
@@ -239,7 +239,7 @@ export default function EditTicketPage() {
             name: u.users_name,
           }))
         );
-        console.log("Available Users:", formattedUsers.map((u: DbUser) => ({ id: u.users_id, name: u.users_name })));
+        // console.log("Available Users:", formattedUsers.map((u: DbUser) => ({ id: u.users_id, name: u.users_name })));
 
         if (!userGroupsResponse.ok) {
           const errorData = await userGroupsResponse.json();
@@ -255,7 +255,7 @@ export default function EditTicketPage() {
                 groupName: String(group.groupName || "-"),
               }))
             : [];
-          console.log("User Groups:", formattedUserGroups);
+          // console.log("User Groups:", formattedUserGroups);
           setUserGroups(formattedUserGroups);
         }
 
@@ -265,7 +265,7 @@ export default function EditTicketPage() {
           setBotNames([]);
         } else {
           const botsData = await botsResponse.json();
-          console.log("Bot Names:", botsData);
+          // console.log("Bot Names:", botsData);
           setBotNames(Array.isArray(botsData) ? botsData : []);
         }
       } catch (err: any) {
@@ -355,7 +355,7 @@ export default function EditTicketPage() {
       }
 
       const ticketIdToUse = ticket?.ticket_id || id || "Not Available";
-      console.log("Ticket ID for Alerts:", ticketIdToUse);
+      // console.log("Ticket ID for Alerts:", ticketIdToUse);
 
       // Send Gmail alert
       const gmailMessageText = constructGmailMessage({
@@ -372,7 +372,7 @@ export default function EditTicketPage() {
         message: gmailMessageText,
         subject: "Ticket Assignment Update",
       };
-      console.log("Gmail Payload:", gmailPayload);
+      // console.log("Gmail Payload:", gmailPayload);
       const gmailResponse = await fetchWithTimeout("/api/data/alert_bot", {
         method: "POST",
         headers: {
@@ -393,8 +393,8 @@ export default function EditTicketPage() {
 
       // Check for Telegram group and send alert if exists
       const userGroup = userGroups.find((group) => group.users_id === assignedUser.id);
-      console.log("Selected User for Telegram:", assignedUser);
-      console.log("User Group for Telegram:", userGroup);
+      // console.log("Selected User for Telegram:", assignedUser);
+      // console.log("User Group for Telegram:", userGroup);
       if (userGroup && userGroup.chatId && botNames.length > 0) {
         const telegramMessage = constructPlainTextTelegramMessage({
           username: userGroup.username || formData.users_name,
@@ -411,7 +411,7 @@ export default function EditTicketPage() {
           chatId: userGroup.chatId,
           message: telegramMessage,
         };
-        console.log("Telegram Payload:", telegramPayload);
+        // console.log("Telegram Payload:", telegramPayload);
         const telegramResponse = await fetchWithTimeout("/api/data/alert_bot", {
           method: "POST",
           headers: {
@@ -449,8 +449,8 @@ export default function EditTicketPage() {
 
   const selectedUser = availableUsers.find((user) => user.name === formData.users_name);
   const selectedUserGroup = userGroups.find((group) => group.users_id === selectedUser?.id);
-  console.log("Selected User:", selectedUser);
-  console.log("Selected User Group:", selectedUserGroup);
+  // console.log("Selected User:", selectedUser);
+  // console.log("Selected User Group:", selectedUserGroup);
 
   const ticketIdToUse = ticket?.ticket_id || id || "Not Available";
   let telegramPreview = "No Telegram message will be sent (no user selected or no group associated).";

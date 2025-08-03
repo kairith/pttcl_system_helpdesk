@@ -20,15 +20,15 @@ interface UserRow extends RowDataPacket {
 export async function GET(request: Request) {
   let connection;
   try {
-    console.log("GET: Fetching report filters");
+    // console.log("GET: Fetching report filters");
     const authHeader = request.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("GET: Unauthorized: Missing or invalid Authorization header");
+      // console.log("GET: Unauthorized: Missing or invalid Authorization header");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const token = authHeader.split(" ")[1];
     if (!token) {
-      console.log("GET: Unauthorized: No token provided");
+      // console.log("GET: Unauthorized: No token provided");
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
@@ -57,10 +57,10 @@ export async function GET(request: Request) {
     const issueTypes = issueTypeRows.map((row) => row.issue_type);
     const users = userRows.map((row) => ({ users_id: String(row.users_id), users_name: row.users_name }));
 
-    console.log("Raw statusRows:", statusRows);
-    console.log("Raw issueTypeRows:", issueTypeRows);
-    console.log("Raw userRows:", userRows);
-    console.log(`GET: Fetched ${statuses.length} statuses, ${issueTypes.length} issue types, ${users.length} users`);
+    // console.log("Raw statusRows:", statusRows);
+    // console.log("Raw issueTypeRows:", issueTypeRows);
+    // console.log("Raw userRows:", userRows);
+    // console.log(`GET: Fetched ${statuses.length} statuses, ${issueTypes.length} issue types, ${users.length} users`);
 
     return NextResponse.json({ statuses, issueTypes, users }, { status: 200 });
   } catch (error) {

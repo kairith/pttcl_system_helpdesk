@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       [ticket_ids]
     );
 
-    console.log(`Images found for ticket_ids ${ticket_ids.join(', ')}:`, rows);
+    // console.log(`Images found for ticket_ids ${ticket_ids.join(', ')}:`, rows);
     return NextResponse.json(rows, { status: 200 });
   } catch (error) {
     console.error('Error fetching images:', error);

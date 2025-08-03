@@ -52,6 +52,7 @@ const constructGmailMessage = (ticketData: {
   issueType: string;
   issueDescription: string;
   ticketId: string;
+  ticketOpen: string;
   imagePath?: string;
 }) => {
   const {
@@ -63,12 +64,13 @@ const constructGmailMessage = (ticketData: {
     issueType,
     issueDescription,
     ticketId,
-    imagePath,
+    ticketOpen,
   } = ticketData;
 
   const issueTypeString = numberToIssueType[issueType] || issueType;
 
   return `New Ticket Created
+
 
 Station ID: ${stationId}
 Station Name: ${stationName}
@@ -77,7 +79,6 @@ Province: ${province}
 Issue On: ${issueOn}
 Issue Type: ${issueTypeString}
 Issue Description: ${issueDescription}
-${imagePath ? `Image Attachment: ${BASE_URL}${imagePath}` : ""}
 Ticket ID: ${ticketId}
 
 Please log in to your helpdesk for further details.`;
@@ -87,24 +88,33 @@ const constructTelegramMessage = (ticketData: {
   username: string;
   stationId: string;
   stationName: string;
+  issueOn: string;
+  issueType: string;
   ticketId: string;
   issueDescription: string;
+  ticketOpen: string;
 }) => {
   const {
     username = "Unknown",
     stationId = "N/A",
     stationName = "N/A",
+    issueOn = "N/A",
+    issueType = "N/A",
     ticketId = "N/A",
     issueDescription = "No description provided",
+    ticketOpen = "N/A",
   } = ticketData;
 
   return `
-    <div class="w-full p-4 bg-white rounded-lg shadow-sm font-sans sm:p-6">
+    <div class="w-full p-4 background rounded-lg shadow-sm font-sans sm:p-6">
       <p class="text-base sm:text-sm font-semibold text-gray-800 mb-1">Dear @${username}</p>
       <p class="text-base sm:text-sm font-bold text-blue-800 mb-1">New Ticket Created</p>
       <div class="border-t border-gray-200 my-2"></div>
+
       <p class="text-sm text-gray-600">Station ID: ${stationId}</p>
       <p class="text-sm text-gray-600">Station Name: ${stationName}</p>
+      <p class="text-sm text-gray-600">Issue On: ${issueOn}</p>
+      <p class="text-sm text-gray-600">Issue Type: ${issueType}</p>
       <p class="text-sm text-gray-600">Ticket ID: ${ticketId}</p>
       <p class="text-sm text-gray-600">Issue Description: ${issueDescription}</p>
       <div class="border-t border-gray-200 my-2"></div>
@@ -117,23 +127,23 @@ const constructPlainTextTelegramMessage = (ticketData: {
   username: string;
   stationId: string;
   stationName: string;
+  issueOn: string;
+  issueType: string;
   ticketId: string;
   issueDescription: string;
+  ticketOpen: string;
 }) => {
-  const {
-    username,
-    stationId,
-    stationName,
-    ticketId,
-    issueDescription,
-  } = ticketData;
+  const { username, stationId, stationName, ticketId, issueDescription, issueOn, issueType, ticketOpen } = ticketData;
 
   if (
     !username?.trim() ||
     !stationId?.trim() ||
     !stationName?.trim() ||
     !ticketId?.trim() ||
-    !issueDescription?.trim()
+    !issueDescription?.trim() ||
+    !issueOn?.trim() ||
+    !issueType?.trim() ||
+    !ticketOpen?.trim()
   ) {
     throw new Error("All required fields must be non-empty for Telegram message");
   }
@@ -143,29 +153,35 @@ const constructPlainTextTelegramMessage = (ticketData: {
   return `Dear @${escapeMarkdown(username)}
 New Ticket Created
 
+
 Station ID: ${escapeMarkdown(stationId)}
 Station Name: ${escapeMarkdown(stationName)}
+Issue On: ${escapeMarkdown(issueOn)}
+Issue Type: ${escapeMarkdown(issueType)}
 Ticket ID: ${escapeMarkdown(ticketId)}
 Issue Description: ${escapeMarkdown(issueDescription)}
 
 Please log in to your helpdesk to review.`;
 };
 
-// Utility to add timeout to fetch requests
-const fetchWithTimeout = async (url: string, options: RequestInit, timeout = 10000) => {
+const fetchWithTimeout = async (url: string, options: RequestInit, timeout = 1000 * 600) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
   try {
     const response = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(id);
+    if (!response) {
+      throw new Error(`No response received from ${url}`);
+    }
     return response;
   } catch (error) {
     clearTimeout(id);
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error("Request timed out");
+      throw new Error(`Request to ${url} timed out`);
     }
-    throw error;
+    console.error(`Fetch error for ${url}:`, error);
+    throw new Error(`Failed to fetch ${url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 
@@ -180,6 +196,7 @@ export default function AddTicketPage() {
   const [issueDescription, setIssueDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
   const [showDropdown, setShowDropdown] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState("");
@@ -230,7 +247,18 @@ export default function AddTicketPage() {
         if (!stationsData.stations || !Array.isArray(stationsData.stations)) {
           throw new Error("Invalid station data format");
         }
-        setStationOptions(stationsData.stations);
+        const validStations = stationsData.stations.filter(
+          (station: Station) =>
+            station.station_id &&
+            station.station_name &&
+            station.station_type &&
+            station.province &&
+            typeof station.station_id === "string"
+        );
+        if (validStations.length === 0) {
+          throw new Error("No valid stations available.");
+        }
+        setStationOptions(validStations);
 
         if (!botsResponse.ok) throw new Error(`Failed to fetch bot names: ${botsResponse.status}`);
         const botsData = await botsResponse.json();
@@ -268,6 +296,7 @@ export default function AddTicketPage() {
         setUserGroups(formattedUserGroups);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to load data.";
+        console.error("FetchData Error:", err);
         setErrors([errorMessage]);
         toast.error(errorMessage);
       } finally {
@@ -295,16 +324,20 @@ export default function AddTicketPage() {
     Third_Party: ["ATG", "ABA", "Fleetcard", "Network", "Dispenser"],
   };
 
-  const filteredStations = () =>
-    stationOptions.filter((station) =>
-      station.station_id.toLowerCase().includes(stationId.toLowerCase())
-    );
+  const filteredStations = () => {
+    return stationOptions.length === 0
+      ? []
+      : stationOptions.filter((station) =>
+          station.station_id.toLowerCase().includes((stationId || "").toLowerCase())
+        );
+  };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (!file) {
       setImage(null);
       setImagePreview(null);
+      
       return;
     }
     const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
@@ -313,21 +346,36 @@ export default function AddTicketPage() {
       toast.error("Invalid file type. Only JPEG, PNG, or GIF allowed.");
       setImage(null);
       setImagePreview(null);
+     
       if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 25 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       setErrors(["Image size exceeds 5MB limit."]);
       toast.error("Image size exceeds 5MB limit.");
       setImage(null);
       setImagePreview(null);
+     
       if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
     setErrors([]);
     setImage(file);
     setImagePreview(URL.createObjectURL(file));
+
+    try {
+      const imageFormData = new FormData();
+      imageFormData.append("image", file);
+      const token = sessionStorage.getItem("token");
+      
+    
+   
+    } catch (err) {
+      console.error("Image Prediction Error:", err);
+      toast.error("Failed to predict image.");
+     
+    }
   };
 
   const handleTicketSubmit = async (e: React.FormEvent) => {
@@ -349,6 +397,24 @@ export default function AddTicketPage() {
       if (!stationId) {
         setErrors(["Station ID is required."]);
         toast.error("Station ID is required.");
+        setIsLoading(false);
+        return;
+      }
+      if (!stationName) {
+        setErrors(["Station Name is required."]);
+        toast.error("Station Name is required.");
+        setIsLoading(false);
+        return;
+      }
+      if (!stationType) {
+        setErrors(["Station Type is required."]);
+        toast.error("Station Type is required.");
+        setIsLoading(false);
+        return;
+      }
+      if (!province) {
+        setErrors(["Province is required."]);
+        toast.error("Province is required.");
         setIsLoading(false);
         return;
       }
@@ -383,13 +449,21 @@ export default function AddTicketPage() {
         setIsLoading(false);
         return;
       }
+      if (!userName) {
+        setErrors(["Username is required."]);
+        toast.error("Username is required.");
+        setIsLoading(false);
+        return;
+      }
 
       let imagePath = "";
+    
       if (image) {
         const imageFormData = new FormData();
         imageFormData.append("image", image);
         const uploadResponse = await fetchWithTimeout("/api/data/upload_image", {
           method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
           body: imageFormData,
         });
         const uploadData = await uploadResponse.json().catch(() => {
@@ -413,20 +487,25 @@ export default function AddTicketPage() {
           setIsLoading(false);
           return;
         }
-        imagePath = `/Uploads/ticket_image/${fileName}`;
+        imagePath = `/uploads/ticket_image/${fileName}`;
       }
 
-      const ticketId = `TICK_${Date.now()}`;
+      const ticketOpen = new Date().toISOString(); // Capture exact submission time in UTC
       const formData = new FormData();
-      formData.append("user_id", userId);
+      formData.append("created_by_name", userName); // Send username instead of user_id
+      formData.append("users_id", userId); // For assignment
       formData.append("station_id", stationId);
       formData.append("station_name", stationName);
       formData.append("station_type", stationType);
       formData.append("province", province);
       formData.append("issue_on", issueOn);
-      formData.append("issue_type", numberToIssueType[issueType]);
+      formData.append("issue_type", issueTypeName);
       formData.append("issue_description", issueDescription);
+      formData.append("ticket_open", ticketOpen);
       if (imagePath) formData.append("image", imagePath);
+  
+
+      console.log("FormData:", Object.fromEntries(formData));
 
       const ticketResponse = await fetchWithTimeout("/api/data/tickets", {
         method: "POST",
@@ -441,7 +520,7 @@ export default function AddTicketPage() {
         } catch {
           throw new Error(`Failed to parse ticket response: ${text}`);
         }
-        if (errorData.error?.includes("expired")) {
+        if (errorData.error?.includes("expired") || errorData.error?.includes("Invalid token")) {
           setErrors(["Session expired. Please log in again."]);
           toast.error("Session expired. Please log in again.");
           router.push("/");
@@ -452,6 +531,13 @@ export default function AddTicketPage() {
         setIsLoading(false);
         return;
       }
+
+      const ticketData = await ticketResponse.json();
+      const ticketId = ticketData.ticketId;
+      if (!ticketId || !/^POS\d{2}\d{2}\d{6}$/.test(ticketId)) {
+        throw new Error(`Invalid ticket ID returned from server: ${ticketId}`);
+      }
+      console.log("Ticket Response:", ticketData);
 
       setFeedback("Ticket created successfully.");
       toast.success("Ticket created successfully!");
@@ -465,6 +551,7 @@ export default function AddTicketPage() {
         issueType,
         issueDescription,
         ticketId,
+        ticketOpen,
         imagePath,
       });
       const gmailPayload = {
@@ -500,6 +587,9 @@ export default function AddTicketPage() {
           stationName,
           ticketId,
           issueDescription,
+          issueOn,
+          issueType: issueTypeName,
+          ticketOpen,
         });
         const telegramPayload = {
           platform: "telegram",
@@ -535,19 +625,18 @@ export default function AddTicketPage() {
         toast(`No Telegram alert sent: ${reason}`);
       }
 
-      // Reset form fields
       setStationId("");
       setIssueType("");
       setIssueDescription("");
       setIssueOn("PTT_Digital");
       setImage(null);
       setImagePreview(null);
+    
       if (imageInputRef.current) imageInputRef.current.value = "";
-
-      // Navigate to ticket page
-      router.push("/page/admin/ticket");
+      router.push("/pages/admin/ticket");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+      console.error("Ticket Submit Error:", error);
       setErrors([errorMessage]);
       toast.error(errorMessage);
     } finally {
@@ -563,7 +652,7 @@ export default function AddTicketPage() {
     );
   }
 
-  if (errors.length > 0 && errors.some((error) => error.includes("log in") || error.includes("token"))) {
+  if (errors.length > 0) {
     return (
       <HeaderResponsive>
         <div className="flex min-h-screen w-full items-center justify-center bg-gray-100">
@@ -597,6 +686,10 @@ export default function AddTicketPage() {
   }
 
   const userGroup = userGroups.find((group) => group.users_id === userId);
+  const now = new Date(new Date().toISOString());
+  const year = now.getFullYear().toString().slice(-2);
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+  const placeholderTicketId = `POS${year}${month}000081`;
 
   return (
     <HeaderResponsive>
@@ -628,10 +721,7 @@ export default function AddTicketPage() {
                 <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">
                   Ticket Details
                 </h2>
-                <form
-                  onSubmit={handleTicketSubmit}
-                  className="space-y-6"
-                >
+                <form onSubmit={handleTicketSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div className="relative">
                       <label htmlFor="stationId" className="block text-sm font-medium text-gray-700 mb-1">
@@ -758,7 +848,7 @@ export default function AddTicketPage() {
                         aria-label="Issue Image Upload"
                       />
                       <span className="text-sm text-gray-500 mt-2 sm:mt-0">
-                        (JPEG, PNG, GIF, max 5MB)
+                        (JPEG, PNG, GIF, max 25MB)
                       </span>
                     </div>
                     {imagePreview && (
@@ -769,6 +859,7 @@ export default function AddTicketPage() {
                           alt="Selected issue image"
                           className="mt-2 max-w-full h-auto rounded-md shadow-sm w-full sm:w-64"
                         />
+                       
                       </div>
                     )}
                   </div>
@@ -786,8 +877,11 @@ export default function AddTicketPage() {
                           username: userName,
                           stationId,
                           stationName,
-                          ticketId: "TICK_PREVIEW",
+                          issueOn,
+                          issueType: numberToIssueType[issueType] || issueType,
+                          ticketId: placeholderTicketId,
                           issueDescription,
+                          ticketOpen: now.toISOString(),
                         }),
                       }}
                     />

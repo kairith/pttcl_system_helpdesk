@@ -27,7 +27,7 @@ const HeaderWithSidebarInner: React.FC<HeaderWithSidebarProps> = ({
 
   const handleUserIdFetched = (userId: string) => {
     setUsersId(userId);
-    console.log(`HeaderWithSidebar: Received users_id: ${userId}`);
+    // console.log(`HeaderWithSidebar: Received users_id: ${userId}`);
   };
 
   useEffect(() => {

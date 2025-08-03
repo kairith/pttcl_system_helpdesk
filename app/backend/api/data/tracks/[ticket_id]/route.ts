@@ -4,7 +4,7 @@ import { dbConfig } from '@/app/database/db-config';
 // track every ticket by ticket_id
 export async function GET(request: NextRequest, context: { params: Promise<{ ticket_id: string }> }) {
   const { ticket_id } = await context.params;
-  console.log('API route hit for ticket_id:', ticket_id);
+  // console.log('API route hit for ticket_id:', ticket_id);
 
   if (!ticket_id) {
     console.error('Invalid ticket_id provided');
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ tic
       // console.log('Query executed, rows:', rows);
 
       if (!Array.isArray(rows) || rows.length === 0) {
-        console.log('No ticket found for ticket_id:', ticket_id);
+        // console.log('No ticket found for ticket_id:', ticket_id);
         return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
       }
 

@@ -15,7 +15,6 @@ interface Permissions {
 }
 
 export default function AddRules() {
-
   const [roleName, setRoleName] = useState("");
   const [permissions, setPermissions] = useState({
     users: { add: false, edit: false, delete: false, list: false },
@@ -27,8 +26,6 @@ export default function AddRules() {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -43,6 +40,15 @@ export default function AddRules() {
     setPermissions((prev) => ({
       ...prev,
       [category]: { ...prev[category as keyof typeof prev], [action]: value },
+    }));
+  };
+
+  const handleCheckAll = (category: string, checked: boolean) => {
+    setPermissions((prev) => ({
+      ...prev,
+      [category]: category === "tickets"
+        ? { add: checked, edit: checked, delete: checked, list: checked, listAssign: checked }
+        : { add: checked, edit: checked, delete: checked, list: checked },
     }));
   };
 
@@ -238,8 +244,18 @@ export default function AddRules() {
                 <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-200">
                   <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Permissions</h2>
                   {["users", "tickets", "stations", "userRules"].map((category) => (
-                    <div key={category} className="mb-4">
+                    <div key={category} className="mb-6">
                       <h3 className="text-lg font-medium text-gray-700 capitalize mb-2">{category}</h3>
+                      <label className="flex items-center space-x-2 mb-3">
+                        <input
+                          type="checkbox"
+                          checked={Object.values(permissions[category as keyof typeof permissions]).every(Boolean)}
+                          onChange={(e) => handleCheckAll(category, e.target.checked)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          aria-label={`Check all permissions for ${category}`}
+                        />
+                        <span className="text-sm text-gray-600 font-medium">Check All</span>
+                      </label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {category === "tickets"
                           ? ["add", "edit", "delete", "list", "listAssign"].map((action) => (
@@ -247,9 +263,9 @@ export default function AddRules() {
                                 <input
                                   type="checkbox"
                                   checked={
-                                    category === "tickets" && action === "listAssign"
+                                    action === "listAssign"
                                       ? permissions.tickets.listAssign
-                                      : (permissions[category as keyof typeof permissions] as Record<string, boolean>)[action]
+                                      : permissions.tickets[action as keyof Omit<Permissions, "listAssign">]
                                   }
                                   onChange={(e) =>
                                     handlePermissionChange(category, action as keyof Permissions, e.target.checked)
@@ -265,9 +281,7 @@ export default function AddRules() {
                                 <input
                                   type="checkbox"
                                   checked={
-                                    category === "tickets" && action === "listAssign"
-                                      ? permissions.tickets.listAssign
-                                      : (permissions[category as keyof typeof permissions] as Omit<Permissions, "listAssign">)[action as Exclude<keyof Permissions, "listAssign">]
+                                    permissions[category as keyof typeof permissions][action as keyof Omit<Permissions, "listAssign">]
                                   }
                                   onChange={(e) =>
                                     handlePermissionChange(category, action as keyof Permissions, e.target.checked)

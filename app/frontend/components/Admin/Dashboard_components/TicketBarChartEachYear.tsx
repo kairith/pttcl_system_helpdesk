@@ -34,7 +34,7 @@ const TicketChart: React.FC<TicketChartProps> = ({ title }) => {
     const loadData = async () => {
       try {
         const { chartData, error } = await fetchDashboardData(undefined, selectedYear);
-        console.log("TicketChart received chartData for", selectedYear, ":", chartData);
+        // console.log("TicketChart received chartData for", selectedYear, ":", chartData);
         if (error) {
           setError(error);
           setChartData([]);

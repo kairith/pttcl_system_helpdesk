@@ -11,11 +11,11 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import ChartDataLabels from "chartjs-plugin-datalabels"; // Import the datalabels plugin
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ChartDataLabels); // Register datalabels
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ChartDataLabels);
 
 interface ReportData {
   label: string;
@@ -102,7 +102,6 @@ export default function Reports() {
         if (startDate) params.append("startDate", startDate);
         if (endDate) params.append("endDate", endDate);
 
-        console.log(`Fetching report: ${reportType}, params: ${params.toString()}`);
         const barResponse = await fetch(`/api/data/reports?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -112,7 +111,6 @@ export default function Reports() {
         const barData = await barResponse.json();
         setData(barData.data || []);
 
-        console.log(`Fetching pivot report: ${reportType}, params: ${params.toString()}`);
         const pivotResponse = await fetch(`/api/data/reports-pivot?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -181,14 +179,14 @@ export default function Reports() {
         position: "top" as const,
       },
       datalabels: {
-        anchor: "end" as const,
-        align: "top" as const,
+        anchor: "center" as const,
+        align: "center" as const,
         color: "#000",
         font: {
           weight: "bold" as const,
           size: 12,
         },
-        formatter: (value: number) => value, // Display the raw value
+        formatter: (value: number) => (value === 0 ? "" : value),
       },
     },
   };
@@ -219,14 +217,14 @@ export default function Reports() {
         display: false,
       },
       datalabels: {
-        anchor: "end" as const,
-        align: "right" as const, // Adjusted for horizontal bars
+        anchor: "center" as const,
+        align: "center" as const,
         color: "#000",
         font: {
           weight: "bold" as const,
           size: 12,
         },
-        formatter: (value: number) => value, // Display the raw value
+        formatter: (value: number) => (value === 0 ? "" : value),
       },
     },
   };
@@ -254,7 +252,7 @@ export default function Reports() {
                 </svg>
                 <p className="mt-4 text-lg font-semibold text-red-600">{error}</p>
                 <button
-                  onClick={() => loadFilters()} // Fixed to use `loadFilters`
+                  onClick={() => loadFilters()}
                   className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
                 >
                   Retry

@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const file = formData.get('image') as File | null;
     const usersId = formData.get('users_id') as string | null;
 
-    console.log('POST - users_id:', usersId, 'file:', file?.name);
+    // console.log('POST - users_id:', usersId, 'file:', file?.name);
 
     if (!file || file.size === 0) {
       return NextResponse.json({ error: 'No valid file uploaded.' }, { status: 400 });
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       [parseInt(usersId), relativePath]
     );
 
-    console.log('Uploaded:', relativePath, 'for users_id:', usersId);
+    // console.log('Uploaded:', relativePath, 'for users_id:', usersId);
 
     return NextResponse.json(
       { imagePath: relativePath, usersId: parseInt(usersId) },
@@ -73,10 +73,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const usersId = searchParams.get('users_id');
 
-    console.log('GET - users_id:', usersId);
+    // console.log('GET - users_id:', usersId);
 
     if (!usersId || isNaN(parseInt(usersId))) {
-      console.log('Invalid users_id:', usersId);
+      // console.log('Invalid users_id:', usersId);
       return NextResponse.json({ error: 'Invalid or missing users_id.' }, { status: 400 });
     }
 
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
       [parsedUsersId]
     );
 
-    console.log('Query result:', rows);
+    // console.log('Query result:', rows);
 
     if (!Array.isArray(rows) || rows.length === 0) {
       console.log('No image for users_id:', parsedUsersId);

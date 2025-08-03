@@ -15,15 +15,15 @@ export async function GET(request: Request) {
   const endDate = searchParams.get("endDate") || "";
 
   try {
-    console.log(`GET: Fetching report type=${type}, filters: status=${status}, issue_type=${issue_type}, sla_category=${sla_category}, user_id=${user_id}, start=${startDate}, end=${endDate}`);
+    // console.log(`GET: Fetching report type=${type}, filters: status=${status}, issue_type=${issue_type}, sla_category=${sla_category}, user_id=${user_id}, start=${startDate}, end=${endDate}`);
     const authHeader = request.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("GET: Unauthorized");
+      // console.log("GET: Unauthorized");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const token = authHeader.split(" ")[1];
     if (!token) {
-      console.log("GET: No token provided");
+      // console.log("GET: No token provided");
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
       count: parseInt(row.count, 10),
     }));
 
-    console.log(`GET: Fetched ${data.length} rows`);
+    // console.log(`GET: Fetched ${data.length} rows`);
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
     console.error("GET: Error fetching report:", error);

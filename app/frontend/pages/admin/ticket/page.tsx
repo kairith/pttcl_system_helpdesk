@@ -93,7 +93,7 @@ export default function Tickets() {
           },
         };
         setPermissions(userPermissions);
-        console.log("Permissions loaded:", userPermissions);
+        // console.log("Permissions loaded:", userPermissions);
 
         // Fetch tickets only if list permission exists
         if (userPermissions.tickets.list) {
@@ -104,7 +104,7 @@ export default function Tickets() {
           } else {
             setTickets(tickets || []);
             setFilteredTickets(tickets || []);
-            console.log("Loaded tickets:", tickets);
+            // console.log("Loaded tickets:", tickets);
           }
         } else {
           setError("You do not have permission to view tickets.");
@@ -168,7 +168,7 @@ export default function Tickets() {
   };
 
   const handleFilterChange = (key: string, value: string) => {
-    console.log(`handleFilterChange: ${key} = ${value}`);
+    // console.log(`handleFilterChange: ${key} = ${value}`);
     switch (key) {
       case "stationIdFilter":
         setStationIdFilter(value);
@@ -240,17 +240,17 @@ export default function Tickets() {
     }
     let result = [...tickets];
 
-    console.log("Filtering with:", {
-      stationIdFilter,
-      stationNameFilter,
-      stationTypeFilter,
-      provinceFilter,
-      issueTypeFilter,
-      statusFilter,
-      usersNameFilter,
-      ticketOpenFrom,
-      ticketOpenTo,
-    });
+    // console.log("Filtering with:", {
+    //   stationIdFilter,
+    //   stationNameFilter,
+    //   stationTypeFilter,
+    //   provinceFilter,
+    //   issueTypeFilter,
+    //   statusFilter,
+    //   usersNameFilter,
+    //   ticketOpenFrom,
+    //   ticketOpenTo,
+    // });
 
     if (stationIdFilter) {
       result = result.filter((ticket) =>

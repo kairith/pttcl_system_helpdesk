@@ -58,7 +58,7 @@ export async function fetchTicketsCount(undefined: undefined, selectedYear: stri
 
     await connection.end();
 
-    console.log(`fetchTicketsCount:`, rows[0]);
+    // console.log(`fetchTicketsCount:`, rows[0]);
 
     return {
       stats: {
@@ -160,7 +160,7 @@ export async function fetchDashboardData(period?: string, selectedYear?: string,
 
     await connection.end();
 
-    console.log(`fetchDashboardData (year: ${selectedYear || "ALL"}, period: ${period || "none"}, limit: ${limit}) - Total: ${totalCount[0].total}, Tickets: ${tickets.length}, BarChart: ${barChartData.length}, DoughnutChart: ${doughnutChartData.length}`);
+    // console.log(`fetchDashboardData (year: ${selectedYear || "ALL"}, period: ${period || "none"}, limit: ${limit}) - Total: ${totalCount[0].total}, Tickets: ${tickets.length}, BarChart: ${barChartData.length}, DoughnutChart: ${doughnutChartData.length}`);
 
     return {
       ticketData: tickets as TicketData[],

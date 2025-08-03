@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch stations data
     const [rows] = await connection.execute<Station[]>("SELECT * FROM tbl_station");
-    console.log("Fetched stations:", rows); // Debug: Log the fetched data
+    // console.log("Fetched stations:", rows); // Debug: Log the fetched data
     await connection.end();
 
     if (!rows || rows.length === 0) {

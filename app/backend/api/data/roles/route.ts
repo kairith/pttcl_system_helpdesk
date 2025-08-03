@@ -9,7 +9,7 @@ const pool = mysql.createPool(dbConfig);
 export async function GET() {
   let connection;
   try {
-    console.log('Attempting to connect to database with config:', dbConfig);
+    // console.log('Attempting to connect to database with config:', dbConfig);
     connection = await pool.getConnection();
     console.log('Database connection established');
     const [rows] = await connection.execute(`
@@ -21,9 +21,9 @@ export async function GET() {
       FROM tbl_users_rules
     `);
     if (Array.isArray(rows)) {
-      console.log('Query executed, rows fetched:', rows.length);
+      // console.log('Query executed, rows fetched:', rows.length);
     } else {
-      console.log('Query executed, but rows is not an array:', rows);
+      // console.log('Query executed, but rows is not an array:', rows);
     }
     const rules = (rows as any[]).map((row) => ({
       rules_id: Number(row.rules_id),

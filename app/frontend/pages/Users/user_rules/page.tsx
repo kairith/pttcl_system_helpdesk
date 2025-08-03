@@ -430,13 +430,13 @@ export default function UserRules() {
               {permissions.userRules.list && (
                 <div className="flex flex-col gap-4 mb-4 sm:mb-6 w-full max-w-full">
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <button
+                    {/* <button
                       onClick={handleFilterToggle}
                       className="w-full sm:w-32 max-w-full min-w-0 bg-white border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-100 text-sm sm:text-base flex items-center justify-center pointer-events-auto"
                       aria-label="Toggle filter input"
                     >
                       <span className="mr-2">🔍</span> Filter
-                    </button>
+                    </button> */}
                     {showFilterInput && (
                       <div className="flex flex-col sm:flex-row gap-2 w-full max-w-full min-w-0">
                         <div className="flex-1 min-w-0">

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "default-secret") as any;
-    console.log("Decoded JWT payload:", decoded);
+    // console.log("Decoded JWT payload:", decoded);
     const userId = decoded.users_id ?? decoded.userId ?? decoded.id ?? decoded.sub;
     if (!userId) {
       return NextResponse.json(
@@ -88,23 +88,23 @@ export async function POST(request: Request) {
 
     // Generate ticket_id with monthly sequence (POSYYMMXXXXXX)
     const now = new Date();
-    console.log("Current Date:", now.toISOString().split("T")[0]);
+    // console.log("Current Date:", now.toISOString().split("T")[0]);
     const year = now.getFullYear().toString().slice(-2); // YY (e.g., 25)
     const month = (now.getMonth() + 1).toString().padStart(2, "0"); // MM (e.g., 06)
-    console.log("Year:", year, "Month:", month);
+    // console.log("Year:", year, "Month:", month);
     const prefix = `POS${year}${month}`; // e.g., POS2506
-    console.log("Prefix:", prefix);
+    // console.log("Prefix:", prefix);
 
     const [maxRows] = await connection.execute(
       "SELECT MAX(CAST(RIGHT(ticket_id, 6) AS UNSIGNED)) as max_seq FROM tbl_ticket WHERE ticket_id LIKE ?",
       [`${prefix}%`]
     );
     const maxSeq = (maxRows as any[])[0].max_seq || 0;
-    console.log("Max Sequence:", maxSeq);
+    // console.log("Max Sequence:", maxSeq);
     const sequence = (maxSeq + 1).toString().padStart(6, "0"); // XXXXXX
-    console.log("Sequence:", sequence);
+    // console.log("Sequence:", sequence);
     const ticketId = `${prefix}${sequence}`; // e.g., POS2506000003
-    console.log("Generated ticketId:", ticketId);
+    // console.log("Generated ticketId:", ticketId);
 
     // Start transaction
     await connection.beginTransaction();

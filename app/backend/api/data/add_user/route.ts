@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('Hashed password for new user:', hashedPassword);
+    // console.log('Hashed password for new user:', hashedPassword);
 
     // Start transaction
     await connection.beginTransaction();

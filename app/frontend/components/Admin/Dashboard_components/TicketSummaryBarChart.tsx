@@ -35,7 +35,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({ title, selectedYear }) => {
     const loadData = async () => {
       try {
         const { barChartData, error } = await fetchDashboardData(undefined, selectedYear);
-        console.log("BarChartCard received data for", selectedYear, ":", barChartData);
+        // console.log("BarChartCard received data for", selectedYear, ":", barChartData);
         if (error) {
           setError(error);
           setBarChartData([]);

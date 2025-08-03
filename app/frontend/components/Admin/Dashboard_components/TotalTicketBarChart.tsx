@@ -29,7 +29,7 @@ const TicketChart = () => {
   useEffect(() => {
     const loadData = async () => {
       const { chartData, error } = await fetchDashboardData(undefined, selectedYear);
-      console.log("Frontend received chartData for", selectedYear, ":", chartData);
+      // console.log("Frontend received chartData for", selectedYear, ":", chartData);
       setChartData(chartData);
       setError(error);
     };

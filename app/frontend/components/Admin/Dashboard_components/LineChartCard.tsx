@@ -35,7 +35,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
     async function loadChartData() {
       try {
         const { chartData, error } = await fetchDashboardData(undefined, selectedYear);
-        console.log("LineChartCard received chartData for", selectedYear, ":", chartData);
+        // console.log("LineChartCard received chartData for", selectedYear, ":", chartData);
         setChartData(chartData);
         setError(error);
       } catch (err) {
@@ -83,7 +83,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
       labels: formattedData.map((item) => item.month),
       datasets: [
         {
-          label: `Tickets Opened in ${selectedYear}`,
+          label: `All Tickets in ${selectedYear}`,
           data: formattedData.map((item) => item.value),
           fill: true,
           borderColor: "rgb(59, 130, 246)",

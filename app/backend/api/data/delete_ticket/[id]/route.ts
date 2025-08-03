@@ -14,13 +14,13 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   try {
     const params = await context.params;
     const authHeader = request.headers.get("authorization");
-    console.log("Authorization Header:", authHeader);
+    // console.log("Authorization Header:", authHeader);
     if (!authHeader) {
       return NextResponse.json({ error: "No authorization header provided" }, { status: 401 });
     }
 
     const token = authHeader.startsWith("Bearer ") ? authHeader.replace("Bearer ", "") : authHeader;
-    console.log("Extracted Token:", token);
+    // console.log("Extracted Token:", token);
     if (!token) {
       return NextResponse.json({ error: "No token provided" }, { status: 401 });
     }
@@ -32,7 +32,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     }
 
     const decoded = jwt.verify(token, secret) as any;
-    console.log("Decoded Token:", decoded);
+    // console.log("Decoded Token:", decoded);
     const userId = decoded.users_id ?? decoded.userId ?? decoded.id ?? decoded.sub;
     if (!userId) {
       return NextResponse.json({ error: "Invalid token: userId missing" }, { status: 401 });
@@ -74,7 +74,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
       const imagePath = path.join(TICKET_IMAGE_FOLDER, path.basename(relativePath));
       try {
         await fs.unlink(imagePath);
-        console.log(`Deleted file: ${imagePath}`);
+        // console.log(`Deleted file: ${imagePath}`);
       } catch (fileError) {
         console.error(`Failed to delete file ${imagePath}:`, fileError);
         // Continue even if file deletion fails (e.g., file doesn't exist)

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,7 +11,7 @@ import FilterControls from "@/app/frontend/components/Admin/AllUser_components/F
 import ExportOptions from "@/app/frontend/components/Admin/AllUser_components/ExportOptions";
 import UsersTable from "@/app/frontend/components/Admin/AllUser_components/UsersTables";
 import DeleteModal from "@/app/frontend/components/Admin/AllUser_components/DeleteModel";
-import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
+import Card from "@/app/frontend/components/common/Card/Card";
 
 interface Permissions {
   users: {
@@ -24,7 +23,7 @@ interface Permissions {
 }
 
 export default function UsersPage() {
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [users, setUsers] = useState<(User & { rules_name: string })[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [filterId, setFilterId] = useState("");
@@ -35,9 +34,11 @@ export default function UsersPage() {
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [filterIdError, setFilterIdError] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Default to 10 rows
+  const [currentPage, setCurrentPage] = useState(1); // Default to page 1
   const router = useRouter();
 
-
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   useEffect(() => {
     async function loadData() {
@@ -48,7 +49,6 @@ export default function UsersPage() {
           router.push("/");
           return;
         }
-        console.log("UsersPage: Fetching with token:", token.substring(0, 10) + "...");
 
         const response = await fetch("/api/data/user", {
           headers: { Authorization: `Bearer ${token}` },
@@ -72,7 +72,6 @@ export default function UsersPage() {
           },
         };
         setPermissions(userPermissions);
-        console.log("UsersPage: Permissions:", JSON.stringify(userPermissions, null, 2));
 
         if (!userPermissions.users.list) {
           setError("You do not have permission to view users.");
@@ -81,7 +80,6 @@ export default function UsersPage() {
         }
 
         const { users, error } = await fetchUsers();
-        console.log("UsersPage: Fetched users:", JSON.stringify(users, null, 2));
         setUsers(users || []);
         setError(error);
         if (error) toast.error(error);
@@ -104,13 +102,13 @@ export default function UsersPage() {
       setFilterIdError(null);
       setFilterId(value);
     }
-    console.log("UsersPage: Filter ID updated:", value);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const handleFilterNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFilterName(value);
-    console.log("UsersPage: Filter Name updated:", value);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const handleFilterToggle = () => {
@@ -120,7 +118,7 @@ export default function UsersPage() {
       setFilterName("");
       setFilterIdError(null);
     }
-    console.log("UsersPage: Filter input toggled:", !showFilterInput);
+    setCurrentPage(1); // Reset to first page when clearing filter
   };
 
   const handleClearFilter = () => {
@@ -128,7 +126,7 @@ export default function UsersPage() {
     setFilterName("");
     setFilterIdError(null);
     setShowFilterInput(false);
-    console.log("UsersPage: Filters cleared");
+    setCurrentPage(1); // Reset to first page
   };
 
   const handleExport = async (format: "excel" | "pdf" | "csv") => {
@@ -148,6 +146,7 @@ export default function UsersPage() {
       const response = await fetch(`/api/data/export-users?format=${format}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -226,6 +225,7 @@ export default function UsersPage() {
       if (error) toast.error(error);
       else toast.success(`User ${deleteUserId} deleted successfully`);
       closeDeleteModal();
+      setCurrentPage(1); // Reset to first page after deletion
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
       setError(`Failed to delete user: ${errorMsg}`);
@@ -244,6 +244,11 @@ export default function UsersPage() {
     setDeleteUserId(null);
   };
 
+  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when rows per page changes
+  };
+
   const filteredUsers = users.filter((user) => {
     const matchesId = filterId
       ? user.users_id.toString().includes(filterId)
@@ -255,10 +260,21 @@ export default function UsersPage() {
     return matchesId && matchesName;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + rowsPerPage);
+
   if (isLoading) {
     return (
       <HeaderResponsive>
-        <LoadingScreen></LoadingScreen>
+        <div className="flex w-full">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+            <div className="text-gray-500 text-center text-sm sm:text-base">
+              Loading users...
+            </div>
+          </main>
+        </div>
       </HeaderResponsive>
     );
   }
@@ -280,13 +296,33 @@ export default function UsersPage() {
   return (
     <HeaderResponsive>
       <div className="flex w-full">
-        <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
-          <div className="p-4 sm:p-6 bg-white rounded-lg shadow-md w-full max-w-full">
-            <UsersHeader
-              permissions={permissions}
-              onFilterToggle={handleFilterToggle}
-              onExportToggle={() => setShowExportOptions((prev) => !prev)}
-            />
+        <main className="flex-1 mt-12 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+          <Card className="mt-6 sm:mt-8 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <UsersHeader
+                permissions={permissions}
+                onFilterToggle={handleFilterToggle}
+                onExportToggle={() => setShowExportOptions((prev) => !prev)}
+              />
+              <div className="flex items-center space-x-2">
+                <label htmlFor="rowsPerPage" className="text-gray-600 text-sm">
+                  Rows per page:
+                </label>
+                <select
+                  id="rowsPerPage"
+                  value={rowsPerPage}
+                  onChange={handleRowsPerPageChange}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  aria-label="Select rows per page"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            </div>
             {permissions.users.list && (
               <>
                 <FilterControls
@@ -304,11 +340,43 @@ export default function UsersPage() {
                   onExport={handleExport}
                 />
                 <UsersTable
-                  users={filteredUsers}
+                  users={paginatedUsers}
                   permissions={permissions}
                   onEdit={handleEditUser}
                   onDelete={openDeleteModal}
+                  // startIndex={startIndex}
                 />
+                {filteredUsers.length > 0 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <button
+                      onClick={() => setCurrentPage((prev) => prev - 1)}
+                      disabled={currentPage === 1}
+                      className={`px-4 py-2 rounded ${
+                        currentPage === 1
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-blue-500 text-white hover:bg-blue-600"
+                      }`}
+                      aria-label="Previous page"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-gray-700">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage((prev) => prev + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`px-4 py-2 rounded ${
+                        currentPage === totalPages
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-blue-500 text-white hover:bg-blue-600"
+                      }`}
+                      aria-label="Next page"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </>
             )}
             <DeleteModal
@@ -318,7 +386,7 @@ export default function UsersPage() {
               onClose={closeDeleteModal}
               onConfirm={handleDeleteUser}
             />
-          </div>
+          </Card>
         </main>
       </div>
     </HeaderResponsive>

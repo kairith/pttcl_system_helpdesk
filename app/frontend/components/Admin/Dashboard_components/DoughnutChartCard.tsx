@@ -35,12 +35,12 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
           undefined,
           selectedYear
         );
-        console.log(
-          "DoughnutChartCard data for",
-          selectedYear,
-          ":",
-          doughnutChartData
-        );
+        // console.log(
+        //   "DoughnutChartCard data for",
+        //   selectedYear,
+        //   ":",
+        //   doughnutChartData
+        // );
         if (error) {
           setError(error);
           setDoughnutChartData([]);

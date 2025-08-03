@@ -6,7 +6,7 @@ import { dbConfig } from "@/app/database/db-config";
 export async function POST(request: Request, { params }: { params: Promise<{ users_id: string }> }) {
   const paramsData = await params;
   const token = request.headers.get("authorization")?.replace("Bearer ", "");
-  console.log("Received token:", token);
+  // console.log("Received token:", token);
 
   const { password } = await request.json();
   const connection = await mysql.createConnection(dbConfig);

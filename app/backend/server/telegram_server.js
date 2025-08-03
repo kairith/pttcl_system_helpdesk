@@ -14,6 +14,7 @@ async function sendTelegramMessage(botName, chatId, message) {
       [botName]
     );
 
+    
     if (!rows || rows.length === 0) {
       throw new Error(`No bot found with name: ${botName}`);
     }
@@ -21,7 +22,8 @@ async function sendTelegramMessage(botName, chatId, message) {
     const botToken = rows[0].bot_token;
 
     // Construct Telegram API URL (no thread ID)
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${encodeURIComponent(message)}`;
+    const url = 
+    `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${encodeURIComponent(message)}`;
 
     // Make request to Telegram API
     const response = await fetch(url, {

@@ -260,7 +260,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Assign</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Issue</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Images</th>
+              {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Images</th> */}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -313,11 +313,11 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                       {ticket.status || "N/A"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-800">
+                  {/* <td className="px-4 py-3 text-sm text-gray-800">
                     {ticketImages[ticket.ticket_id]?.length > 0
                       ? `${ticketImages[ticket.ticket_id].length} image(s)`
                       : "No images"}
-                  </td>
+                  </td> */}
                 </tr>
               ))
             )}
@@ -344,6 +344,13 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                   Images: {ticketImages[ticket.ticket_id]?.length > 0 ? `${ticketImages[ticket.ticket_id].length} image(s)` : "No images"}
                 </div>
                 <div className="flex justify-start gap-2 mt-3">
+                   <button
+                    onClick={() => handleView(ticket)}
+                    className="p-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
+                    aria-label={`View ticket ${ticket.ticket_id}`}
+                  >
+                    <EyeIcon className="w-4 h-4" />
+                  </button>
                   {permissions.edit && (
                     <button
                       onClick={() => handleEdit(ticket.id.toString())}
@@ -362,13 +369,13 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   )}
-                  <button
+                  {/* <button
                     onClick={() => handleView(ticket)}
                     className="p-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
                     aria-label={`View ticket ${ticket.ticket_id}`}
                   >
                     <EyeIcon className="w-4 h-4" />
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))

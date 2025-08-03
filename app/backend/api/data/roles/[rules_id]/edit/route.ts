@@ -81,7 +81,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ru
       `SELECT * FROM tbl_users_rules WHERE rules_id = ?`,
       [ruleId]
     );
-    console.log('Updated rule state:', updatedRows);
+    // console.log('Updated rule state:', updatedRows);
 
     console.log('Rule updated successfully:', { rules_id: ruleId });
     return NextResponse.json({ message: 'Rule updated successfully', updatedRule: (updatedRows as mysql.RowDataPacket[])[0] }, { status: 200 });

@@ -33,7 +33,7 @@ export default function CreateUserPage() {
         return;
       }
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"}/api/data/roles`, {
+        const response = await fetch("/api/data/roles", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -51,8 +51,8 @@ export default function CreateUserPage() {
         setRoles(fetchedRoles);
         setRulesId(fetchedRoles[0]?.rules_id?.toString() || "");
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Unknown error";
-        setErrors([`Failed to load roles: ${errorMsg}`]);
+        const error = err instanceof Error ? err.message : "Unknown error";
+        setErrors([`Failed to load roles: ${error}`]);
         setRoles([]);
       } finally {
         setIsLoading(false);

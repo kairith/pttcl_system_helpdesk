@@ -61,7 +61,7 @@ export default function LoginPage() {
       });
 
       const data: LoginResponse = await response.json();
-      console.log('Login response data:', data);
+      // console.log('Login response data:', data);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -84,28 +84,28 @@ export default function LoginPage() {
       // Fetch user image
       try {
         const imageResponse = await fetch(`/api/data/user_image?users_id=${data.user.users_id}`);
-        console.log('Image response status:', imageResponse.status);
+        // console.log('Image response status:', imageResponse.status);
         const imageData: UserImageResponse = await imageResponse.json();
-        console.log('Image response data:', imageData);
+        // console.log('Image response data:', imageData);
 
         if (imageResponse.ok && imageData.imagePath) {
           const imagePath = imageData.imagePath.toLowerCase();
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('userImage', imagePath);
-            console.log('Stored userImage in sessionStorage:', imagePath);
+            // console.log('Stored userImage in sessionStorage:', imagePath);
           }
         } else {
           console.error('Image fetch failed:', imageData.error || 'No image path returned');
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
-            console.log('Stored default userImage in sessionStorage:', '/Uploads/user_image/Default-avatar.jpg');
+            // console.log('Stored default userImage in sessionStorage:', '/Uploads/user_image/Default-avatar.jpg');
           }
         }
       } catch (imageError) {
         console.error('Failed to fetch user image:', imageError);
         if (typeof window !== 'undefined') {
           sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
-          console.log('Stored default userImage in sessionStorage due to error:', '/Uploads/user_image/Default-avatar.jpg');
+          // console.log('Stored default userImage in sessionStorage due to error:', '/Uploads/user_image/Default-avatar.jpg');
         }
       }
 
@@ -121,6 +121,7 @@ export default function LoginPage() {
   return (
     <div className="login-page flex items-center justify-center min-h-screen bg-gray-100">
       {isLoading}
+
       <div className="login-box w-full max-w-sm">
         <div className="card bg-white rounded-2xl shadow-lg">
           <div className="card-header bg-gray-500 text-white text-center flex flex-col items-center py-4 rounded-t-2xl">

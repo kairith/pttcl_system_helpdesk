@@ -1,3 +1,4 @@
+
 import { User } from "@/app/backend/types/user";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
@@ -19,13 +20,13 @@ export default function UsersTable({
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-gray-100 rounded-xl">
-            <th className="text-left p-2 sm:p-3 font-bold text-gray-800">User ID</th>
+            <th className="text-left p-2 sm:p-3 font-bold text-gray-800">No</th>
             {(permissions.users.edit || permissions.users.delete) && (
               <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Actions</th>
             )}
             <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Name</th>
             <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Email</th>
-            <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Verified</th>
+            {/* <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Verified</th> */}
             <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Status</th>
             <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Rules</th>
             <th className="text-left p-2 sm:p-3 font-bold text-gray-800">Company</th>
@@ -35,19 +36,19 @@ export default function UsersTable({
           {users.length === 0 ? (
             <tr>
               <td
-                colSpan={(permissions.users.edit || permissions.users.delete) ? 8 : 7}
+                colSpan={(permissions.users.edit || permissions.users.delete) ? 7 : 6}
                 className="p-4 text-center text-gray-500"
               >
                 No users found.
               </td>
             </tr>
           ) : (
-            users.map((user) => (
+            users.map((user, index) => (
               <tr
                 key={user.users_id}
                 className="border-b border-gray-200 hover:bg-gray-50"
               >
-                <td className="p-2 sm:p-3 text-gray-700">{user.users_id}</td>
+                <td className="p-2 sm:p-3 text-gray-700">{index + 1}</td>
                 {(permissions.users.edit || permissions.users.delete) && (
                   <td className="p-2 sm:p-3 text-gray-700 flex gap-2">
                     {permissions.users.edit && (
@@ -72,9 +73,9 @@ export default function UsersTable({
                 )}
                 <td className="p-2 sm:p-3 text-gray-700">{user.users_name}</td>
                 <td className="p-2 sm:p-3 text-gray-700">{user.email}</td>
-                <td className="p-2 sm:p-3 text-gray-700">
+                {/* <td className="p-2 sm:p-3 text-gray-700">
                   {user.code === 0 ? "Verified" : "Not Verified"}
-                </td>
+                </td> */}
                 <td className="p-2 sm:p-3 text-gray-700">
                   {user.status ? "Active" : "Inactive"}
                 </td>

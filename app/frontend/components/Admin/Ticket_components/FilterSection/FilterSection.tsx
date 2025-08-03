@@ -81,7 +81,7 @@ export default function FilterSection({
   }, [showFilterInput, stationIdFilter]);
 
   const handleSelectChange = (key: string, value: string) => {
-    console.log(`Selected ${key}: ${value}`);
+    // console.log(`Selected ${key}: ${value}`);
     onFilterChange(key, value);
   };
 
@@ -179,7 +179,7 @@ export default function FilterSection({
               ))}
           </select>
         </div>
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700">User Create</label>
           <select
             value={userCreateTicketFilter}
@@ -195,8 +195,8 @@ export default function FilterSection({
                 </option>
               ))}
           </select>
-        </div>
-        <div>
+        </div> */}
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700">Issue Type ID</label>
           <select
             value={issueTypeIdFilter}
@@ -212,7 +212,7 @@ export default function FilterSection({
                 </option>
               ))}
           </select>
-        </div>
+        </div> */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Ticket Open From</label>
           <input

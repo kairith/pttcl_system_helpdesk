@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     let decoded: any;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || "");
-      console.log("Decoded JWT:", { users_id: decoded.users_id, rules_id: decoded.rules_id });
+      // console.log("Decoded JWT:", { users_id: decoded.users_id, rules_id: decoded.rules_id });
     } catch (err) {
       console.error("JWT verification failed:", err);
       return NextResponse.json({ error: "Invalid or expired token." }, { status: 401 });
@@ -35,8 +35,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid user ID in token." }, { status: 401 });
     }
     const usersIdStr = String(usersId); // Convert to string for SQL
-    console.log("Converted users_id to string:", usersIdStr);
-    console.log("Converted users_id to string:", usersIdStr);
+    // console.log("Converted users_id to string:", usersIdStr);
+    // console.log("Converted users_id to string:", usersIdStr);
 
     // Fetch user permissions
     connection = await pool.getConnection();
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "User not found or no permissions assigned." }, { status: 404 });
     }
     if (!userRules.list_ticket_status) {
-      console.log("User lacks list_ticket_status permission for users_id:", usersIdStr);
+      // console.log("User lacks list_ticket_status permission for users_id:", usersIdStr);
       return NextResponse.json(
         { error: "You do not have permission to view tickets." },
         { status: 403 }
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
     }
     const [ticketRows] = await connection.execute(ticketQuery, [usersIdStr]);
     const tickets: TicketRow[] = Array.isArray(ticketRows) ? ticketRows as TicketRow[] : [];
-    console.log("Fetched tickets for users_id:", usersIdStr, "Count:", tickets.length);
+    // console.log("Fetched tickets for users_id:", usersIdStr, "Count:", tickets.length);
 
     if (!format) {
       return NextResponse.json({ tickets });

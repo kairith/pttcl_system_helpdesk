@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import jwt, { JwtPayload } from "jsonwebtoken";
@@ -62,7 +63,7 @@ export async function GET(request: Request) {
       groupName: String(row.groupName || "Unnamed"),
     }));
 
-    console.log("GET /api/data/telegram_groups: Fetched groups:", groups);
+    // console.log("GET /api/data/telegram_groups: Fetched groups:", groups);
     return NextResponse.json(groups, { headers: { 'Cache-Control': 'no-cache' }, status: 200 });
   } catch (error: any) {
     console.error("GET /api/data/telegram_groups error:", error);
@@ -110,7 +111,7 @@ export async function POST(request: Request) {
       [chatId, groupName]
     );
 
-    console.log("POST /api/data/telegram_groups: Added group:", { chatId, groupName });
+    // console.log("POST /api/data/telegram_groups: Added group:", { chatId, groupName });
     return NextResponse.json(
       { message: "Group added successfully" },
       { status: 200 }
@@ -119,6 +120,62 @@ export async function POST(request: Request) {
     console.error("POST /api/data/telegram_groups error:", error);
     return NextResponse.json(
       { error: `Failed to add group: ${error.message || "Unknown error"}` },
+      { status: 500 }
+    );
+  } finally {
+    if (connection) connection.release();
+  }
+}
+
+export async function PUT(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  const userId = verifyToken(authHeader);
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized: Invalid or missing token" }, { status: 401 });
+  }
+
+  let connection;
+  try {
+    const body = await request.json();
+    const { id, chatId, groupName } = body;
+
+    if (!id || !chatId || !groupName) {
+      console.error("PUT /api/data/telegram_groups: Missing id, chatId, or groupName", { body });
+      return NextResponse.json(
+        { error: "ID, Chat ID, and Group Name are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!/^-?\d+$/.test(chatId)) {
+      console.error("PUT /api/data/telegram_groups: Invalid chatId format", { chatId });
+      return NextResponse.json(
+        { error: "Chat ID must be a valid integer (e.g., -123456789)" },
+        { status: 400 }
+      );
+    }
+
+    connection = await getDbConnection();
+    const [result] = await connection.execute(
+      "UPDATE tbl_telegramgroups SET group_id = ?, group_name = ? WHERE id = ?",
+      [chatId, groupName, id]
+    );
+
+    if ((result as any).affectedRows === 0) {
+      console.warn("PUT /api/data/telegram_groups: No group found with id", { id });
+      return NextResponse.json({ error: "Group not found" }, { status: 404 });
+    }
+
+    // console.log("PUT /api/data/telegram_groups: Updated group:", { id, chatId, groupName });
+    return NextResponse.json(
+      { message: "Group updated successfully" },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("PUT /api/data/telegram_groups error:", error);
+    return NextResponse.json(
+      { error: `Failed to update group: ${error.message || "Unknown error"}` },
       { status: 500 }
     );
   } finally {
@@ -155,7 +212,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Group not found" }, { status: 404 });
     }
 
-    console.log("DELETE /api/data/telegram_groups: Deleted group:", { chatId });
+    // console.log("DELETE /api/data/telegram_groups: Deleted group:", { chatId });
     return NextResponse.json({ message: "Group deleted successfully" }, { status: 200 });
   } catch (error: any) {
     console.error("DELETE /api/data/telegram_groups error:", error);

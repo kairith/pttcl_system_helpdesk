@@ -33,23 +33,23 @@ export async function POST(request: Request) {
     }
 
     if (user.status !== 1) {
-      console.log("User inactive, email:", email);
+      // console.log("User inactive, email:", email);
       return NextResponse.json({ error: "Account is inactive" }, { status: 401 });
     }
 
     if (user.code !== 0) {
-      console.log("User not verified, email:", email);
+      // console.log("User not verified, email:", email);
       return NextResponse.json({ error: "Account not verified" }, { status: 401 });
     }
 
     const passwordMatch = await bcrypt.compare(password.trim(), user.password);
     if (!passwordMatch) {
-      console.log("Password mismatch for email:", email);
+      // console.log("Password mismatch for email:", email);
       return NextResponse.json({ error: "Invalid password" }, { status: 401 });
     }
 
     if (!user.users_name) {
-      console.log("User has no username, email:", email);
+      // console.log("User has no username, email:", email);
       return NextResponse.json({ error: "User account is missing username" }, { status: 400 });
     }
 
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     }
     const token = jwt.sign(payload, secret, { algorithm: "HS256" });
 
-    console.log("Generated token for user:", user.email);
+    // console.log("Generated token for user:", user.email);
     return NextResponse.json({
       token,
       user: { 

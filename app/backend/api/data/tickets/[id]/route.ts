@@ -10,13 +10,13 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   try {
     const params = await context.params;
     const authHeader = request.headers.get("authorization");
-    console.log("Authorization Header:", authHeader);
+    // console.log("Authorization Header:", authHeader);
     if (!authHeader) {
       return NextResponse.json({ error: "No authorization header provided" }, { status: 401 });
     }
 
     const token = authHeader.startsWith("Bearer ") ? authHeader.replace("Bearer ", "") : authHeader;
-    console.log("Extracted Token:", token);
+    // console.log("Extracted Token:", token);
     if (!token) {
       return NextResponse.json({ error: "No token provided" }, { status: 401 });
     }
@@ -28,7 +28,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     }
 
     const decoded = jwt.verify(token, secret) as any;
-    console.log("Decoded Token:", decoded);
+    // console.log("Decoded Token:", decoded);
     const userId = decoded.users_id ?? decoded.userId ?? decoded.id ?? decoded.sub;
     if (!userId) {
       

@@ -34,8 +34,8 @@ const uploadMiddleware = (req: Request): Promise<{ fields: any; file: any }> =>
 export async function GET(request: Request, { params }: { params: Promise<{ users_id: string }> }) {
   const paramsData = await params;
   const token = request.headers.get("authorization")?.replace("Bearer ", "");
-  console.log("Fetching user with ID:", paramsData.users_id);
-  console.log("Received token:", token);
+  // console.log("Fetching user with ID:", paramsData.users_id);
+  // console.log("Received token:", token);
 
   const connection = await mysql.createConnection(dbConfig);
   try {
@@ -71,7 +71,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ user
 export async function PUT(request: Request, { params }: { params: Promise<{ users_id: string }> }) {
   const paramsData = await params;
   const token = request.headers.get("authorization")?.replace("Bearer ", "");
-  console.log("Received token:", token);
+  // console.log("Received token:", token);
 
   if (!token) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });

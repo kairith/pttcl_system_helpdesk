@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, Fragment } from "react";
@@ -9,6 +8,7 @@ import { TrashIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { Dialog, Transition } from "@headlessui/react";
 import { Station } from "@/app/backend/types/station";
 import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
+import Card from "@/app/frontend/components/common/Card/Card";
 
 interface Permissions {
   stations: {
@@ -20,7 +20,6 @@ interface Permissions {
 }
 
 export default function Stations() {
- 
   const [stations, setStations] = useState<Station[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [filterId, setFilterId] = useState("");
@@ -28,10 +27,10 @@ export default function Stations() {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [deleteStationId, setDeleteStationId] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Default to 10 rows
+  const [currentPage, setCurrentPage] = useState(1); // Default to page 1
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-
-  
 
   // Fetch permissions and stations on mount
   useEffect(() => {
@@ -83,8 +82,7 @@ export default function Stations() {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred."
         );
-      }
-      finally{
+      } finally {
         setIsLoading(false);
       }
     }
@@ -93,18 +91,21 @@ export default function Stations() {
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterId(e.target.value);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const handleFilterToggle = () => {
     setShowFilterInput((prev) => !prev);
     if (showFilterInput) {
       setFilterId("");
+      setCurrentPage(1); // Reset to first page when clearing filter
     }
   };
 
   const handleClearFilter = () => {
     setFilterId("");
     setShowFilterInput(false);
+    setCurrentPage(1); // Reset to first page
   };
 
   const handleExport = async (format: "xlsx" | "pdf" | "csv") => {
@@ -196,6 +197,7 @@ export default function Stations() {
       );
       setError(error);
       closeDeleteModal();
+      setCurrentPage(1); // Reset to first page after deletion
     } catch (error) {
       setError(
         `Failed to delete station: ${
@@ -232,18 +234,28 @@ export default function Stations() {
     setShowExportOptions((prev) => !prev);
   };
 
+  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when rows per page changes
+  };
+
   const filteredStations = filterId
     ? stations.filter((station) =>
         station.station_id.toString().includes(filterId)
       )
     : stations;
 
-  if(isLoading){
-    <HeaderResponsive>
-      <LoadingScreen>
-        
-      </LoadingScreen>
-    </HeaderResponsive>
+  // Pagination logic
+  const totalPages = Math.ceil(filteredStations.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const paginatedStations = filteredStations.slice(startIndex, startIndex + rowsPerPage);
+
+  if (isLoading) {
+    return (
+      <HeaderResponsive>
+        <LoadingScreen />
+      </HeaderResponsive>
+    );
   }
 
   return (
@@ -251,10 +263,31 @@ export default function Stations() {
       <div className="flex w-full">
         <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
           <div className="w-full max-w-full">
-            <div className="p-4 sm:p-6 bg-white rounded-lg shadow-md">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-8">
-                Stations
-              </h1>
+            <Card className="mt-6 sm:mt-8 p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                  Stations
+                </h1>
+                {/* Rows Per Page Dropdown */}
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="rowsPerPage" className="text-gray-600 text-sm">
+                    Rows per page:
+                  </label>
+                  <select
+                    id="rowsPerPage"
+                    value={rowsPerPage}
+                    onChange={handleRowsPerPageChange}
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    aria-label="Select rows per page"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+              </div>
               {error && <p className="text-red-600 mb-4">{error}</p>}
               {(permissions?.stations.add || permissions?.stations.list) && (
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 w-full max-w-full">
@@ -338,12 +371,12 @@ export default function Stations() {
                 </div>
               )}
               {permissions?.stations.list && (
-                <div className="overflow-x-auto w-full max-w-full">
-                  <table className="w-full text-sm table-auto">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gray-100 rounded-xl">
                         <th className="text-left p-2 sm:p-3 font-bold text-gray-800 min-w-[80px]">
-                          ID
+                          No
                         </th>
                         {(permissions.stations.edit ||
                           permissions.stations.delete) && (
@@ -366,7 +399,7 @@ export default function Stations() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredStations.length === 0 ? (
+                      {paginatedStations.length === 0 ? (
                         <tr>
                           <td
                             colSpan={
@@ -381,13 +414,13 @@ export default function Stations() {
                           </td>
                         </tr>
                       ) : (
-                        filteredStations.map((station) => (
+                        paginatedStations.map((station, index) => (
                           <tr
                             key={station.station_id}
-                            className="border-b border-gray-200 hover:bg-gray-50"
+                            className="border-b border-gray-200"
                           >
                             <td className="p-2 sm:p-3 text-gray-700 min-w-0">
-                              {station.id}
+                              {startIndex + index + 1}
                             </td>
                             {(permissions.stations.edit ||
                               permissions.stations.delete) && (
@@ -435,7 +468,38 @@ export default function Stations() {
                   </table>
                 </div>
               )}
-            </div>
+              {permissions?.stations.list && filteredStations.length > 0 && (
+                <div className="flex justify-between items-center mt-4">
+                  <button
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 rounded ${
+                      currentPage === 1
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    }`}
+                    aria-label="Previous page"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 rounded ${
+                      currentPage === totalPages
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                    }`}
+                    aria-label="Next page"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </Card>
           </div>
           {/* Delete Confirmation Modal */}
           {permissions?.stations.delete && (

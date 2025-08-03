@@ -1,20 +1,22 @@
+
 "use client";
-import React, { useState, useEffect, Fragment, useRef } from "react";
+import React, { useState, useEffect, Fragment, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Ticket,
-  MapPin,
-  Users,
-  ClipboardList,
-  LineChart,
-  Calendar,
-  LogOut,
-  Bell,
-} from "lucide-react";
 import { Dialog, Transition } from "@headlessui/react";
+import dynamic from "next/dynamic";
+
+// Dynamically import lucide-react icons to reduce bundle size
+const LayoutDashboard = dynamic(() => import("lucide-react").then(mod => mod.LayoutDashboard), { ssr: false });
+const Ticket = dynamic(() => import("lucide-react").then(mod => mod.Ticket), { ssr: false });
+const MapPin = dynamic(() => import("lucide-react").then(mod => mod.MapPin), { ssr: false });
+const Users = dynamic(() => import("lucide-react").then(mod => mod.Users), { ssr: false });
+const ClipboardList = dynamic(() => import("lucide-react").then(mod => mod.ClipboardList), { ssr: false });
+const LineChart = dynamic(() => import("lucide-react").then(mod => mod.LineChart), { ssr: false });
+const Calendar = dynamic(() => import("lucide-react").then(mod => mod.Calendar), { ssr: false });
+const LogOut = dynamic(() => import("lucide-react").then(mod => mod.LogOut), { ssr: false });
+const Bell = dynamic(() => import("lucide-react").then(mod => mod.Bell), { ssr: false });
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -170,26 +172,23 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-
-const Sidebar: React.FC<SidebarProps> = ({
-  isSidebarOpen,
-  toggleSidebar,
-  handleLogout,
-  onUserIdFetched,
-}) => {
+const Sidebar: React.FC<SidebarProps> = React.memo(({ isSidebarOpen, toggleSidebar, handleLogout, onUserIdFetched }) => {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [users_id, setUsersId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Handle permissions fetching with type-safe error handling
   useEffect(() => {
-    let isCancelled = false;
-
+    const controller = new AbortController();
     async function loadPermissions() {
+      setLoading(true);
       try {
         if (typeof window === "undefined") return;
         const cached = sessionStorage.getItem("permissions");
@@ -197,8 +196,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}");
         const userId = sessionUser.users_id || "";
 
-        if (!token && !userId) {
-          // setError(" Please log in again.");
+        if (!token || !userId) {
           router.push("/");
           return;
         }
@@ -210,11 +208,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           const parsed = JSON.parse(cached);
           setPermissions(parsed.permissions);
           setIsAdmin(parsed.isAdmin);
+          setLoading(false);
           return;
         }
 
         const response = await fetch("/api/data/user", {
           headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
         });
         if (!response.ok) {
           const data = await response.json();
@@ -246,28 +246,31 @@ const Sidebar: React.FC<SidebarProps> = ({
           list_alertbot: rules.list_alertbot !== undefined ? !!rules.list_alertbot : user.rules_id === 1461,
         };
 
-        if (!isCancelled) {
-          setPermissions(perms);
-          setIsAdmin(user.rules_id === 1461);
-          sessionStorage.setItem(
-            "permissions",
-            JSON.stringify({ permissions: perms, isAdmin: user.rules_id === 1461 })
-          );
-        }
-      } catch (err) {
+        setPermissions(perms);
+        setIsAdmin(user.rules_id === 1461);
+        sessionStorage.setItem(
+          "permissions",
+          JSON.stringify({ permissions: perms, isAdmin: user.rules_id === 1461 })
+        );
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") return;
+        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
         console.error("Error fetching permissions:", err);
-        if (!isCancelled) {
-          setError(`Failed to load permissions: ${(err as Error).message}`);
-          router.push("/");
-        }
+        setError(`Failed to load permissions: ${errorMessage}`);
+        router.push("/");
+      } finally {
+        setLoading(false);
       }
     }
 
     loadPermissions();
-    return () => {
-      isCancelled = true;
-    };
+    return () => controller.abort();
   }, [router, onUserIdFetched]);
+
+  // Debug navigation by tracking pathname changes (App Router compatible)
+  useEffect(() => {
+    console.log("Current pathname:", pathname);
+  }, [pathname]);
 
   const openLogoutDialog = () => setIsLogoutDialogOpen(true);
   const closeLogoutDialog = () => setIsLogoutDialogOpen(false);
@@ -278,60 +281,54 @@ const Sidebar: React.FC<SidebarProps> = ({
     router.push("/");
   };
 
-  // While permissions are loading, show a spinner
-  // While permissions are loading, show a skeleton placeholder
-if (!permissions) {
-  return (
-    <div className="fixed top-0 left-0 h-screen w-64 bg-white p-6 flex flex-col justify-between shadow-md">
-      <div className="space-y-6 animate-pulse">
-        {/* Logo placeholder */}
-        <div className="h-8 bg-gray-300 rounded w-3/4" />
+  const filteredMenuItems = useMemo(() => {
+    return menuItems.filter((item) => {
+      if (item.label === "Logout") return true;
+      if (item.label === "Config Alert") return isAdmin;
+      if (!item.requiredPermission) return false;
+      if (item.adminOnly && !isAdmin) return false;
+      if (item.nonAdminOnly && isAdmin) return false;
+      return permissions && permissions[item.requiredPermission as keyof Permissions];
+    });
+  }, [permissions, isAdmin]);
 
-        {/* Menu items */}
-        <div className="space-y-4">
-          {[...Array(7)].map((_, index) => (
-            <div key={index} className="flex items-center space-x-4">
-              <div className="w-6 h-6 bg-gray-300 rounded-md" /> {/* icon */}
-              <div className="h-4 bg-gray-300 rounded w-2/3" /> {/* label */}
-            </div>
-          ))}
+  if (loading || !permissions) {
+    return (
+      <div className="fixed top-0 left-0 h-screen w-64 bg-white p-6 flex flex-col justify-between shadow-md">
+        <div className="space-y-6 animate-pulse">
+          <div className="h-8 bg-gray-300 rounded w-3/4" />
+          <div className="space-y-4">
+            {[...Array(7)].map((_, index) => (
+              <div key={index} className="flex items-center space-x-4">
+                <div className="w-6 h-6 bg-gray-300 rounded-md" />
+                <div className="h-4 bg-gray-300 rounded w-2/3" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* User profile placeholder at the bottom */}
-      
-    </div>
-  );
-}
-
-
-
-  const filteredMenuItems = menuItems.filter((item) => {
-    if (item.label === "Logout") return true;
-    if (item.label === "Config Alert") return isAdmin;
-    if (!item.requiredPermission) return false;
-    if (item.adminOnly && !isAdmin) return false;
-    if (item.nonAdminOnly && isAdmin) return false;
-    return permissions[item.requiredPermission as keyof Permissions];
-  });
+    );
+  }
 
   return (
     <>
-      {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`fixed top-0 left-0 h-screen bg-white  shadow-sm transition-transform duration-300 z-50 ${
+        className={`fixed top-0 left-0 h-screen bg-white shadow-sm transition-transform duration-300 z-50 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } w-64`}
+        role="navigation"
+        aria-label="Main navigation"
       >
         <div className="flex items-center gap-3 p-4">
           <Image
             src="/img/logo_Station2.png"
-            alt="Logo"
+            alt="PTT Cambodia Logo"
             width={32}
             height={32}
             className="cursor-pointer"
             onClick={toggleSidebar}
+            loading="lazy"
           />
           {isSidebarOpen && (
             <span className="text-blue-700 text-sm font-semibold">
@@ -345,11 +342,13 @@ if (!permissions) {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 className={`flex items-center gap-3 rounded px-3 py-2 transition-all ${
                   pathname === item.href || pathname.startsWith(item.href + "/")
                     ? "bg-blue-100 text-blue-700"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
+                aria-current={pathname === item.href ? "page" : undefined}
               >
                 {item.icon}
                 {isSidebarOpen && <span>{item.label}</span>}
@@ -359,6 +358,7 @@ if (!permissions) {
                 key={item.label}
                 onClick={openLogoutDialog}
                 className="flex items-center gap-3 text-red-600 hover:bg-red-100 rounded px-3 py-2 transition-all w-full text-left"
+                aria-label="Log out"
               >
                 {item.icon}
                 {isSidebarOpen && <span>{item.label}</span>}
@@ -368,9 +368,8 @@ if (!permissions) {
         </nav>
       </div>
 
-      {/* Logout Dialog */}
       <Transition appear show={isLogoutDialogOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={closeLogoutDialog}>
+        <Dialog as="div" className="relative z-50" onClose={closeLogoutDialog} initialFocus={cancelButtonRef}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -383,6 +382,7 @@ if (!permissions) {
             <div
               className="fixed inset-0 bg-white-100 bg-opacity-50"
               style={{ backdropFilter: "blur(6px)" }}
+              aria-hidden="true"
             />
           </Transition.Child>
           <div className="fixed inset-0 overflow-y-auto flex items-center justify-center p-4">
@@ -404,14 +404,17 @@ if (!permissions) {
                 </p>
                 <div className="mt-6 flex justify-end gap-2">
                   <button
+                    ref={cancelButtonRef}
                     onClick={closeLogoutDialog}
                     className="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100"
+                    aria-label="Cancel logout"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={confirmLogout}
                     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    aria-label="Confirm logout"
                   >
                     Log Out
                   </button>
@@ -422,13 +425,16 @@ if (!permissions) {
         </Dialog>
       </Transition>
 
-      {/* Error Message */}
       {error && (
-        <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
+        <div
+          className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50"
+          role="alert"
+        >
           {error}
           <button
             className="ml-4 hover:text-red-900"
             onClick={() => setError(null)}
+            aria-label="Close error message"
           >
             ×
           </button>
@@ -436,6 +442,6 @@ if (!permissions) {
       )}
     </>
   );
-};
+});
 
 export default Sidebar;

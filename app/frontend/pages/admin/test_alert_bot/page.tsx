@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Plus, Save, Trash2 } from 'lucide-react';
+import { Bell, Plus, Save, Trash2, Edit } from 'lucide-react';
 import { toast } from 'react-toastify';
 import HeaderResponsive from '@/app/frontend/components/common/Header/headerResponsive';
 import LoadingScreen from '@/app/frontend/components/ui/loadingScreen';
@@ -48,12 +48,23 @@ interface UserGroupInputs {
   chatId: string;
 }
 
+interface EditUserGroupInputs {
+  users_id: string;
+  chatId: string;
+}
+
 interface User {
   users_id: string;
   users_name: string;
 }
 
 interface TelegramGroup {
+  id: number;
+  chatId: string;
+  groupName: string;
+}
+
+interface EditGroupInputs {
   id: number;
   chatId: string;
   groupName: string;
@@ -220,7 +231,16 @@ const AlertBotPage: React.FC = () => {
     chatId: "",
     groupName: "",
   });
+  const [editGroupInputs, setEditGroupInputs] = useState<EditGroupInputs>({
+    id: 0,
+    chatId: "",
+    groupName: "",
+  });
   const [userGroupInputs, setUserGroupInputs] = useState<UserGroupInputs>({
+    users_id: "",
+    chatId: "",
+  });
+  const [editUserGroupInputs, setEditUserGroupInputs] = useState<EditUserGroupInputs>({
     users_id: "",
     chatId: "",
   });
@@ -233,6 +253,8 @@ const AlertBotPage: React.FC = () => {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isAddBotModalOpen, setIsAddBotModalOpen] = useState(false);
   const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState(false);
+  const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
+  const [isEditUserGroupModalOpen, setIsEditUserGroupModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -246,7 +268,6 @@ const AlertBotPage: React.FC = () => {
         setIsLoading(false);
         return;
       }
-      console.log("AlertBotPage: Fetching with token:", token.substring(0, 10) + "...");
 
       try {
         // Fetch bot names
@@ -265,7 +286,6 @@ const AlertBotPage: React.FC = () => {
         const uniqueBotNames = Array.isArray(botsData)
           ? [...new Set(botsData.filter((name: unknown) => typeof name === 'string' && name.trim()))]
           : [];
-        console.log("AlertBotPage: Bot names:", uniqueBotNames);
         setBotNames(uniqueBotNames);
 
         // Fetch Telegram groups
@@ -278,11 +298,9 @@ const AlertBotPage: React.FC = () => {
         });
         if (!telegramGroupsResponse.ok) {
           const errorText = await telegramGroupsResponse.text();
-          console.error("Telegram groups fetch error:", errorText);
           throw new Error(`Failed to fetch Telegram groups: ${errorText}`);
         }
         const telegramGroupsData = await telegramGroupsResponse.json();
-        console.log("Raw Telegram groups data:", telegramGroupsData);
         const formattedTelegramGroups = Array.isArray(telegramGroupsData)
           ? telegramGroupsData
               .map((group: any) => ({
@@ -292,7 +310,6 @@ const AlertBotPage: React.FC = () => {
               }))
               .sort((a, b) => a.groupName.localeCompare(b.groupName))
           : [];
-        console.log("Formatted Telegram groups:", formattedTelegramGroups);
         setTelegramGroups(formattedTelegramGroups);
 
         // Fetch users and statuses from report-filters
@@ -315,10 +332,8 @@ const AlertBotPage: React.FC = () => {
           throw new Error(`Failed to fetch filter data: ${errorText}`);
         }
         const filtersData: FiltersData | { error: string } = await filtersResponse.json();
-        console.log("AlertBotPage: Filters response:", JSON.stringify(filtersData, null, 2));
 
         if ('error' in filtersData) {
-          console.error("AlertBotPage: Filters API error:", filtersData.error);
           setFeedback(`Failed to load filters: ${filtersData.error}`);
           setUsers([]);
           setStatuses([]);
@@ -347,7 +362,6 @@ const AlertBotPage: React.FC = () => {
           (user, index, self) =>
             user.users_id && self.findIndex((u) => u.users_id === user.users_id) === index
         );
-        console.log("AlertBotPage: Unique users:", JSON.stringify(uniqueUsers, null, 2));
         setUsers(uniqueUsers);
 
         if (uniqueUsers.length === 0) {
@@ -360,7 +374,6 @@ const AlertBotPage: React.FC = () => {
           ? filtersData.statuses.filter((s): s is string => typeof s === 'string' && s.trim() !== '')
           : [];
         setStatuses([...new Set(fetchedStatuses)]);
-        console.log("AlertBotPage: Statuses:", fetchedStatuses);
 
         if (uniqueUsers.length > 0) {
           setTelegramInputs((prev) => ({
@@ -385,11 +398,9 @@ const AlertBotPage: React.FC = () => {
         });
         if (!userGroupsResponse.ok) {
           const errorText = await userGroupsResponse.text();
-          console.error("User groups fetch error:", errorText);
           throw new Error(`Failed to fetch user-group associations: ${errorText}`);
         }
         const userGroupsData = await userGroupsResponse.json();
-        console.log("Raw user groups data:", userGroupsData);
         const formattedUserGroups = Array.isArray(userGroupsData)
           ? userGroupsData.map((group: any) => ({
               users_id: String(group.users_id),
@@ -398,7 +409,6 @@ const AlertBotPage: React.FC = () => {
               groupName: String(group.groupName || "-"),
             }))
           : [];
-        console.log("Formatted user groups:", JSON.stringify(formattedUserGroups, null, 2));
         setUserGroups(formattedUserGroups);
       } catch (error) {
         console.error("AlertBotPage: Error fetching data:", error);
@@ -420,9 +430,6 @@ const AlertBotPage: React.FC = () => {
   useEffect(() => {
     const selectedUser = users.find((user) => user.users_id === telegramInputs.users_id);
     const selectedGroup = userGroups.find((group) => group.users_id === telegramInputs.users_id);
-    console.log("Selected user for chatId update:", selectedUser);
-    console.log("Selected group for chatId update:", selectedGroup);
-    console.log("Current telegramInputs:", telegramInputs);
     setTelegramInputs((prev) => ({
       ...prev,
       username: selectedUser ? selectedUser.users_name : "",
@@ -464,11 +471,29 @@ const AlertBotPage: React.FC = () => {
     }));
   };
 
+  const handleEditGroupInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditGroupInputs((prev) => ({
+      ...prev,
+      [name]: value || "",
+    }));
+  };
+
   const handleUserGroupInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setUserGroupInputs((prev) => ({
+      ...prev,
+      [name]: value || "",
+    }));
+  };
+
+  const handleEditUserGroupInputChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditUserGroupInputs((prev) => ({
       ...prev,
       [name]: value || "",
     }));
@@ -538,7 +563,6 @@ const AlertBotPage: React.FC = () => {
           message,
           assigner: telegramInputs.assigner,
         };
-        console.log("Telegram alert payload:", alertPayload);
         const alertResponse = await fetch("/api/data/alert_bot", {
           method: "POST",
           headers: {
@@ -598,7 +622,6 @@ const AlertBotPage: React.FC = () => {
         message: gmailInputs.gmailMessage,
         subject: "New Ticket Alert",
       };
-      console.log("Gmail submit payload:", payload);
       const response = await fetch("/api/data/alert_bot", {
         method: "POST",
         headers: {
@@ -720,7 +743,6 @@ const AlertBotPage: React.FC = () => {
       });
       if (groupsResponse.ok) {
         const groupsData = await groupsResponse.json();
-        console.log("Refreshed groups data:", groupsData);
         const formattedGroups = Array.isArray(groupsData)
           ? groupsData
               .map((group: any) => ({
@@ -745,6 +767,71 @@ const AlertBotPage: React.FC = () => {
     }
   };
 
+  const handleEditGroupSubmit = async () => {
+    setFeedback(null);
+    try {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please log in to edit a group.");
+      }
+      if (!editGroupInputs.chatId.trim() || !editGroupInputs.groupName.trim()) {
+        throw new Error("Chat ID and Group Name are required.");
+      }
+      if (!/^-\d+$/.test(editGroupInputs.chatId)) {
+        throw new Error("Invalid Telegram Chat ID format (e.g., -123456789 or -1002819438719).");
+      }
+      const response = await fetch("/api/data/telegram_groups", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: editGroupInputs.id,
+          chatId: editGroupInputs.chatId,
+          groupName: editGroupInputs.groupName,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update group");
+      }
+      setFeedback(data.message || "Group updated successfully");
+      toast.success(data.message || "Group updated successfully");
+      // Refresh groups
+      const groupsResponse = await fetch("/api/data/telegram_groups", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (groupsResponse.ok) {
+        const groupsData = await groupsResponse.json();
+        const formattedGroups = Array.isArray(groupsData)
+          ? groupsData
+              .map((group: any) => ({
+                id: Number(group.id),
+                chatId: String(group.chatId),
+                groupName: String(group.groupName || "-"),
+              }))
+              .sort((a, b) => a.groupName.localeCompare(b.groupName))
+          : [];
+        setTelegramGroups(formattedGroups);
+      }
+      setEditGroupInputs({ id: 0, chatId: "", groupName: "" });
+      setIsEditGroupModalOpen(false);
+    } catch (error) {
+      console.error("Edit group error:", error);
+      setFeedback(
+        error instanceof Error ? error.message : "An error occurred while updating group"
+      );
+      toast.error(
+        error instanceof Error ? error.message : "An error occurred while updating group"
+      );
+    }
+  };
+
   const handleUserGroupSubmit = async () => {
     setFeedback(null);
     try {
@@ -765,7 +852,6 @@ const AlertBotPage: React.FC = () => {
         users_id: userGroupInputs.users_id,
         chatId: userGroupInputs.chatId,
       };
-      console.log("User group submit payload:", payload);
       const response = await fetch("/api/data/user_groups", {
         method: "POST",
         headers: {
@@ -790,7 +876,6 @@ const AlertBotPage: React.FC = () => {
       });
       if (userGroupsResponse.ok) {
         const userGroupsData = await userGroupsResponse.json();
-        console.log("Refreshed user groups data:", userGroupsData);
         const formattedUserGroups = Array.isArray(userGroupsData)
           ? userGroupsData.map((group: any) => ({
               users_id: String(group.users_id),
@@ -868,6 +953,145 @@ const AlertBotPage: React.FC = () => {
       );
       toast.error(
         error instanceof Error ? error.message : "An error occurred while deleting group"
+      );
+    }
+  };
+
+  const handleEditGroup = (group: TelegramGroup) => {
+    setEditGroupInputs({
+      id: group.id,
+      chatId: group.chatId,
+      groupName: group.groupName,
+    });
+    setIsEditGroupModalOpen(true);
+  };
+
+  const handleDeleteUserGroup = async (users_id: string, chatId: string) => {
+    if (!confirm(`Are you sure you want to delete the association for user ID ${users_id} and Chat ID ${chatId}?`)) {
+      return;
+    }
+    setFeedback(null);
+    try {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please log in to delete a user-group association.");
+      }
+      const response = await fetch("/api/data/user_groups", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ users_id, chatId }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete user-group association");
+      }
+      setFeedback(data.message || "User-group association deleted successfully");
+      toast.success(data.message || "User-group association deleted successfully");
+      // Refresh user groups
+      const userGroupsResponse = await fetch("/api/data/user_groups", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (userGroupsResponse.ok) {
+        const userGroupsData = await userGroupsResponse.json();
+        const formattedUserGroups = Array.isArray(userGroupsData)
+          ? userGroupsData.map((group: any) => ({
+              users_id: String(group.users_id),
+              username: String(group.username || "-"),
+              chatId: String(group.chatId),
+              groupName: String(group.groupName || "-"),
+            }))
+          : [];
+        setUserGroups(formattedUserGroups);
+      }
+    } catch (error) {
+      console.error("Delete user-group error:", error);
+      setFeedback(
+        error instanceof Error ? error.message : "An error occurred while deleting user-group association"
+      );
+      toast.error(
+        error instanceof Error ? error.message : "An error occurred while deleting user-group association"
+      );
+    }
+  };
+
+  const handleEditUserGroup = (group: UserGroup) => {
+    setEditUserGroupInputs({
+      users_id: group.users_id,
+      chatId: group.chatId,
+    });
+    setIsEditUserGroupModalOpen(true);
+  };
+
+  const handleEditUserGroupSubmit = async () => {
+    setFeedback(null);
+    try {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please log in to edit a user-group association.");
+      }
+      if (!editUserGroupInputs.users_id.trim() || !editUserGroupInputs.chatId.trim()) {
+        throw new Error("User and Group are required.");
+      }
+      const selectedGroup = telegramGroups.find(
+        (group) => group.chatId === editUserGroupInputs.chatId
+      );
+      if (!selectedGroup) {
+        throw new Error("Invalid Telegram group selected.");
+      }
+      const payload = {
+        users_id: editUserGroupInputs.users_id,
+        chatId: editUserGroupInputs.chatId,
+      };
+      const response = await fetch("/api/data/user_groups", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update user-group association");
+      }
+      setFeedback(data.message || "User-group association updated successfully");
+      toast.success(data.message || "User-group association updated successfully");
+      // Refresh user groups
+      const userGroupsResponse = await fetch("/api/data/user_groups", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (userGroupsResponse.ok) {
+        const userGroupsData = await userGroupsResponse.json();
+        const formattedUserGroups = Array.isArray(userGroupsData)
+          ? userGroupsData.map((group: any) => ({
+              users_id: String(group.users_id),
+              username: String(group.username || "-"),
+              chatId: String(group.chatId),
+              groupName: String(group.groupName || "-"),
+            }))
+          : [];
+        setUserGroups(formattedUserGroups);
+      }
+      setEditUserGroupInputs({ users_id: "", chatId: "" });
+      setIsEditUserGroupModalOpen(false);
+    } catch (error) {
+      console.error("Edit user-group error:", error);
+      setFeedback(
+        error instanceof Error ? error.message : "An error occurred while updating user-group association"
+      );
+      toast.error(
+        error instanceof Error ? error.message : "An error occurred while updating user-group association"
       );
     }
   };
@@ -1022,53 +1246,55 @@ const AlertBotPage: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                  {/* <div className="mt-4">
-                    <h3 className="text-base sm:text-lg font-semibold mb-2">Current Associations</h3>
-                    {userGroups.length > 0 ? (
-                      <ul className="list-disc pl-5">
-                        {userGroups.map((group, index) => (
-                          <li key={`group-${index}`} className="text-sm sm:text-base text-gray-600">
-                            User ID: {group.users_id},
-                             Username: {group.username}, Group: {group.groupName} ({group.chatId})
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-sm sm:text-base text-gray-600">No user-group associations found.</p>
-                    )}
-                  </div> */}
                   <div className="mt-6">
-  <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Associations</h3>
-
-  {userGroups.length > 0 ? (
-    <div className="overflow-x-auto rounded-lg shadow-sm border border-gray-200">
-      <table className="min-w-full text-sm sm:text-base text-gray-700">
-        <thead className="bg-gray-100 text-left">
-          <tr>
-            <th className="px-6 py-3 font-medium border-b border-gray-200">Username</th>
-            <th className="px-6 py-3 font-medium border-b border-gray-200">Group</th>
-            <th className="px-6 py-3 font-medium border-b border-gray-200">Chat ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {userGroups.map((group, index) => (
-            <tr
-              key={`group-${index}`}
-              className="transition-colors duration-200 hover:bg-blue-50 odd:bg-white even:bg-gray-50"
-            >
-              <td className="px-6 py-3 border-b border-gray-200">{group.username}</td>
-              <td className="px-6 py-3 border-b border-gray-200">{group.groupName}</td>
-              <td className="px-6 py-3 border-b border-gray-200">{group.chatId}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  ) : (
-    <p className="text-gray-500 text-sm sm:text-base">No user-group associations found.</p>
-  )}
-</div>
-
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Associations</h3>
+                    {userGroups.length > 0 ? (
+                      <div className="overflow-x-auto rounded-lg shadow-sm border border-gray-200">
+                        <table className="min-w-full text-sm sm:text-base text-gray-700">
+                          <thead className="bg-gray-100 text-left">
+                            <tr>
+                              <th className="px-6 py-3 font-medium border-b border-gray-200">Username</th>
+                              <th className="px-6 py-3 font-medium border-b border-gray-200">Group</th>
+                              <th className="px-6 py-3 font-medium border-b border-gray-200">Chat ID</th>
+                              <th className="px-6 py-3 font-medium border-b border-gray-200">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {userGroups.map((group, index) => (
+                              <tr
+                                key={`group-${group.users_id}-${group.chatId}-${index}`}
+                                className="transition-colors duration-200 hover:bg-blue-50 odd:bg-white even:bg-gray-50"
+                              >
+                                <td className="px-6 py-3 border-b border-gray-200">{group.username}</td>
+                                <td className="px-6 py-3 border-b border-gray-200">{group.groupName}</td>
+                                <td className="px-6 py-3 border-b border-gray-200">{group.chatId}</td>
+                                <td className="px-6 py-3 border-b border-gray-200">
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleEditUserGroup(group)}
+                                      className="text-blue-500 hover:text-blue-700"
+                                      aria-label={`Edit association for ${group.username}`}
+                                    >
+                                      <Edit size={20} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteUserGroup(group.users_id, group.chatId)}
+                                      className="text-red-500 hover:text-red-700"
+                                      aria-label={`Delete association for ${group.username}`}
+                                    >
+                                      <Trash2 size={20} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-sm sm:text-base">No user-group associations found.</p>
+                    )}
+                  </div>
                 </>
               )}
             </section>
@@ -1080,25 +1306,45 @@ const AlertBotPage: React.FC = () => {
                   No Telegram groups available. Please add groups using the 'Add Group' button.
                 </p>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-full">
-                  {telegramGroups.map((group) => (
-                    <div
-                      key={`group-card-${group.chatId}`}
-                      className="p-4 bg-gray-50 rounded-md border border-gray-200 shadow-sm flex justify-between items-center"
-                    >
-                      <div>
-                        <p className="text-sm sm:text-base font-semibold">{group.groupName}</p>
-                        <p className="text-sm text-gray-600">{group.chatId}</p>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteGroup(group.chatId)}
-                        className="text-red-500 hover:text-red-700"
-                        aria-label={`Delete group ${group.groupName}`}
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto rounded-lg shadow-sm border border-gray-200">
+                  <table className="min-w-full text-sm sm:text-base text-gray-700">
+                    <thead className="bg-gray-100 text-left">
+                      <tr>
+                        <th className="px-6 py-3 font-medium border-b border-gray-200">Group Name</th>
+                        <th className="px-6 py-3 font-medium border-b border-gray-200">Chat ID</th>
+                        <th className="px-6 py-3 font-medium border-b border-gray-200">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {telegramGroups.map((group, index) => (
+                        <tr
+                          key={`group-${group.chatId}-${index}`}
+                          className="transition-colors duration-200 hover:bg-blue-50 odd:bg-white even:bg-gray-50"
+                        >
+                          <td className="px-6 py-3 border-b border-gray-200">{group.groupName}</td>
+                          <td className="px-6 py-3 border-b border-gray-200">{group.chatId}</td>
+                          <td className="px-6 py-3 border-b border-gray-200">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEditGroup(group)}
+                                className="text-blue-500 hover:text-blue-700"
+                                aria-label={`Edit group ${group.groupName}`}
+                              >
+                                <Edit size={20} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteGroup(group.chatId)}
+                                className="text-red-500 hover:text-red-700"
+                                aria-label={`Delete group ${group.groupName}`}
+                              >
+                                <Trash2 size={20} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </section>
@@ -1361,6 +1607,106 @@ const AlertBotPage: React.FC = () => {
                         onClick={() => setIsAddGroupModalOpen(false)}
                         className="border border-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 w-full sm:w-auto text-sm sm:text-base"
                         aria-label="Cancel Add Group"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {isEditGroupModalOpen && (
+              <div className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md w-full max-w-lg mx-4">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-6">Edit Telegram Group</h2>
+                  <div className="flex flex-col gap-4">
+                    <input
+                      type="text"
+                      name="chatId"
+                      placeholder="Chat ID (e.g., -123456789 or -1002819438719)"
+                      value={editGroupInputs.chatId || ""}
+                      onChange={handleEditGroupInputChange}
+                      className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Chat ID"
+                    />
+                    <input
+                      type="text"
+                      name="groupName"
+                      placeholder="Group Name"
+                      value={editGroupInputs.groupName || ""}
+                      onChange={handleEditGroupInputChange}
+                      className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Group Name"
+                    />
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={handleEditGroupSubmit}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 w-full sm:w-auto text-sm sm:text-base"
+                        disabled={!editGroupInputs.chatId.trim() || !editGroupInputs.groupName.trim()}
+                        aria-label="Save Changes"
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={() => setIsEditGroupModalOpen(false)}
+                        className="border border-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 w-full sm:w-auto text-sm sm:text-base"
+                        aria-label="Cancel Edit Group"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {isEditUserGroupModalOpen && (
+              <div className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md w-full max-w-lg mx-4">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-6">Edit User-Group Association</h2>
+                  <div className="flex flex-col gap-4">
+                    <select
+                      name="users_id"
+                      value={editUserGroupInputs.users_id || ""}
+                      onChange={handleEditUserGroupInputChange}
+                      className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Select User"
+                    >
+                      <option value="">Select User</option>
+                      {users.map((user) => (
+                        <option key={`edit-usergroup-${user.users_id}`} value={user.users_id}>
+                          {user.users_name}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      name="chatId"
+                      value={editUserGroupInputs.chatId || ""}
+                      onChange={handleEditUserGroupInputChange}
+                      className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Select Group"
+                    >
+                      <option value="">Select Group</option>
+                      {telegramGroups.map((group) => (
+                        <option key={`edit-group-${group.chatId}`} value={group.chatId}>
+                          {group.groupName} ({group.chatId})
+                        </option>
+                      ))}
+                    </select>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={handleEditUserGroupSubmit}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 w-full sm:w-auto text-sm sm:text-base"
+                        disabled={!editUserGroupInputs.users_id.trim() || !editUserGroupInputs.chatId.trim()}
+                        aria-label="Save Changes"
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={() => setIsEditUserGroupModalOpen(false)}
+                        className="border border-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 w-full sm:w-auto text-sm sm:text-base"
+                        aria-label="Cancel Edit User-Group"
                       >
                         Cancel
                       </button>

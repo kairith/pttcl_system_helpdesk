@@ -1,20 +1,20 @@
+
 "use client";
-import React, { useState, useEffect } from "react";
-import Header from "@/app/frontend/components/common/Header/Headerwithsidebar";
-import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
+import { Toaster, toast } from "react-hot-toast";
 
 interface Permissions {
   add: boolean;
   edit: boolean;
   delete: boolean;
   list: boolean;
-}
-                                                           
-interface AddRulesProps {
-  isSidebarOpen: boolean;
+  listAssign?: boolean;
 }
 
-export default function AddRules({ isSidebarOpen }: AddRulesProps) {
+export default function AddRules() {
   const [roleName, setRoleName] = useState("");
   const [permissions, setPermissions] = useState({
     users: { add: false, edit: false, delete: false, list: false },
@@ -24,6 +24,17 @@ export default function AddRules({ isSidebarOpen }: AddRulesProps) {
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+      setError("No authentication token found. Please log in.");
+      toast.error("No authentication token found. Please log in.");
+      setTimeout(() => router.push("/"), 2000);
+    }
+  }, [router]);
 
   const handlePermissionChange = (category: string, action: keyof Permissions, value: boolean) => {
     setPermissions((prev) => ({
@@ -32,36 +43,58 @@ export default function AddRules({ isSidebarOpen }: AddRulesProps) {
     }));
   };
 
+  const handleCheckAll = (category: string, checked: boolean) => {
+    setPermissions((prev) => ({
+      ...prev,
+      [category]: category === "tickets"
+        ? { add: checked, edit: checked, delete: checked, list: checked, listAssign: checked }
+        : { add: checked, edit: checked, delete: checked, list: checked },
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    setLoading(true);
 
-    // Log the current permissions state for debugging
-    console.log("Current permissions state:", permissions);
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+      setError("No authentication token found. Please log in.");
+      toast.error("No authentication token found. Please log in.");
+      setLoading(false);
+      setTimeout(() => router.push("/"), 2000);
+      return;
+    }
 
-    // Ensure all permissions are included in the payload
+    if (!roleName.trim()) {
+      setError("Role name is required.");
+      toast.error("Role name is required.");
+      setLoading(false);
+      return;
+    }
+
     const payloadPermissions = {
-      users: { 
+      users: {
         add: permissions.users.add,
         edit: permissions.users.edit,
         delete: permissions.users.delete,
         list: permissions.users.list,
       },
-      tickets: { 
+      tickets: {
         add: permissions.tickets.add,
         edit: permissions.tickets.edit,
         delete: permissions.tickets.delete,
         list: permissions.tickets.list,
         listAssign: permissions.tickets.listAssign,
       },
-      stations: { 
+      stations: {
         add: permissions.stations.add,
         edit: permissions.stations.edit,
         delete: permissions.stations.delete,
         list: permissions.stations.list,
       },
-      userRules: { 
+      userRules: {
         add: permissions.userRules.add,
         edit: permissions.userRules.edit,
         delete: permissions.userRules.delete,
@@ -72,13 +105,21 @@ export default function AddRules({ isSidebarOpen }: AddRulesProps) {
     try {
       const response = await fetch("/api/data/add_rules", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ roleName, permissions: payloadPermissions }),
       });
 
-      if (!response.ok) throw new Error("Failed to add role");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to add role");
+      }
+
       const data = await response.json();
       setSuccess(data.message);
+      toast.success(data.message, { duration: 2000, position: "top-right" });
       setRoleName("");
       setPermissions({
         users: { add: false, edit: false, delete: false, list: false },
@@ -86,105 +127,198 @@ export default function AddRules({ isSidebarOpen }: AddRulesProps) {
         stations: { add: false, edit: false, delete: false, list: false },
         userRules: { add: false, edit: false, delete: false, list: false },
       });
+      setTimeout(() => router.push("/pages/admin/user_rules"), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMsg = err instanceof Error ? err.message : "An error occurred";
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100">
-    
-      <div className="flex">
-        {/* Sidebar */}
-      
-        <main
-          className={`flex-1 p-4 sm:p-6 lg:p-8  min-h-screen transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? "sm:ml-64" : "sm:ml-0"
-          }`}
-         >
-          <div className="container mx-auto  max-w-5xl">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-6">Add Roles</h1>
-            {error && (
-              <div className="bg-red-100 text-red-600 p-4 rounded-lg mb-4">{error}</div>
-            )}
-            {success && (
-              <div className="bg-green-100 text-green-600 p-4 rounded-lg mb-4">{success}</div>
-            )}
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 mb-6">
-              <div className="mb-4">
-                <label htmlFor="roleName" className="block text-sm font-medium text-gray-700">Add Roles</label>
-                <input
-                  type="text"
-                  id="roleName"
-                  value={roleName}
-                  onChange={(e) => setRoleName(e.target.value)}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Roles Name..."
-                  required
-                />
+  if (loading) {
+    return (
+      <HeaderResponsive>
+        <div className="flex w-full">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+            <Toaster position="top-right" />
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center space-x-3">
+                <svg
+                  className="animate-spin h-8 w-8 text-blue-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
+                  />
+                </svg>
+                <span className="text-lg font-medium text-gray-600">Adding role...</span>
               </div>
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                Add
-              </button>
-            </form>
+            </div>
+          </main>
+        </div>
+      </HeaderResponsive>
+    );
+  }
 
-            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Permissions</h2>
-              {["users", "tickets", "stations", "userRules"].map((category) => (
-                <div key={category} className="mb-4">
-                  <h3 className="text-lg font-medium text-gray-700 capitalize">{category}</h3>
-                  <div className="grid grid-cols-4 gap-4 mt-2">
-                    {category === "tickets" ? (
-                      ["add", "edit", "delete", "list", "listAssign"].map((action) => (
-                        <label key={action} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={
-                              category === "tickets" && action === "listAssign"
-                                ? permissions.tickets.listAssign
-                                : permissions[category as keyof typeof permissions][action as keyof Permissions]
-                            }
-                            onChange={(e) =>
-                              handlePermissionChange(
-                                category,
-                                action as keyof Permissions,
-                                e.target.checked
-                              )
-                            }
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                          />
-                          <span className="text-sm text-gray-600 capitalize">{action}</span>
-                        </label>
-                      ))
-                    ) : (
-                      ["add", "edit", "delete", "list"].map((action) => (
-                        <label key={action} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={permissions[category as keyof typeof permissions][action as keyof Permissions]}
-                            onChange={(e) =>
-                              handlePermissionChange(
-                                category,
-                                action as keyof Permissions,
-                                e.target.checked
-                              )
-                            }
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                          />
-                          <span className="text-sm text-gray-600 capitalize">{action}</span>
-                        </label>
-                      ))
-                    )}
-                  </div>
+  if (error && error.includes("authentication")) {
+    return (
+      <HeaderResponsive>
+        <div className="flex w-full">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+            <Toaster position="top-right" />
+            <div className="flex items-center justify-center py-8">
+              <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md w-full border border-gray-200">
+                <svg
+                  className="mx-auto h-12 w-12 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="mt-4 text-lg font-semibold text-red-600">{error}</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </HeaderResponsive>
+    );
+  }
+
+  return (
+    <HeaderResponsive>
+      <div className="flex w-full">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+          <Toaster position="top-right" />
+          <div className="flex justify-center items-center min-h-[calc(100vh-128px)]">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md w-full max-w-md sm:max-w-full border border-gray-200">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">
+                Add Role
+              </h1>
+              {error && (
+                <div className="mb-4 p-3 rounded text-sm sm:text-base bg-red-100 text-red-800 w-full max-w-full">
+                  {error}
                 </div>
-              ))}
+              )}
+              {success && (
+                <div className="mb-4 p-3 rounded text-sm sm:text-base bg-green-100 text-green-800 w-full max-w-full">
+                  {success}
+                </div>
+              )}
+              <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-full min-w-0">
+                <div className="flex flex-col">
+                  <label htmlFor="roleName" className="block text-sm font-medium text-gray-700 mb-1">
+                    Role Name
+                  </label>
+                  <input
+                    type="text"
+                    id="roleName"
+                    value={roleName}
+                    onChange={(e) => setRoleName(e.target.value)}
+                    className="w-full max-w-full min-w-0 p-2 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter role name..."
+                    required
+                    aria-label="Role Name"
+                  />
+                </div>
+                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-200">
+                  <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Permissions</h2>
+                  {["users", "tickets", "stations", "userRules"].map((category) => (
+                    <div key={category} className="mb-6">
+                      <h3 className="text-lg font-medium text-gray-700 capitalize mb-2">{category}</h3>
+                      <label className="flex items-center space-x-2 mb-3">
+                        <input
+                          type="checkbox"
+                          checked={Object.values(permissions[category as keyof typeof permissions]).every(Boolean)}
+                          onChange={(e) => handleCheckAll(category, e.target.checked)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          aria-label={`Check all permissions for ${category}`}
+                        />
+                        <span className="text-sm text-gray-600 font-medium">Check All</span>
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {category === "tickets"
+                          ? ["add", "edit", "delete", "list", "listAssign"].map((action) => (
+                              <label key={action} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    action === "listAssign"
+                                      ? permissions.tickets.listAssign
+                                      : permissions.tickets[action as keyof Omit<Permissions, "listAssign">]
+                                  }
+                                  onChange={(e) =>
+                                    handlePermissionChange(category, action as keyof Permissions, e.target.checked)
+                                  }
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  aria-label={`${category} ${action} permission`}
+                                />
+                                <span className="text-sm text-gray-600 capitalize">{action}</span>
+                              </label>
+                            ))
+                          : ["add", "edit", "delete", "list"].map((action) => (
+                              <label key={action} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    permissions[category as keyof typeof permissions][action as keyof Omit<Permissions, "listAssign">]
+                                  }
+                                  onChange={(e) =>
+                                    handlePermissionChange(category, action as keyof Permissions, e.target.checked)
+                                  }
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  aria-label={`${category} ${action} permission`}
+                                />
+                                <span className="text-sm text-gray-600 capitalize">{action}</span>
+                              </label>
+                            ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-center space-x-4 mt-4 sm:mt-6">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full sm:w-40 max-w-full min-w-0 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300 text-sm sm:text-base font-medium"
+                    aria-label={loading ? "Adding Role" : "Add Role"}
+                  >
+                    {loading ? "Adding..." : "Add Role"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/pages/admin/user_rules")}
+                    className="w-full sm:w-40 max-w-full min-w-0 bg-gray-400 text-white px-6 py-2 rounded-md hover:bg-gray-500 text-sm sm:text-base font-medium"
+                    aria-label="Cancel"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </main>
       </div>
-    </div>
+    </HeaderResponsive>
   );
 }
