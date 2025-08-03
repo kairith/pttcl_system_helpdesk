@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   } finally {
     if (connection) {
       await connection.end();
-      console.log('Database connection closed');
+      // console.log('Database connection closed');
     }
   }
 }
@@ -90,7 +90,7 @@ export async function GET(request: Request) {
     // console.log('Query result:', rows);
 
     if (!Array.isArray(rows) || rows.length === 0) {
-      console.log('No image for users_id:', parsedUsersId);
+      // console.log('No image for users_id:', parsedUsersId);
       return NextResponse.json(
         { imagePath: '/Uploads/user_image/Default-avatar.jpg', usersId: parsedUsersId },
         { status: 200 }
@@ -98,7 +98,7 @@ export async function GET(request: Request) {
     }
 
     const userImage = rows[0] as { id: number; users_id: number; image_path: string };
-    console.log('Found image:', userImage.image_path);
+    // console.log('Found image:', userImage.image_path);
 
     return NextResponse.json(
       { imagePath: userImage.image_path.toLowerCase(), usersId: userImage.users_id },
@@ -110,7 +110,7 @@ export async function GET(request: Request) {
   } finally {
     if (connection) {
       await connection.end();
-      console.log('Database connection closed');
+      // console.log('Database connection closed');
     }
   }
 }

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     await writeFile(filePath, buffer);
 
     const relativePath = `/uploads/ticket_image/${fileName}`;
-    console.log('Uploaded image:', relativePath);
+    // console.log('Uploaded image:', relativePath);
     return NextResponse.json({ imagePath: relativePath }, { status: 200 });
   } catch (error) {
     console.error('Image upload error:', error);

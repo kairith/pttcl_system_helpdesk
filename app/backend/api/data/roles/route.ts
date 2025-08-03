@@ -11,7 +11,7 @@ export async function GET() {
   try {
     // console.log('Attempting to connect to database with config:', dbConfig);
     connection = await pool.getConnection();
-    console.log('Database connection established');
+    // console.log('Database connection established');
     const [rows] = await connection.execute(`
       SELECT rules_id, rules_name, 
              add_user_status, edit_user_status, delete_user_status, list_user_status,
@@ -57,7 +57,7 @@ export async function GET() {
     }
   } finally {
     if (connection) {
-      console.log('Releasing database connection');
+      // console.log('Releasing database connection');
       connection.release();
     }
   }

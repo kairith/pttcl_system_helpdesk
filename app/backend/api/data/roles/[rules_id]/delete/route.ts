@@ -18,7 +18,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ r
     }
 
     connection = await pool.getConnection();
-    console.log('Database connection established for DELETE rule:', ruleId);
+    // console.log('Database connection established for DELETE rule:', ruleId);
     const [result] = await connection.execute('DELETE FROM tbl_users_rules WHERE rules_id = ?', [ruleId]);
 
     if ((result as any).affectedRows === 0) {
@@ -26,7 +26,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ r
       return NextResponse.json({ error: 'Rule not found' }, { status: 404 });
     }
 
-    console.log('Rule deleted successfully:', ruleId);
+    // console.log('Rule deleted successfully:', ruleId);
     return NextResponse.json({ message: 'Rule deleted successfully' }, { status: 200 });
   } catch (error) {
     if (error instanceof Error) {
@@ -38,7 +38,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ r
     }
   } finally {
     if (connection) {
-      console.log('Releasing database connection');
+      // console.log('Releasing database connection');
       connection.release();
     }
   }

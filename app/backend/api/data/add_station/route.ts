@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       'INSERT INTO tbl_station (station_id, station_name, station_type, province) VALUES (?, ?, ?, ?)',
       [station_id, station_name, station_type, province]
     );
-    console.log('Insert result:', result); // Debug log
+    // console.log('Insert result:', result); // Debug log
 
     // Fetch the newly created station to get the auto-incremented id
     const [newRows] = await connection.execute<RowDataPacket[] & Station[]>(

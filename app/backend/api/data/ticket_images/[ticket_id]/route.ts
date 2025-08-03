@@ -32,7 +32,7 @@ export async function GET(request: Request, context: { params: Promise<{ ticket_
       [ticket_id]
     );
 
-    console.log(`Images found for ticket_id ${ticket_id}:`, rows);
+    // console.log(`Images found for ticket_id ${ticket_id}:`, rows);
     return NextResponse.json(rows, { status: 200 });
   } catch (error) {
     console.error(`Error fetching images for ticket ${ticket_id}:`, error);

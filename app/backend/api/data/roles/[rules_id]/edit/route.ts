@@ -8,7 +8,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ru
   let connection;
   try {
     const { rules_id } = await params;
-    console.log('PATCH request for rules_id:', rules_id);
+    // console.log('PATCH request for rules_id:', rules_id);
     const ruleId = parseInt(rules_id, 10);
     if (isNaN(ruleId)) {
       console.error('Invalid rule ID:', rules_id);
@@ -16,7 +16,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ru
     }
 
     const body = await request.json();
-    console.log('PATCH request body:', JSON.stringify(body, null, 2));
+    // console.log('PATCH request body:', JSON.stringify(body, null, 2));
     const { rules_name, permissions } = body;
 
     // Validate rules_name
@@ -38,7 +38,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ru
       `SELECT * FROM tbl_users_rules WHERE rules_id = ?`,
       [ruleId]
     );
-    console.log('Current rule state:', currentRows);
+    // console.log('Current rule state:', currentRows);
 
     const [result] = await connection.execute(
       `UPDATE tbl_users_rules SET 
@@ -83,7 +83,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ru
     );
     // console.log('Updated rule state:', updatedRows);
 
-    console.log('Rule updated successfully:', { rules_id: ruleId });
+    // console.log('Rule updated successfully:', { rules_id: ruleId });
     return NextResponse.json({ message: 'Rule updated successfully', updatedRule: (updatedRows as mysql.RowDataPacket[])[0] }, { status: 200 });
   } catch (error) {
     if (error instanceof Error) {
@@ -95,7 +95,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ru
   } finally {
     if (connection) {
       connection.release();
-      console.log('Database connection released');
+      // console.log('Database connection released');
     }
   }
 }

@@ -141,6 +141,7 @@
 {"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to too.ch@ptt.com.kh","messageId":"<4a8cb440-348c-6c5b-06a5-d56f27de0327@gmail.com>","messageLength":346,"smtpResponse":"250 2.0.0 OK  1753666261 d9443c01a7336-23fbe4fce17sm42200675ad.110 - gsmtp","timestamp":"2025-07-28T01:31:01.662Z"}
 {"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to bona@gmail.com","messageId":"<1ca48ccd-6a96-17b7-0d53-639798539677@gmail.com>","messageLength":369,"smtpResponse":"250 2.0.0 OK  1753666440 d9443c01a7336-2403de0710bsm2114715ad.12 - gsmtp","timestamp":"2025-07-28T01:34:00.413Z"}
 {"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+<<<<<<< Updated upstream
 {"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to digital.cambodia@site.com","messageId":"<6219ddb0-df8f-998a-4ae7-15b9a29acf2e@gmail.com>","messageLength":369,"smtpResponse":"250 2.0.0 OK  1753775072 d2e1a72fcca58-7640b8adf44sm7352568b3a.120 - gsmtp","timestamp":"2025-07-29T07:44:31.557Z"}
 {"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
 {"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to kai@gmail.com","messageId":"<df0b9223-213c-f2a9-1b3d-ec7f97029470@gmail.com>","messageLength":242,"smtpResponse":"250 2.0.0 OK  1753801782 41be03b00d2f7-b3f7f569d24sm7365603a12.1 - gsmtp","timestamp":"2025-07-29T15:09:43.205Z"}
@@ -206,3 +207,8 @@
 {"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
 {"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<85651ddf-cca4-2db4-cda5-a91de6bbd1cc@gmail.com>","messageLength":273,"smtpResponse":"250 2.0.0 OK  1753968439 98e67ed59e1d1-3207eba6bcfsm2056278a91.6 - gsmtp","timestamp":"2025-07-31T13:27:18.887Z"}
 {"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<8cf7623c-5fd0-6521-53af-c230fcb64fae@gmail.com>","messageLength":348,"smtpResponse":"250 2.0.0 OK  1753968600 d9443c01a7336-241e8aca27esm18338745ad.190 - gsmtp","timestamp":"2025-07-31T13:30:00.147Z"}
+=======
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<8cbf3624-65c6-981d-63f9-42136d58a16f@gmail.com>","messageLength":290,"smtpResponse":"250 2.0.0 OK  1754199441 d2e1a72fcca58-76bccfbcee7sm7654901b3a.66 - gsmtp","timestamp":"2025-08-03T05:37:21.205Z"}
+>>>>>>> Stashed changes
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<78afd072-be93-e2a6-a8a6-bb28d867ef6d@gmail.com>","messageLength":282,"smtpResponse":"250 2.0.0 OK  1754200108 41be03b00d2f7-b423d2f4fcesm4388027a12.33 - gsmtp","timestamp":"2025-08-03T05:48:29.008Z"}

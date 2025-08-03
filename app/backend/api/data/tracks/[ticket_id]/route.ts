@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ tic
   let connection;
   try {
     connection = await mysql.createConnection(dbConfig);
-    console.log('Database connected successfully');
+    // console.log('Database connected successfully');
 
     try {
       const [rows] = await connection.execute(
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ tic
         [ticket_id]
       );
 
-      // console.log('Query executed, rows:', rows);
+      console.log('Query executed, rows:', rows);
 
       if (!Array.isArray(rows) || rows.length === 0) {
         // console.log('No ticket found for ticket_id:', ticket_id);
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ tic
     } finally {
       if (connection) {
         await connection.end();
-        console.log('Database connection closed');
+        // console.log('Database connection closed');
       }
     }
   } catch (connectionError: any) {

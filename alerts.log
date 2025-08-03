@@ -390,6 +390,7 @@
 {"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"bona"}
 {"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Calling sendTelegramMessage","messageLength":316,"timestamp":"2025-07-28T01:34:00.582Z","username":"bona"}
 {"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-07-28T01:34:01.623Z","username":"bona"}
+<<<<<<< Updated upstream
 {"email":"digital.cambodia@site.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
 {"email":"digital.cambodia@site.com","level":"info","message":"Sent gmail alert","messageId":"<6219ddb0-df8f-998a-4ae7-15b9a29acf2e@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-07-29T07:44:31.558Z"}
 {"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"PTT Digital Cambodia"}
@@ -654,3 +655,15 @@
 {"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"Admin"}
 {"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Calling sendTelegramMessage","messageLength":276,"timestamp":"2025-07-31T13:30:00.329Z","username":"Admin"}
 {"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-07-31T13:30:01.467Z","username":"Admin"}
+=======
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: New Ticket Created\n\nStation ID: F605\nStation Name:","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<8cbf3624-65c6-981d-63f9-42136d58a16f@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-03T05:37:21.205Z"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sending alert with: Dear @Admin\nNew Ticket Created\n\nStation ID: F605\nS","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Calling sendTelegramMessage","messageLength":209,"timestamp":"2025-08-03T05:37:21.276Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-03T05:37:22.059Z","username":"Admin"}
+>>>>>>> Stashed changes
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: New Ticket Created\n\n\nStation ID: F603\nStation Name","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<78afd072-be93-e2a6-a8a6-bb28d867ef6d@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-03T05:48:29.009Z"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sending alert with: Dear @Admin\nNew Ticket Created\n\n\nStation ID: F603\n","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Calling sendTelegramMessage","messageLength":241,"timestamp":"2025-08-03T05:48:29.087Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-03T05:48:31.500Z","username":"Admin"}

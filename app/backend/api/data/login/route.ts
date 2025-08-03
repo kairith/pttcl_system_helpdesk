@@ -11,12 +11,12 @@ export async function POST(request: Request) {
     const { email, password, rememberMe } = body;
 
     if (!email || !password) {
-      console.log("Missing email or password");
+      // console.log("Missing email or password");
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
     connection = await mysql.createConnection(dbConfig);
-    console.log("Database connected successfully");
+    // console.log("Database connected successfully");
 
     const query = `
       SELECT u.users_id, u.users_name, u.email, u.password, u.status, u.code, u.rules_id, r.rules_name, r.list_ticket_status, r.add_user_rules
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const user = (rows as any[])[0];
 
     if (!user) {
-      console.log("No user found for email:", email);
+      // console.log("No user found for email:", email);
       return NextResponse.json({ error: "Invalid email" }, { status: 401 });
     }
 
