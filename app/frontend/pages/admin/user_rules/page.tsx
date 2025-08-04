@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, useCallback, useMemo, Fragment } from "react";
 import { tbl_users_rules } from "@/app/backend/types/rules";
 import { fetchUserRules } from "./action";
 import Link from "next/link";
@@ -13,20 +12,13 @@ import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 interface Permissions {
   users: { add: boolean; edit: boolean; delete: boolean; list: boolean };
-  tickets: {
-    add: boolean;
-    edit: boolean;
-    delete: boolean;
-    list: boolean;
-    listAssign: boolean;
-  };
+  tickets: { add: boolean; edit: boolean; delete: boolean; list: boolean; listAssign: boolean };
   stations: { add: boolean; edit: boolean; delete: boolean; list: boolean };
   userRules: { add: boolean; edit: boolean; delete: boolean; list: boolean };
 }
 
 export default function UserRules() {
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [rules, setRules] = useState<tbl_users_rules[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -47,8 +39,6 @@ export default function UserRules() {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
-
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
@@ -61,7 +51,6 @@ export default function UserRules() {
           setTimeout(() => router.push("/"), 2000);
           return;
         }
-        // console.log("UserRules: Fetching with token:", token.substring(0, 10) + "...");
 
         const response = await fetch("/api/data/user", {
           headers: { Authorization: `Bearer ${token}` },
@@ -99,7 +88,6 @@ export default function UserRules() {
           },
         };
         setPermissions(userPermissions);
-        // console.log("UserRules: Permissions:", JSON.stringify(userPermissions, null, 2));
 
         if (!userPermissions.userRules.list) {
           setError("You do not have permission to view user rules.");
@@ -108,7 +96,6 @@ export default function UserRules() {
         }
 
         const { rules, error } = await fetchUserRules();
-        // console.log("UserRules: Fetched rules:", JSON.stringify(rules, null, 2));
         setRules(rules || []);
         if (error) {
           setError(error);
@@ -125,7 +112,7 @@ export default function UserRules() {
     loadData();
   }, [router]);
 
-  const mapRuleToPermissions = (rule: tbl_users_rules): Permissions => ({
+  const mapRuleToPermissions = useCallback((rule: tbl_users_rules): Permissions => ({
     users: {
       add: !!rule.add_user_status,
       edit: !!rule.edit_user_status,
@@ -151,24 +138,26 @@ export default function UserRules() {
       delete: !!rule.delete_user_rules,
       list: !!rule.list_user_rules,
     },
-  });
+  }), []);
 
-  const handleEdit = (rule: tbl_users_rules) => {
+  const handleEdit = useCallback((rule: tbl_users_rules) => {
     if (!permissions?.userRules.edit) {
       toast.error("You do not have permission to edit user rules.");
       return;
     }
+    if (rule.rules_id === 1461) {
+      toast.error("Cannot edit admin rule (ID 1461).");
+      return;
+    }
     if (!rule?.rules_id || !rule?.rules_name) {
-      console.error("UserRules: Invalid rule data:", rule);
       toast.error("Invalid rule data. Please try again.");
       return;
     }
     setSelectedRule(rule);
-    setEditRuleName(rule.rules_name || ""); // Ensure non-empty string
+    setEditRuleName(rule.rules_name || "");
     setEditPermissions(mapRuleToPermissions(rule));
     setIsEditModalOpen(true);
-    // console.log("UserRules: Opening edit modal for rule:", rule.rules_id);
-  };
+  }, [permissions, mapRuleToPermissions]);
 
   type PermissionKey =
     | keyof Permissions["users"]
@@ -176,22 +165,26 @@ export default function UserRules() {
     | keyof Permissions["stations"]
     | keyof Permissions["userRules"];
 
-  const handlePermissionChange = (
-    category: keyof Permissions,
-    permission: PermissionKey
-  ) => {
-    setEditPermissions((prev) => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [permission]: !prev[category][permission as keyof (typeof prev)[typeof category]],
-      },
-    }));
-  };
+  const handlePermissionChange = useCallback(
+    (category: keyof Permissions, permission: PermissionKey) => {
+      setEditPermissions((prev) => ({
+        ...prev,
+        [category]: {
+          ...prev[category],
+          [permission]: !prev[category][permission as keyof (typeof prev)[typeof category]],
+        },
+      }));
+    },
+    []
+  );
 
-  const handleEditSubmit = async () => {
+  const handleEditSubmit = useCallback(async () => {
     if (!selectedRule || !permissions?.userRules.edit) {
       toast.error("You do not have permission to edit user rules.");
+      return;
+    }
+    if (selectedRule.rules_id === 1461) {
+      toast.error("Cannot edit admin rule (ID 1461).");
       return;
     }
     if (!selectedRule.rules_id || !editRuleName.trim()) {
@@ -218,7 +211,6 @@ export default function UserRules() {
         }),
       });
       const data = await response.json();
-      // console.log("UserRules: Edit response:", JSON.stringify(data, null, 2));
       if (response.ok) {
         setRules(
           rules.map((r) =>
@@ -267,15 +259,20 @@ export default function UserRules() {
       const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred.";
       setError(errorMsg);
       toast.error(errorMsg);
-      console.error("UserRules: Edit error:", errorMsg);
     } finally {
       setIsActionLoading(false);
     }
-  };
+  }, [permissions, router, rules, selectedRule, editRuleName, editPermissions]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!selectedRule || !permissions?.userRules.delete) {
       toast.error("You do not have permission to delete user rules.");
+      return;
+    }
+    if (selectedRule.rules_id === 1461) {
+      toast.error("Cannot delete admin rule (ID 1461).");
+      setIsDeleteModalOpen(false);
+      setSelectedRule(null);
       return;
     }
     if (!selectedRule.rules_id) {
@@ -295,7 +292,6 @@ export default function UserRules() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-      // console.log("UserRules: Delete response:", JSON.stringify(data, null, 2));
       if (response.ok) {
         setRules(rules.filter((r) => r.rules_id !== selectedRule.rules_id));
         setIsDeleteModalOpen(false);
@@ -311,13 +307,12 @@ export default function UserRules() {
       const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred.";
       setError(errorMsg);
       toast.error(errorMsg);
-      console.error("UserRules: Delete error:", errorMsg);
     } finally {
       setIsActionLoading(false);
     }
-  };
+  }, [permissions, router, rules, selectedRule]);
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.trim();
     if (value && !/^\d+$/.test(value)) {
       setFilterIdError("Rule ID must be numeric");
@@ -325,45 +320,44 @@ export default function UserRules() {
       setFilterIdError(null);
       setFilterId(value);
     }
-    // console.log("UserRules: Filter ID updated:", value);
-  };
+  }, []);
 
-  const handleFilterNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFilterName(value);
-    // console.log("UserRules: Filter Name updated:", value);
-  };
+  const handleFilterNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterName(e.target.value);
+  }, []);
 
-  const handleFilterToggle = () => {
-    setShowFilterInput((prev) => !prev);
-    if (showFilterInput) {
-      setFilterId("");
-      setFilterName("");
-      setFilterIdError(null);
-    }
-    // console.log("UserRules: Filter input toggled:", !showFilterInput);
-  };
+  const handleFilterToggle = useCallback(() => {
+    setShowFilterInput((prev) => {
+      if (prev) {
+        setFilterId("");
+        setFilterName("");
+        setFilterIdError(null);
+      }
+      return !prev;
+    });
+  }, []);
 
-  const handleClearFilter = () => {
+  const handleClearFilter = useCallback(() => {
     setFilterId("");
     setFilterName("");
     setFilterIdError(null);
     setShowFilterInput(false);
-    // console.log("UserRules: Filters cleared");
-  };
+  }, []);
 
-  const filteredRules = rules.filter((rule) => {
-    const matchesId = filterId ? rule.rules_id.toString().includes(filterId) : true;
-    const matchesName = filterName
-      ? rule.rules_name.toLowerCase().includes(filterName.toLowerCase())
-      : true;
-    return matchesId && matchesName;
-  });
+  const filteredRules = useMemo(() => {
+    return rules.filter((rule) => {
+      const matchesId = filterId ? rule.rules_id.toString().includes(filterId) : true;
+      const matchesName = filterName
+        ? rule.rules_name.toLowerCase().includes(filterName.toLowerCase())
+        : true;
+      return matchesId && matchesName;
+    });
+  }, [rules, filterId, filterName]);
 
   if (isLoading) {
     return (
       <HeaderResponsive>
-        <LoadingScreen></LoadingScreen>
+        <LoadingScreen />
       </HeaderResponsive>
     );
   }
@@ -372,7 +366,7 @@ export default function UserRules() {
     return (
       <HeaderResponsive>
         <div className="flex w-full">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-200 box-border">
             <Toaster position="top-right" />
             <div className="flex items-center justify-center py-8">
               <div className="bg-white p-6 rounded-md shadow-md text-center max-w-md w-full border border-gray-200">
@@ -404,7 +398,7 @@ export default function UserRules() {
   return (
     <HeaderResponsive>
       <div className="flex w-full">
-        <main className="flex-1 mt-9 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+        <main className="flex-1 mt-9 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-200 box-border">
           <Toaster position="top-right" />
           <div className="flex justify-center items-center min-h-[calc(100vh-128px)]">
             <div className="bg-white p-4 sm:p-6 rounded-md shadow-md w-full max-w-md sm:max-w-full border border-gray-200">
@@ -524,12 +518,9 @@ export default function UserRules() {
                               <td className="p-2 sm:p-3 text-gray-700 min-w-0">{row.rules_name}</td>
                               {(permissions?.userRules?.edit || permissions?.userRules?.delete) && (
                                 <td className="p-2 sm:p-3 text-gray-700 min-w-0 flex gap-2">
-                                  {permissions?.userRules?.edit && (
+                                  {permissions?.userRules?.edit && row.rules_id !== 1461 && (
                                     <button
-                                      onClick={() => {
-                                        handleEdit(row);
-                                        // console.log("UserRules: Edit button clicked for rule:", row.rules_id);
-                                      }}
+                                      onClick={() => handleEdit(row)}
                                       className="w-8 h-8 p-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors pointer-events-auto"
                                       aria-label={`Edit rule ${row.rules_name}`}
                                       disabled={isActionLoading}
@@ -550,12 +541,11 @@ export default function UserRules() {
                                       </svg>
                                     </button>
                                   )}
-                                  {permissions?.userRules?.delete && (
+                                  {permissions?.userRules?.delete && row.rules_id !== 1461 && (
                                     <button
                                       onClick={() => {
                                         setSelectedRule(row);
                                         setIsDeleteModalOpen(true);
-                                        // console.log("UserRules: Delete button clicked for rule:", row.rules_id);
                                       }}
                                       className="w-8 h-8 p-1 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors pointer-events-auto"
                                       aria-label={`Delete rule ${row.rules_name}`}
@@ -576,6 +566,9 @@ export default function UserRules() {
                                         />
                                       </svg>
                                     </button>
+                                  )}
+                                  {row.rules_id === 1461 && (
+                                    <span className="text-gray-500 text-xs italic">Admin Restriction</span>
                                   )}
                                 </td>
                               )}
@@ -605,15 +598,14 @@ export default function UserRules() {
                     stations: { add: false, edit: false, delete: false, list: false },
                     userRules: { add: false, edit: false, delete: false, list: false },
                   });
-                  // console.log("UserRules: Edit modal closed");
                 }}
               >
                 <Transition.Child
                   as={Fragment}
-                  enter="ease-out duration-300"
+                  enter="ease-out duration-200"
                   enterFrom="opacity-0"
                   enterTo="opacity-100"
-                  leave="ease-in duration-200"
+                  leave="ease-in duration-150"
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
@@ -622,10 +614,10 @@ export default function UserRules() {
                 <div className="flex items-center justify-center min-h-screen p-4">
                   <Transition.Child
                     as={Fragment}
-                    enter="ease-out duration-300"
+                    enter="ease-out duration-200"
                     enterFrom="opacity-0 scale-95"
                     enterTo="opacity-100 scale-100"
-                    leave="ease-in duration-200"
+                    leave="ease-in duration-150"
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                   >
@@ -650,7 +642,6 @@ export default function UserRules() {
                       <div className="mt-4">
                         <h4 className="text-sm font-semibold text-gray-700">Permissions</h4>
                         <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                          {/* Users Permissions */}
                           <div>
                             <h5 className="text-sm font-semibold text-gray-600">Users</h5>
                             {(["add", "edit", "delete", "list"] as Array<keyof Permissions["users"]>).map(
@@ -674,7 +665,6 @@ export default function UserRules() {
                               )
                             )}
                           </div>
-                          {/* Tickets Permissions */}
                           <div>
                             <h5 className="text-sm font-semibold text-gray-600">Tickets</h5>
                             {(
@@ -700,7 +690,6 @@ export default function UserRules() {
                               </div>
                             ))}
                           </div>
-                          {/* Stations Permissions */}
                           <div>
                             <h5 className="text-sm font-semibold text-gray-600">Stations</h5>
                             {(["add", "edit", "delete", "list"] as Array<keyof Permissions["stations"]>).map(
@@ -724,7 +713,6 @@ export default function UserRules() {
                               )
                             )}
                           </div>
-                          {/* UserRules Permissions */}
                           <div>
                             <h5 className="text-sm font-semibold text-gray-600">User Rules</h5>
                             {(["add", "edit", "delete", "list"] as Array<keyof Permissions["userRules"]>).map(
@@ -763,7 +751,6 @@ export default function UserRules() {
                               stations: { add: false, edit: false, delete: false, list: false },
                               userRules: { add: false, edit: false, delete: false, list: false },
                             });
-                            // console.log("UserRules: Edit modal Cancel clicked");
                           }}
                           className="w-full sm:w-32 max-w-full min-w-0 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:bg-gray-100 pointer-events-auto"
                           aria-label="Cancel edit"
@@ -773,10 +760,7 @@ export default function UserRules() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
-                            // console.log("UserRules: Edit modal Save clicked");
-                            handleEditSubmit();
-                          }}
+                          onClick={handleEditSubmit}
                           className="w-full sm:w-32 max-w-full min-w-0 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-300 pointer-events-auto"
                           aria-label="Save rule"
                           disabled={isActionLoading || !editRuleName.trim()}
@@ -799,15 +783,14 @@ export default function UserRules() {
                 onClose={() => {
                   setIsDeleteModalOpen(false);
                   setSelectedRule(null);
-                  // console.log("UserRules: Delete modal closed");
                 }}
               >
                 <Transition.Child
                   as={Fragment}
-                  enter="ease-out duration-300"
+                  enter="ease-out duration-200"
                   enterFrom="opacity-0"
                   enterTo="opacity-100"
-                  leave="ease-in duration-200"
+                  leave="ease-in duration-150"
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
@@ -816,10 +799,10 @@ export default function UserRules() {
                 <div className="flex items-center justify-center min-h-screen p-4">
                   <Transition.Child
                     as={Fragment}
-                    enter="ease-out duration-300"
+                    enter="ease-out duration-200"
                     enterFrom="opacity-0 scale-95"
                     enterTo="opacity-100 scale-100"
-                    leave="ease-in duration-200"
+                    leave="ease-in duration-150"
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                   >
@@ -838,7 +821,6 @@ export default function UserRules() {
                           onClick={() => {
                             setIsDeleteModalOpen(false);
                             setSelectedRule(null);
-                            // console.log("UserRules: Delete modal Cancel clicked");
                           }}
                           className="w-full sm:w-32 max-w-full min-w-0 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 disabled:bg-gray-100 pointer-events-auto"
                           aria-label="Cancel deletion"
@@ -847,10 +829,7 @@ export default function UserRules() {
                           Cancel
                         </button>
                         <button
-                          onClick={() => {
-                            // console.log("UserRules: Delete modal Delete clicked");
-                            handleDelete();
-                          }}
+                          onClick={handleDelete}
                           className="w-full sm:w-32 max-w-full min-w-0 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:bg-red-300 pointer-events-auto"
                           aria-label="Delete rule"
                           disabled={isActionLoading}
@@ -866,6 +845,6 @@ export default function UserRules() {
           )}
         </main>
       </div>
-   </HeaderResponsive>
+    </HeaderResponsive>
   );
 }

@@ -212,3 +212,6 @@
 >>>>>>> Stashed changes
 {"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
 {"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<78afd072-be93-e2a6-a8a6-bb28d867ef6d@gmail.com>","messageLength":282,"smtpResponse":"250 2.0.0 OK  1754200108 41be03b00d2f7-b423d2f4fcesm4388027a12.33 - gsmtp","timestamp":"2025-08-03T05:48:29.008Z"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<b84b93dd-2a70-0869-f451-223b89eacb0d@gmail.com>","messageLength":268,"smtpResponse":"250 2.0.0 OK  1754207568 98e67ed59e1d1-3207eca6fdfsm8904131a91.20 - gsmtp","timestamp":"2025-08-03T07:52:48.581Z"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dararithzone@gmail.com","messageId":"<579474f7-1569-e04c-69ee-ac66f829e20a@gmail.com>","messageLength":352,"smtpResponse":"250 2.0.0 OK  1754207636 98e67ed59e1d1-31f63ee49fbsm11550644a91.18 - gsmtp","timestamp":"2025-08-03T07:53:56.353Z"}

@@ -1,15 +1,14 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { Ticket } from "../../../../backend/types/ticket";
 import { fetchTickets } from "./action";
 import HeaderResponsive from "@/app/frontend/components/common/Header/headerResponsive";
 import ControlsSection from "@/app/frontend/components/Admin/Ticket_components/ControlsSection/ControlsSection";
 import FilterSection from "@/app/frontend/components/Admin/Ticket_components/FilterSection/FilterSection";
 import TicketTable from "@/app/frontend/components/Admin/Ticket_components/TicketTable/TicketTable";
-import { toast } from "react-toastify";
 import LoadingScreen from "@/app/frontend/components/ui/loadingScreen";
 
 interface Permissions {
@@ -22,10 +21,53 @@ interface Permissions {
   };
 }
 
+interface Filters {
+  stationId: string;
+  stationName: string;
+  stationType: string;
+  province: string;
+  issueDescription: string;
+  issueType: string;
+  status: string;
+  usersId: string;
+  ticketOpenFrom: string;
+  ticketOpenTo: string;
+  ticketCloseFrom: string;
+  ticketCloseTo: string;
+  ticketOnHold: string;
+  ticketInProgress: string;
+  ticketPendingVendor: string;
+  ticketTime: string;
+  comment: string;
+  userCreateTicket: string;
+  issueTypeId: string;
+  usersName: string;
+}
+
 export default function Tickets() {
- 
   const [tickets, setTickets] = useState<(Ticket & { users_name: string; creator_name: string })[]>([]);
-  const [filteredTickets, setFilteredTickets] = useState<(Ticket & { users_name: string; creator_name: string })[]>([]);
+  const [filters, setFilters] = useState<Filters>({
+    stationId: "",
+    stationName: "",
+    stationType: "",
+    province: "",
+    issueDescription: "",
+    issueType: "",
+    status: "",
+    usersId: "",
+    ticketOpenFrom: "",
+    ticketOpenTo: "",
+    ticketCloseFrom: "",
+    ticketCloseTo: "",
+    ticketOnHold: "",
+    ticketInProgress: "",
+    ticketPendingVendor: "",
+    ticketTime: "",
+    comment: "",
+    userCreateTicket: "",
+    issueTypeId: "",
+    usersName: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [showFilterInput, setShowFilterInput] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
@@ -34,48 +76,25 @@ export default function Tickets() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Filter states
-  const [stationIdFilter, setStationIdFilter] = useState("");
-  const [stationNameFilter, setStationNameFilter] = useState("");
-  const [stationTypeFilter, setStationTypeFilter] = useState("");
-  const [provinceFilter, setProvinceFilter] = useState("");
-  const [issueDescriptionFilter, setIssueDescriptionFilter] = useState("");
-  const [issueTypeFilter, setIssueTypeFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [usersIdFilter, setUsersIdFilter] = useState("");
-  const [ticketOpenFrom, setTicketOpenFrom] = useState("");
-  const [ticketOpenTo, setTicketOpenTo] = useState("");
-  const [ticketCloseFrom, setTicketCloseFrom] = useState("");
-  const [ticketCloseTo, setTicketCloseTo] = useState("");
-  const [ticketOnHoldFilter, setTicketOnHoldFilter] = useState("");
-  const [ticketInProgressFilter, setTicketInProgressFilter] = useState("");
-  const [ticketPendingVendorFilter, setTicketPendingVendorFilter] = useState("");
-  const [ticketTimeFilter, setTicketTimeFilter] = useState("");
-  const [commentFilter, setCommentFilter] = useState("");
-  const [userCreateTicketFilter, setUserCreateTicketFilter] = useState("");
-  const [issueTypeIdFilter, setIssueTypeIdFilter] = useState("");
-  const [usersNameFilter, setUsersNameFilter] = useState("");
-
-  
-
   useEffect(() => {
     async function loadData() {
       try {
         setIsLoading(true);
         const token = sessionStorage.getItem("token");
         if (!token) {
+          setError("Please log in to access tickets.");
           toast.error("Please log in to access tickets.");
           router.push("/");
           return;
         }
 
-        // Fetch permissions
         const response = await fetch("/api/data/user", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
           const data = await response.json();
           if (data.error?.includes("Invalid token")) {
+            setError("Session expired. Please log in again.");
             toast.error("Session expired. Please log in again.");
             router.push("/");
             return;
@@ -93,9 +112,7 @@ export default function Tickets() {
           },
         };
         setPermissions(userPermissions);
-        // console.log("Permissions loaded:", userPermissions);
 
-        // Fetch tickets only if list permission exists
         if (userPermissions.tickets.list) {
           const { tickets, error } = await fetchTickets();
           if (error) {
@@ -103,8 +120,6 @@ export default function Tickets() {
             toast.error(error);
           } else {
             setTickets(tickets || []);
-            setFilteredTickets(tickets || []);
-            // console.log("Loaded tickets:", tickets);
           }
         } else {
           setError("You do not have permission to view tickets.");
@@ -114,7 +129,6 @@ export default function Tickets() {
         const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
         setError(errorMessage);
         toast.error(errorMessage);
-        console.error("Error loading data:", err);
       } finally {
         setIsLoading(false);
       }
@@ -122,7 +136,7 @@ export default function Tickets() {
     loadData();
   }, [router]);
 
-  const handleCreateTicket = () => {
+  const handleCreateTicket = useCallback(() => {
     const token = sessionStorage.getItem("token");
     if (!token) {
       toast.error("Please log in to create a ticket.");
@@ -134,263 +148,115 @@ export default function Tickets() {
       return;
     }
     router.push("/pages/admin/ticket/add_ticket");
-  };
+  }, [permissions, router]);
 
-  const handleFilterToggle = () => {
+  const handleFilterToggle = useCallback(() => {
     if (!permissions?.tickets.list) {
       toast.error("You do not have permission to filter tickets.");
       return;
     }
     setShowFilterInput((prev) => !prev);
-    if (showFilterInput) {
-      setStationIdFilter("");
-      setStationNameFilter("");
-      setStationTypeFilter("");
-      setProvinceFilter("");
-      setIssueDescriptionFilter("");
-      setIssueTypeFilter("");
-      setStatusFilter("");
-      setUsersIdFilter("");
-      setTicketOpenFrom("");
-      setTicketOpenTo("");
-      setTicketCloseFrom("");
-      setTicketCloseTo("");
-      setTicketOnHoldFilter("");
-      setTicketInProgressFilter("");
-      setTicketPendingVendorFilter("");
-      setTicketTimeFilter("");
-      setCommentFilter("");
-      setUserCreateTicketFilter("");
-      setIssueTypeIdFilter("");
-      setUsersNameFilter("");
-      setFilteredTickets(tickets);
-    }
-  };
+  }, [permissions]);
 
-  const handleFilterChange = (key: string, value: string) => {
-    // console.log(`handleFilterChange: ${key} = ${value}`);
-    switch (key) {
-      case "stationIdFilter":
-        setStationIdFilter(value);
-        break;
-      case "stationNameFilter":
-        setStationNameFilter(value);
-        break;
-      case "stationTypeFilter":
-        setStationTypeFilter(value);
-        break;
-      case "provinceFilter":
-        setProvinceFilter(value);
-        break;
-      case "issueDescriptionFilter":
-        setIssueDescriptionFilter(value);
-        break;
-      case "issueTypeFilter":
-        setIssueTypeFilter(value);
-        break;
-      case "statusFilter":
-        setStatusFilter(value);
-        break;
-      case "usersIdFilter":
-        setUsersIdFilter(value);
-        break;
-      case "ticketOpenFrom":
-        setTicketOpenFrom(value);
-        break;
-      case "ticketOpenTo":
-        setTicketOpenTo(value);
-        break;
-      case "ticketCloseFrom":
-        setTicketCloseFrom(value);
-        break;
-      case "ticketCloseTo":
-        setTicketCloseTo(value);
-        break;
-      case "ticketOnHoldFilter":
-        setTicketOnHoldFilter(value);
-        break;
-      case "ticketInProgressFilter":
-        setTicketInProgressFilter(value);
-        break;
-      case "ticketPendingVendorFilter":
-        setTicketPendingVendorFilter(value);
-        break;
-      case "ticketTimeFilter":
-        setTicketTimeFilter(value);
-        break;
-      case "commentFilter":
-        setCommentFilter(value);
-        break;
-      case "userCreateTicketFilter":
-        setUserCreateTicketFilter(value);
-        break;
-      case "issueTypeIdFilter":
-        setIssueTypeIdFilter(value);
-        break;
-      case "usersNameFilter":
-        setUsersNameFilter(value);
-        break;
-    }
-  };
-
-  const handleFilter = () => {
-    if (!permissions?.tickets.list) {
-      toast.error("You do not have permission to filter tickets.");
-      return;
-    }
-    let result = [...tickets];
-
-    // console.log("Filtering with:", {
-    //   stationIdFilter,
-    //   stationNameFilter,
-    //   stationTypeFilter,
-    //   provinceFilter,
-    //   issueTypeFilter,
-    //   statusFilter,
-    //   usersNameFilter,
-    //   ticketOpenFrom,
-    //   ticketOpenTo,
-    // });
-
-    if (stationIdFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.station_id || "").toLowerCase().includes(stationIdFilter.toLowerCase())
-      );
-    }
-    if (stationNameFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.station_name || "").toLowerCase().includes(stationNameFilter.toLowerCase())
-      );
-    }
-    if (stationTypeFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.station_type || "").toLowerCase().includes(stationTypeFilter.toLowerCase())
-      );
-    }
-    if (provinceFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.province || "").toLowerCase().includes(provinceFilter.toLowerCase())
-      );
-    }
-    if (issueDescriptionFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.issue_description || "").toLowerCase().includes(issueDescriptionFilter.toLowerCase())
-      );
-    }
-    if (issueTypeFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.issue_type || "").toLowerCase().includes(issueTypeFilter.toLowerCase())
-      );
-    }
-    if (statusFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.status || "").toLowerCase().includes(statusFilter.toLowerCase())
-      );
-    }
-    if (usersIdFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.users_id || "").toLowerCase().includes(usersIdFilter.toLowerCase())
-      );
-    }
-    if (usersNameFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.users_name || "").toLowerCase().includes(usersNameFilter.toLowerCase())
-      );
-    }
-    if (ticketOpenFrom || ticketOpenTo) {
-      result = result.filter((ticket) => {
-        const ticketDate = new Date(ticket.ticket_open || "");
-        const fromDate = ticketOpenFrom ? new Date(ticketOpenFrom) : null;
-        const toDate = ticketOpenTo ? new Date(ticketOpenTo) : null;
-        return (!fromDate || ticketDate >= fromDate) && (!toDate || ticketDate <= toDate);
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    if (Object.keys(filters).includes(key)) {
+      setFilters((prev) => {
+        if (prev[key as keyof Filters] === value) return prev;
+        return { ...prev, [key]: value };
       });
     }
-    if (ticketCloseFrom || ticketCloseTo) {
-      result = result.filter((ticket) => {
-        const ticketDate = new Date(ticket.ticket_close || "");
-        const fromDate = ticketCloseFrom ? new Date(ticketCloseFrom) : null;
-        const toDate = ticketCloseTo ? new Date(ticketCloseTo) : null;
-        return (!fromDate || ticketDate >= fromDate) && (!toDate || ticketDate <= toDate);
-      });
-    }
-    if (ticketOnHoldFilter) {
-      result = result.filter((ticket) =>
-        ticket.ticket_on_hold
-          ? new Date(ticket.ticket_on_hold).toISOString().includes(ticketOnHoldFilter)
-          : false
-      );
-    }
-    if (ticketInProgressFilter) {
-      result = result.filter((ticket) =>
-        ticket.ticket_in_progress
-          ? new Date(ticket.ticket_in_progress).toISOString().includes(ticketInProgressFilter)
-          : false
-      );
-    }
-    if (ticketPendingVendorFilter) {
-      result = result.filter((ticket) =>
-        ticket.ticket_pending_vendor
-          ? new Date(ticket.ticket_pending_vendor).toISOString().includes(ticketPendingVendorFilter)
-          : false
-      );
-    }
-    if (ticketTimeFilter) {
-      result = result.filter((ticket) =>
-        ticket.ticket_time
-          ? new Date(ticket.ticket_time).toISOString().includes(ticketTimeFilter)
-          : false
-      );
-    }
-    if (commentFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.comment || "").toLowerCase().includes(commentFilter.toLowerCase())
-      );
-    }
-    if (userCreateTicketFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.user_create_ticket || "").toLowerCase().includes(userCreateTicketFilter.toLowerCase())
-      );
-    }
-    if (issueTypeIdFilter) {
-      result = result.filter((ticket) =>
-        String(ticket.issue_type_id || "").toLowerCase().includes(issueTypeIdFilter.toLowerCase())
-      );
-    }
+  }, [filters]);
 
-    setFilteredTickets(result);
-    console.log("Filtered results:", result);
-  };
+  const filteredTickets = useMemo(() => {
+    if (!permissions?.tickets.list) return tickets;
 
-  const handleClearFilter = () => {
+    return tickets.filter((ticket) => {
+      const {
+        stationId,
+        stationName,
+        stationType,
+        province,
+        issueDescription,
+        issueType,
+        status,
+        usersId,
+        ticketOpenFrom,
+        ticketOpenTo,
+        ticketCloseFrom,
+        ticketCloseTo,
+        ticketOnHold,
+        ticketInProgress,
+        ticketPendingVendor,
+        ticketTime,
+        comment,
+        userCreateTicket,
+        issueTypeId,
+        usersName,
+      } = filters;
+
+      const ticketOpenDate = ticket.ticket_open ? new Date(ticket.ticket_open) : null;
+      const ticketCloseDate = ticket.ticket_close ? new Date(ticket.ticket_close) : null;
+      const ticketOnHoldDate = ticket.ticket_on_hold ? new Date(ticket.ticket_on_hold) : null;
+      const ticketInProgressDate = ticket.ticket_in_progress ? new Date(ticket.ticket_in_progress) : null;
+      const ticketPendingVendorDate = ticket.ticket_pending_vendor ? new Date(ticket.ticket_pending_vendor) : null;
+      const ticketTimeDate = ticket.ticket_time ? new Date(ticket.ticket_time) : null;
+
+      return (
+        (!stationId || String(ticket.station_id || "").toLowerCase().includes(stationId.toLowerCase())) &&
+        (!stationName || String(ticket.station_name || "").toLowerCase().includes(stationName.toLowerCase())) &&
+        (!stationType || String(ticket.station_type || "").toLowerCase().includes(stationType.toLowerCase())) &&
+        (!province || String(ticket.province || "").toLowerCase().includes(province.toLowerCase())) &&
+        (!issueDescription || String(ticket.issue_description || "").toLowerCase().includes(issueDescription.toLowerCase())) &&
+        (!issueType || String(ticket.issue_type || "").toLowerCase().includes(issueType.toLowerCase())) &&
+        (!status || String(ticket.status || "").toLowerCase().includes(status.toLowerCase())) &&
+        (!usersId || String(ticket.users_id || "").toLowerCase().includes(usersId.toLowerCase())) &&
+        (!usersName || String(ticket.users_name || "").toLowerCase().includes(usersName.toLowerCase())) &&
+        (!ticketOpenFrom || (ticketOpenDate && ticketOpenDate >= new Date(ticketOpenFrom))) &&
+        (!ticketOpenTo || (ticketOpenDate && ticketOpenDate <= new Date(ticketOpenTo))) &&
+        (!ticketCloseFrom || (ticketCloseDate && ticketCloseDate >= new Date(ticketCloseFrom))) &&
+        (!ticketCloseTo || (ticketCloseDate && ticketCloseDate <= new Date(ticketCloseTo))) &&
+        (!ticketOnHold || (ticketOnHoldDate && ticketOnHoldDate.toISOString().includes(ticketOnHold))) &&
+        (!ticketInProgress || (ticketInProgressDate && ticketInProgressDate.toISOString().includes(ticketInProgress))) &&
+        (!ticketPendingVendor || (ticketPendingVendorDate && ticketPendingVendorDate.toISOString().includes(ticketPendingVendor))) &&
+        (!ticketTime || (ticketTimeDate && ticketTimeDate.toISOString().includes(ticketTime))) &&
+        (!comment || String(ticket.comment || "").toLowerCase().includes(comment.toLowerCase())) &&
+        (!userCreateTicket || String(ticket.user_create_ticket || "").toLowerCase().includes(userCreateTicket.toLowerCase())) &&
+        (!issueTypeId || String(ticket.issue_type_id || "").toLowerCase().includes(issueTypeId.toLowerCase()))
+      );
+    });
+  }, [filters, tickets, permissions]);
+
+  const handleClearFilter = useCallback(() => {
     if (!permissions?.tickets.list) {
       toast.error("You do not have permission to clear filters.");
       return;
     }
-    setStationIdFilter("");
-    setStationNameFilter("");
-    setStationTypeFilter("");
-    setProvinceFilter("");
-    setIssueDescriptionFilter("");
-    setIssueTypeFilter("");
-    setStatusFilter("");
-    setUsersIdFilter("");
-    setTicketOpenFrom("");
-    setTicketOpenTo("");
-    setTicketCloseFrom("");
-    setTicketCloseTo("");
-    setTicketOnHoldFilter("");
-    setTicketInProgressFilter("");
-    setTicketPendingVendorFilter("");
-    setTicketTimeFilter("");
-    setCommentFilter("");
-    setUserCreateTicketFilter("");
-    setIssueTypeIdFilter("");
-    setUsersNameFilter("");
+    setFilters({
+      stationId: "",
+      stationName: "",
+      stationType: "",
+      province: "",
+      issueDescription: "",
+      issueType: "",
+      status: "",
+      usersId: "",
+      ticketOpenFrom: "",
+      ticketOpenTo: "",
+      ticketCloseFrom: "",
+      ticketCloseTo: "",
+      ticketOnHold: "",
+      ticketInProgress: "",
+      ticketPendingVendor: "",
+      ticketTime: "",
+      comment: "",
+      userCreateTicket: "",
+      issueTypeId: "",
+      usersName: "",
+    });
     setShowFilterInput(false);
-    setFilteredTickets(tickets);
-  };
+  }, [permissions]);
 
-  const handleExport = async (format: "xlsx" | "pdf" | "csv") => {
+  const handleExport = useCallback(async (format: "xlsx" | "pdf" | "csv") => {
     if (!permissions?.tickets.list) {
       toast.error("You do not have permission to export tickets.");
       return;
@@ -448,28 +314,26 @@ export default function Tickets() {
       toast.success(`Successfully exported tickets to ${format.toUpperCase()}`);
       setShowExportOptions(false);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred.";
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       toast.error(errorMessage);
-      console.error("Export error:", error);
     } finally {
       setIsExporting(false);
     }
-  };
+  }, [permissions, router]);
 
   if (isLoading) {
     return (
       <HeaderResponsive>
-        <LoadingScreen></LoadingScreen>
+        <LoadingScreen />
       </HeaderResponsive>
     );
   }
 
   if (error || !permissions) {
     return (
-    <HeaderResponsive>
+      <HeaderResponsive>
         <div className="flex w-full">
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-200">
             <div className="text-red-500 text-center text-sm sm:text-base">
               {error || "Failed to load permissions"}
             </div>
@@ -482,9 +346,9 @@ export default function Tickets() {
   return (
     <HeaderResponsive>
       <div className="flex w-full">
-        <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-300 box-border">
+        <main className="flex-1 mt-17 sm:p-6 lg:p-8 w-full max-w-full pt-16 transition-all duration-200">
           <div className="bg-white shadow rounded-lg p-4 w-full max-w-full">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 ">Tickets</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Tickets</h1>
           </div>
           {(permissions.tickets.add || permissions.tickets.list) && (
             <div className="mt-4 w-full max-w-full">
@@ -504,29 +368,29 @@ export default function Tickets() {
                   <FilterSection
                     showFilterInput={showFilterInput}
                     isExporting={isExporting}
-                    stationIdFilter={stationIdFilter}
-                    stationNameFilter={stationNameFilter}
-                    stationTypeFilter={stationTypeFilter}
-                    provinceFilter={provinceFilter}
-                    issueDescriptionFilter={issueDescriptionFilter}
-                    issueTypeFilter={issueTypeFilter}
-                    statusFilter={statusFilter}
-                    usersIdFilter={usersIdFilter}
-                    ticketOpenFrom={ticketOpenFrom}
-                    ticketOpenTo={ticketOpenTo}
-                    ticketCloseFrom={ticketCloseFrom}
-                    ticketCloseTo={ticketCloseTo}
-                    ticketOnHoldFilter={ticketOnHoldFilter}
-                    ticketInProgressFilter={ticketInProgressFilter}
-                    ticketPendingVendorFilter={ticketPendingVendorFilter}
-                    ticketTimeFilter={ticketTimeFilter}
-                    commentFilter={commentFilter}
-                    userCreateTicketFilter={userCreateTicketFilter}
-                    issueTypeIdFilter={issueTypeIdFilter}
-                    usersNameFilter={usersNameFilter}
+                    stationIdFilter={filters.stationId}
+                    stationNameFilter={filters.stationName}
+                    stationTypeFilter={filters.stationType}
+                    provinceFilter={filters.province}
+                    issueDescriptionFilter={filters.issueDescription}
+                    issueTypeFilter={filters.issueType}
+                    statusFilter={filters.status}
+                    usersIdFilter={filters.usersId}
+                    ticketOpenFrom={filters.ticketOpenFrom}
+                    ticketOpenTo={filters.ticketOpenTo}
+                    ticketCloseFrom={filters.ticketCloseFrom}
+                    ticketCloseTo={filters.ticketCloseTo}
+                    ticketOnHoldFilter={filters.ticketOnHold}
+                    ticketInProgressFilter={filters.ticketInProgress}
+                    ticketPendingVendorFilter={filters.ticketPendingVendor}
+                    ticketTimeFilter={filters.ticketTime}
+                    commentFilter={filters.comment}
+                    userCreateTicketFilter={filters.userCreateTicket}
+                    issueTypeIdFilter={filters.issueTypeId}
+                    usersNameFilter={filters.usersName}
                     tickets={tickets}
                     onFilterChange={handleFilterChange}
-                    onFilter={handleFilter}
+                    onFilter={handleCreateTicket}
                     onClearFilter={handleClearFilter}
                   />
                   <TicketTable

@@ -667,3 +667,13 @@
 {"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sending alert with: Dear @Admin\nNew Ticket Created\n\n\nStation ID: F603\n","platform":"telegram","username":"Admin"}
 {"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Calling sendTelegramMessage","messageLength":241,"timestamp":"2025-08-03T05:48:29.087Z","username":"Admin"}
 {"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-03T05:48:31.500Z","username":"Admin"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: New Ticket Created\n\n\nStation ID: F605\nStation Name","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<b84b93dd-2a70-0869-f451-223b89eacb0d@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-03T07:52:48.581Z"}
+{"botName":"Helpdesk bots","chatId":"-4958041774","level":"info","message":"Sending alert with: Dear @Admin\nNew Ticket Created\n\n\nStation ID: F605\n","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4958041774","level":"info","message":"Calling sendTelegramMessage","messageLength":231,"timestamp":"2025-08-03T07:52:48.635Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4958041774","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-03T07:52:49.426Z","username":"Admin"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<579474f7-1569-e04c-69ee-ac66f829e20a@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-03T07:53:56.354Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":280,"timestamp":"2025-08-03T07:53:56.427Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-03T07:53:58.149Z","username":"Admin"}
