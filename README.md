@@ -2,8 +2,23 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+Setting up the project 
 
+after clone this project 
+user need to have xampp for mysql database or cli up to user ( Recommend xampp )
+After install and run xampp on your local success 
+download this database 
+https://drive.google.com/drive/folders/1we0NNghow4eKQprl7OcNPJWZP7RohCrG?usp=sharing
+and import it to your computer 
+and then to go project in the database folder config it for your current setting of your mysql databse 
+after the database part is success 
+
+this is the .env part 
+download it https://drive.google.com/drive/folders/11k4C2vz9izzbSzYqJ_dcUTlQQa8cXOyQ?usp=sharing
+and the save to the project but outside the folder App with rename to .env becuase the download file is env
+
+Afrer finish setting up the project now for run 
+after clone the project cd/project and run on terminal with 
 ```bash
 npm run dev
 # or
