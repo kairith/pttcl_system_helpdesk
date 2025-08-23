@@ -36,8 +36,8 @@ Make sure you have the following installed:
 
 ```bash
 # 1) Clone the repo
-git clone <YOUR-REPOSITORY-URL>
-cd <YOUR-REPOSITORY-NAME>
+git clone https://github.com/kairith/pttcl_system_helpdesk.git
+cd the project name
 
 # 2) Install dependencies (choose one)
 npm install
