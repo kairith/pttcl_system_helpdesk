@@ -1,6 +1,6 @@
 # Next.js Project
 
-A clean, step‑by‑step guide to set up, run, and deploy your app. Built with ❤️ using Next.js.
+A clean, step‑by‑step guide to set up, run, This intern project was built using Next.js.
 
 ---
 
