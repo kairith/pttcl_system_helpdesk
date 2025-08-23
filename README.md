@@ -183,7 +183,7 @@ Helpful resources:
 
 ---
 
-## Deployment
+## Deployment ( Optional )
 
 Deploy on **Vercel** for the best developer experience.
 
