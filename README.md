@@ -30,7 +30,7 @@ cd <repository-name>
 
 Set Up MySQL Database:
 
-Download the database dump from this Google Drive link.
+Download the database dump from this Google Drive link https://drive.google.com/file/d/19QoUaBChegaqiHtL4ZKAXKzOdjgjF6G3/view?usp=drive_link.
 Start XAMPP and ensure the MySQL service is running.
 Import the downloaded database dump into your MySQL server using phpMyAdmin or the MySQL CLI.
 Navigate to the database folder in the project and update the database configuration file (e.g., config.js or similar) with your MySQL settings (host, user, password, database name).
@@ -40,7 +40,7 @@ Navigate to the database folder in the project and update the database configura
 Environment Configuration
 
 Set Up Environment Variables:
-Download the .env file from this Google Drive link.
+Download the .env file from this Google Drive link https://drive.google.com/file/d/1uvhZVe3FX6hrD5E7WbTIM0gE3T-FddBB/view?usp=sharing.
 Rename the downloaded file to .env and place it in the root directory of the project (outside the app folder).
 Update the .env file with your specific configuration (e.g., database credentials, API keys, etc.).
 
