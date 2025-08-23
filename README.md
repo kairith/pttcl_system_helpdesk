@@ -76,7 +76,7 @@ bun install
 
    ```env
    DB_HOST=localhost
-   DB_PORT=3306
+   DB_PORT=3306 ( Your port )
    DB_USER=<YOUR_USERNAME>
    DB_PASSWORD=<YOUR_PASSWORD>
    DB_NAME=<DB_NAME>
