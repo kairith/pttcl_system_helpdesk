@@ -6,7 +6,6 @@ import { PencilIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
 import { Dialog, Transition } from "@headlessui/react";
 import { toast } from "react-toastify";
-import Card from "@/app/frontend/components/common/Card/Card";
 
 interface TicketImage {
   id: string;
@@ -17,9 +16,9 @@ interface TicketImage {
 interface TicketTableProps {
   filteredTickets: (Ticket & { users_name: string; creator_name: string; images?: TicketImage[] })[];
   permissions: { add: boolean; edit: boolean; delete: boolean; list: boolean; listAssign: boolean };
+  onTicketDeleted?: (ticketId: string) => void; // Optional callback for parent state update
 }
-
-export default function TicketTable({ filteredTickets, permissions }: TicketTableProps) {
+export default function TicketTable({ filteredTickets, permissions, onTicketDeleted }: TicketTableProps) {
   const router = useRouter();
   const [selectedTicket, setSelectedTicket] = useState<
     (Ticket & { users_name: string; creator_name: string; images?: TicketImage[] }) | null
@@ -166,9 +165,12 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
       }
 
       toast.success("✅ Ticket deleted successfully");
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      if (onTicketDeleted) {
+        onTicketDeleted(ticketToDelete.ticket_id); // Notify parent to update state
+      } else {
+        // Fallback: refresh route data without a full browser reload
+        router.refresh();
+      }
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -256,16 +258,14 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
 
   if (!permissions.list) {
     return (
-      <Card className="mt-6 sm:mt-8 p-4 sm:p-6">
-        <div className="w-full p-4 text-center text-gray-500 bg-white shadow-lg rounded-lg border border-gray-200">
-          You do not have permission to view tickets.
-        </div>
-      </Card>
+      <div className="w-full p-4 text-center text-gray-500">
+        You do not have permission to view tickets.
+      </div>
     );
   }
 
   return (
-    <Card className="mt-6 sm:mt-1 p-4 sm:p-6">
+    <>
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800"></h2>
         <div className="flex items-center space-x-2">
@@ -496,8 +496,9 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
                 <div><p className="text-gray-800 break-words truncate">Status: {selectedTicket.status || "N/A"}</p></div>
                 <div><p className="text-gray-800 break-words truncate">Assign: {selectedTicket.users_name || "Not Assigned"}</p></div>
                 <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Comment: {selectedTicket.comment || "N/A"}</p></div>
+                <div><p className="text-gray-800 break-words truncate">First create: {selectedTicket.ticket_open ? new Date(selectedTicket.ticket_open).toLocaleString() : "N/A"}</p></div>
                 <div><p className="text-gray-800 break-words truncate">Ticket Time: {selectedTicket.ticket_time ? new Date(selectedTicket.ticket_time).toLocaleString() : "N/A"}</p></div>
-                <div><p className="text-gray-800 break-words truncate">Created By User ID: {selectedTicket.user_create_ticket || "N/A"}</p></div>
+                {/* <div><p className="text-gray-800 break-words truncate">Created By User ID: {selectedTicket.user_create_ticket || "N/A"}</p></div> */}
               </div>
             </div>
             <div className="mt-6">
@@ -638,6 +639,6 @@ export default function TicketTable({ filteredTickets, permissions }: TicketTabl
           </Dialog>
         </Transition>
       )}
-    </Card>
+    </>
   );
 }

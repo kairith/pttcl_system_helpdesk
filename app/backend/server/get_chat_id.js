@@ -8,7 +8,7 @@ config();
 
 async function getBotToken() {
   let connection;
-
+  // individual database connection for js filr spilt from typescript amd api routes 
   try {
     connection = await mysql.createConnection({
   host: process.env.DB_HOST || 'localhost',
@@ -60,7 +60,6 @@ async function startBot() {
       bot.sendMessage(chatId, `Thanks! Your chat ID is ${chatId}. Use this for configuring alerts.`)
         .catch((error) => console.error('Error sending message:', error));
     });
-
     bot.on('polling_error', (error) => {
       console.error('Polling error:', error.message);
     });

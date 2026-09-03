@@ -18,8 +18,7 @@ export async function GET(request: Request) {
       
     }
     const decoded = jwt.verify(token, secret) as { users_id: number; rules_id: number };
-   
-
+  
     connection = await mysql.createConnection(dbConfig);
 
     const [rows] = await connection.execute(

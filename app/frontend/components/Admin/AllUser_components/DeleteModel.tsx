@@ -9,7 +9,6 @@ interface DeleteModalProps {
   onClose: () => void;
   onConfirm: () => Promise<void>;
 }
-
 export default function DeleteModal({
   isOpen,
   users,

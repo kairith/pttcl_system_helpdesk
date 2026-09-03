@@ -5,6 +5,7 @@ import { dbConfig } from "@/app/database/db-config";
 
 export async function POST(request: Request) {
   let connection;
+  
   try {
     // Authenticate user
     const token = request.headers.get("authorization")?.replace("Bearer ", "");

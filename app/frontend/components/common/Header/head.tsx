@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { User } from "./UserDataProvider";
-
+import { GlobalSearch , Permissions } from "./globalsearch";
 interface HeaderProps {
   toggleSidebar: () => void;
   toggleProfile: () => void;
@@ -20,7 +20,18 @@ const Header: React.FC<HeaderProps> = ({
   isProfileOpen,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAdmin, setIsAdmin] = React.useState(false);
+  const [permissions, setPermissions] = React.useState<Permissions | null>(null);
 
+   React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const cached = sessionStorage.getItem("permissions");
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      setIsAdmin(Boolean(parsed?.isAdmin));
+      setPermissions(parsed?.permissions ?? null);
+    }
+  }, []);
   return (
     <header className="header bg-white shadow-md h-16 fixed top-0 left-0 right-0 z-50">
       <div className="flex items-center justify-between h-full px-6">
@@ -46,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({
               height={15}
               className="mr-3"
             />
-            <input
+            {/* <input
               id="search-input"
               type="text"
               placeholder="Search"
@@ -54,7 +65,14 @@ const Header: React.FC<HeaderProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent outline-none flex-1 text-black-90"
               aria-label="Search"
-            />
+            /> */}
+             <div className="bg-transparent outline-none flex-1 text-black-90">
+             <GlobalSearch
+            isAdmin={isAdmin}
+            permissions={permissions}
+            placeholder="Search feature"
+          />
+        </div>
           </div>
         </div>
         <div className="relative">

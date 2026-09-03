@@ -19,7 +19,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
     {
       title: "Open",
       value: stats.open.toString(),
-      trend: "8.5% Up from yesterday",
+      trend: "Ticket That created",
       trendType: "positive",
       icon: "/images/img_ticket_1.png",
       bgColor: "bg-purple-100",
@@ -27,7 +27,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
     {
       title: "On Hold",
       value: stats.on_hold.toString(),
-      trend: "1.3% Up from past week",
+      trend: "Ticket still on hold by user",
       trendType: "positive",
       icon: "/images/img_icon_yellow_700.svg",
       bgColor: "bg-yellow-100",
@@ -35,23 +35,23 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
     {
       title: "In Progress",
       value: stats.in_progress.toString(),
-      trend: "4.3% Down from yesterday",
-      trendType: "negative",
+      trend: "Ticket is progressing",
+      trendType: "positive",
       icon: "/images/img_icon.svg",
       bgColor: "bg-green-100",
     },
     {
       title: "Close",
       value: stats.close.toString(),
-      trend: "1.8% Up from yesterday",
-      trendType: "positive",
+      trend: "Ticket are solved",
+      trendType: "negative",
       icon: "/images/img_check_1.png",
       bgColor: "bg-orange-100",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8 pt-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
       {statsCards.map((stat, index) => (
         <Card key={index} className="p-4 sm:p-6">
           <div className="flex items-center justify-between">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import HeaderWithSidebar from "@/app/frontend/components/common/Header/Headerwithsidebar";
+import UserDataProvider from "@/app/frontend/components/common/Header/UserDataProvider";
 
 interface HeaderResponsiveProps {
   children: React.ReactNode;
@@ -30,21 +31,23 @@ const HeaderResponsive: React.FC<HeaderResponsiveProps> = ({ children }) => {
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   return (
-    <div
-      className={`min-h-screen bg-gray-50 ${
-        isSidebarOpen ? "sm:ml-64" : ""
-      } transition-all duration-300 overflow-x-hidden box-border`}
-    >
-      <HeaderWithSidebar
-        isSidebarOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
-      />
-      <div className="flex w-full">
-        <main className="w-full max-w-full transition-all duration-300 box-border">
-          {children}
-        </main>
+    <UserDataProvider>
+      <div
+        className={`min-h-screen bg-gray-50 ${
+          isSidebarOpen ? "sm:ml-64" : ""
+        } transition-all duration-300 overflow-x-hidden box-border`}
+      >
+        <HeaderWithSidebar
+          isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
+        />
+        <div className="flex w-full">
+          <main className="w-full max-w-full p-4 sm:p-6 lg:p-8 pt-[calc(4rem+1rem)] sm:pt-[calc(4rem+1.5rem)] lg:pt-[calc(4rem+2rem)] transition-all duration-300 box-border">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </UserDataProvider>
   );
 };
 

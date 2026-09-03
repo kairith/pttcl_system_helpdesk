@@ -21,6 +21,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+
+  
   // Get token from cookies or Authorization header
   const token = request.cookies.get('token')?.value || request.headers.get('Authorization')?.replace('Bearer ', '');
   console.log('Token in middleware:', token ? '[token present]' : '[no token]');

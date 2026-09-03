@@ -28,21 +28,21 @@ export default function ExportOptions({
         <div className="flex gap-4 mb-8 ">
           <button
             onClick={() => handleExportClick("excel")}
-            className="bg-white border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 text-sm sm:text-base shadow-sm"
+            className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base"
             aria-label="Export as Excel"
           >
             Excel
           </button>
           <button
             onClick={() => handleExportClick("pdf")}
-            className="bg-white border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 text-sm sm:text-base shadow-sm"
+            className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base"
             aria-label="Export as PDF"
           >
             PDF
           </button>
           <button
             onClick={() => handleExportClick("csv")}
-            className="bg-white border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-100 text-sm sm:text-base shadow-sm"
+            className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base"
             aria-label="Export as CSV"
           >
             CSV

@@ -1,14 +1,32 @@
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import { dbConfig } from '@/app/database/db-config';
-
+import jwt from 'jsonwebtoken';
 // Create a connection pool
 const pool = mysql.createPool(dbConfig);
-
+const JWT_SECRET = process.env.JWT_SECRET;
 // GET: Fetch all rules with permissions
-export async function GET() {
+export async function GET(request: NextResponse) {
   let connection;
   try {
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET is not defined');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+    const authHeader = request.headers.get('authorization');
+   
+            if (!authHeader || !authHeader.startsWith("Bearer ")) {
+              return NextResponse.json({ error: "Missing or invalid token" }, { status: 401 });
+            }
+            const token = authHeader.split(" ")[1];
+        
+            // Verify JWT token
+            try {
+              jwt.verify(token, JWT_SECRET);
+            } catch (err) {
+              console.error("JWT verification error:", err);
+              return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+            }
     // console.log('Attempting to connect to database with config:', dbConfig);
     connection = await pool.getConnection();
     // console.log('Database connection established');

@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mysql from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
-
 export async function POST(request: Request) {
   let connection;
   try {
@@ -14,10 +13,8 @@ export async function POST(request: Request) {
       // console.log("Missing email or password");
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
-
     connection = await mysql.createConnection(dbConfig);
     // console.log("Database connected successfully");
-
     const query = `
       SELECT u.users_id, u.users_name, u.email, u.password, u.status, u.code, u.rules_id, r.rules_name, r.list_ticket_status, r.add_user_rules
       FROM tbl_users u
@@ -70,7 +67,6 @@ export async function POST(request: Request) {
       throw new Error("JWT_SECRET is not configured");
     }
     const token = jwt.sign(payload, secret, { algorithm: "HS256" });
-
     // console.log("Generated token for user:", user.email);
     return NextResponse.json({
       token,

@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useEffect, useRef, Fragment } from "react";
+import React, { useState, useEffect, useRef, Fragment, useMemo } from "react";
 import { Ticket } from "@/app/backend/types/ticket";
 import { PencilIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
@@ -31,6 +30,19 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
   const [ticketImages, setTicketImages] = useState<{ [key: string]: TicketImage[] }>({});
 
   console.log("TicketTable props:", { permissions, ticketCount: filteredTickets.length });
+
+  // ---- NEW: Sort newest-first by ticket_time; fallback to id desc ----
+  const sortedTickets = useMemo(() => {
+    return [...filteredTickets].sort((a, b) => {
+      const tA = a.ticket_time ? new Date(a.ticket_time).getTime() : 0;
+      const tB = b.ticket_time ? new Date(b.ticket_time).getTime() : 0;
+      if (tB !== tA) return tB - tA;
+
+      const idA = Number(a.id);
+      const idB = Number(b.id);
+      return idB - idA;
+    });
+  }, [filteredTickets]);
 
   // Fetch ticket images for all tickets
   useEffect(() => {
@@ -84,7 +96,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
     if (permissions.list) {
       fetchImages();
     }
-  }, [filteredTickets, permissions.list]);
+  }, [filteredTickets, permissions.list, router]);
 
   // Restrict table display to users with list permission
   if (!permissions.list) {
@@ -162,10 +174,8 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
       if (onTicketDeleted) {
         onTicketDeleted(ticketToDelete.ticket_id); // Notify parent to update state
       } else {
-        // Fallback to reload if parent callback not provided
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+        // Fallback: refresh route data without a full browser reload
+        router.refresh();
       }
     } catch (err: any) {
       console.error("Delete error:", err.message);
@@ -250,7 +260,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
     <div className="w-full overflow-x-auto">
       <div ref={tableRef} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200 hidden md:table">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-100 rounded-xl">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
@@ -260,18 +270,17 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Assign</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Issue</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Images</th> */}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filteredTickets.length === 0 ? (
+            {sortedTickets.length === 0 ? (
               <tr>
                 <td colSpan={9} className="px-4 py-4 text-center text-gray-500">
                   No tickets found.
                 </td>
               </tr>
             ) : (
-              filteredTickets.map((ticket, index) => (
+              sortedTickets.map((ticket, index) => (
                 <tr key={ticket.id} className="hover:bg-gray-50 transition-colors duration-200">
                   <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{index + 1}</td>
                   <td className="px-4 py-3">
@@ -313,11 +322,6 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                       {ticket.status || "N/A"}
                     </span>
                   </td>
-                  {/* <td className="px-4 py-3 text-sm text-gray-800">
-                    {ticketImages[ticket.ticket_id]?.length > 0
-                      ? `${ticketImages[ticket.ticket_id].length} image(s)`
-                      : "No images"}
-                  </td> */}
                 </tr>
               ))
             )}
@@ -326,10 +330,10 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
 
         {/* Mobile Responsive Cards */}
         <div className="md:hidden divide-y divide-gray-200">
-          {filteredTickets.length === 0 ? (
+          {sortedTickets.length === 0 ? (
             <div className="p-4 text-center text-gray-500">No tickets found.</div>
           ) : (
-            filteredTickets.map((ticket, index) => (
+            sortedTickets.map((ticket, index) => (
               <div key={ticket.id} className="p-4">
                 <div className="mb-2 text-sm text-gray-800 font-medium">No: {index + 1}</div>
                 <div className="mb-2 text-sm text-gray-800 font-medium">Ticket ID: {ticket.ticket_id}</div>
@@ -344,7 +348,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                   Images: {ticketImages[ticket.ticket_id]?.length > 0 ? `${ticketImages[ticket.ticket_id].length} image(s)` : "No images"}
                 </div>
                 <div className="flex justify-start gap-2 mt-3">
-                   <button
+                  <button
                     onClick={() => handleView(ticket)}
                     className="p-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
                     aria-label={`View ticket ${ticket.ticket_id}`}
@@ -369,13 +373,6 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   )}
-                  {/* <button
-                    onClick={() => handleView(ticket)}
-                    className="p-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
-                    aria-label={`View ticket ${ticket.ticket_id}`}
-                  >
-                    <EyeIcon className="w-4 h-4" />
-                  </button> */}
                 </div>
               </div>
             ))
@@ -421,7 +418,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                 <div><p className="text-gray-800 break-words truncate">Assign: {selectedTicket.users_name || "Not Assigned"}</p></div>
                 <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Comment: {selectedTicket.comment || "N/A"}</p></div>
                 <div><p className="text-gray-800 break-words truncate">Ticket Time: {selectedTicket.ticket_time ? new Date(selectedTicket.ticket_time).toLocaleString() : "N/A"}</p></div>
-                <div><p className="text-gray-800 break-words truncate">Created By User ID: {selectedTicket.user_create_ticket || "N/A"}</p></div>
+                {/* <div><p className="text-gray-800 break-words truncate">Created By User ID: {selectedTicket.user_create_ticket || "N/A"}</p></div> */}
               </div>
             </div>
             {/* Image Gallery */}

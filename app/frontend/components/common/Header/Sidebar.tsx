@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { Dialog, Transition } from "@headlessui/react";
 import dynamic from "next/dynamic";
+import { useUserData } from "./UserDataProvider";
 
 // Dynamically import lucide-react icons to reduce bundle size
 const LayoutDashboard = dynamic(() => import("lucide-react").then(mod => mod.LayoutDashboard), { ssr: false });
@@ -153,7 +154,7 @@ const menuItems: MenuItem[] = [
   },
   {
     label: "Config Alert",
-    href: "/pages/admin/test_alert_bot",
+    href: "/pages/admin/config_bot",
     icon: <Bell size={20} aria-label="Config Alert" />,
     requiredPermission: "list_alertbot",
     adminOnly: true,
@@ -174,98 +175,45 @@ const menuItems: MenuItem[] = [
 
 const Sidebar: React.FC<SidebarProps> = React.memo(({ isSidebarOpen, toggleSidebar, handleLogout, onUserIdFetched }) => {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
-  const [permissions, setPermissions] = useState<Permissions | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [users_id, setUsersId] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, rules, isAdmin, authLoading } = useUserData();
+  const loading = authLoading;
   const router = useRouter();
   const pathname = usePathname();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Handle permissions fetching with type-safe error handling
+  // Derive this sidebar's permission shape from the permissions/user data
+  // that UserDataProvider already fetched once for the whole session.
+  const permissions = useMemo<Permissions | null>(() => {
+    if (!rules) return null;
+    return {
+      add_user_status: !!rules.add_user_status,
+      edit_user_status: !!rules.edit_user_status,
+      delete_user_status: !!rules.delete_user_status,
+      list_user_status: !!rules.list_user_status,
+      add_ticket_status: !!rules.add_ticket_status,
+      edit_ticket_status: !!rules.edit_ticket_status,
+      delete_ticket_status: !!rules.delete_ticket_status,
+      list_ticket_status: !!rules.list_ticket_status,
+      list_ticket_assign: !!rules.list_ticket_assign,
+      add_user_rules: !!rules.add_user_rules,
+      edit_user_rules: !!rules.edit_user_rules,
+      delete_user_rules: !!rules.delete_user_rules,
+      list_user_rules: !!rules.list_user_rules,
+      add_station: !!rules.add_station,
+      edit_station: !!rules.edit_station,
+      delete_station: !!rules.delete_station,
+      list_station: !!rules.list_station,
+      list_dashboard: rules.list_dashboard !== undefined ? !!rules.list_dashboard : true,
+      list_track: rules.list_track !== undefined ? !!rules.list_track : true,
+      list_report: rules.list_report !== undefined ? !!rules.list_report : true,
+      list_alertbot: rules.list_alertbot !== undefined ? !!rules.list_alertbot : !!rules.add_user_rules,
+    };
+  }, [rules]);
+
   useEffect(() => {
-    const controller = new AbortController();
-    async function loadPermissions() {
-      setLoading(true);
-      try {
-        if (typeof window === "undefined") return;
-        const cached = sessionStorage.getItem("permissions");
-        const token = sessionStorage.getItem("token");
-        const sessionUser = JSON.parse(sessionStorage.getItem("user") || "{}");
-        const userId = sessionUser.users_id || "";
-
-        if (!token || !userId) {
-          router.push("/");
-          return;
-        }
-
-        setUsersId(userId);
-        onUserIdFetched(userId);
-
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          setPermissions(parsed.permissions);
-          setIsAdmin(parsed.isAdmin);
-          setLoading(false);
-          return;
-        }
-
-        const response = await fetch("/api/data/user", {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || "Failed to fetch permissions");
-        }
-
-        const { user, rules } = await response.json();
-        const perms: Permissions = {
-          add_user_status: !!rules.add_user_status,
-          edit_user_status: !!rules.edit_user_status,
-          delete_user_status: !!rules.delete_user_status,
-          list_user_status: !!rules.list_user_status,
-          add_ticket_status: !!rules.add_ticket_status,
-          edit_ticket_status: !!rules.edit_ticket_status,
-          delete_ticket_status: !!rules.delete_ticket_status,
-          list_ticket_status: !!rules.list_ticket_status,
-          list_ticket_assign: !!rules.list_ticket_assign,
-          add_user_rules: !!rules.add_user_rules,
-          edit_user_rules: !!rules.edit_user_rules,
-          delete_user_rules: !!rules.delete_user_rules,
-          list_user_rules: !!rules.list_user_rules,
-          add_station: !!rules.add_station,
-          edit_station: !!rules.edit_station,
-          delete_station: !!rules.delete_station,
-          list_station: !!rules.list_station,
-          list_dashboard: rules.list_dashboard !== undefined ? !!rules.list_dashboard : true,
-          list_track: rules.list_track !== undefined ? !!rules.list_track : true,
-          list_report: rules.list_report !== undefined ? !!rules.list_report : true,
-          list_alertbot: rules.list_alertbot !== undefined ? !!rules.list_alertbot : user.rules_id === 1461,
-        };
-
-        setPermissions(perms);
-        setIsAdmin(user.rules_id === 1461);
-        sessionStorage.setItem(
-          "permissions",
-          JSON.stringify({ permissions: perms, isAdmin: user.rules_id === 1461 })
-        );
-      } catch (err: unknown) {
-        if (err instanceof Error && err.name === "AbortError") return;
-        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-        console.error("Error fetching permissions:", err);
-        setError(`Failed to load permissions: ${errorMessage}`);
-        router.push("/");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadPermissions();
-    return () => controller.abort();
-  }, [router, onUserIdFetched]);
+    if (user?.users_id !== undefined) onUserIdFetched(String(user.users_id));
+  }, [user?.users_id, onUserIdFetched]);
 
   // Debug navigation by tracking pathname changes (App Router compatible)
   useEffect(() => {
@@ -424,22 +372,6 @@ const Sidebar: React.FC<SidebarProps> = React.memo(({ isSidebarOpen, toggleSideb
           </div>
         </Dialog>
       </Transition>
-
-      {error && (
-        <div
-          className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50"
-          role="alert"
-        >
-          {error}
-          <button
-            className="ml-4 hover:text-red-900"
-            onClick={() => setError(null)}
-            aria-label="Close error message"
-          >
-            ×
-          </button>
-        </div>
-      )}
     </>
   );
 });

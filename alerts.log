@@ -677,3 +677,149 @@
 {"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"Admin"}
 {"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":280,"timestamp":"2025-08-03T07:53:56.427Z","username":"Admin"}
 {"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-03T07:53:58.149Z","username":"Admin"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: New Ticket Created\n\n\nStation ID: F604\nStation Name","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<d3dd6d11-d7d5-8ed0-48da-579644d1d30e@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-07T01:16:28.966Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: Dear @Admin\nNew Ticket Created\n\n\nStation ID: F604\n","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":226,"timestamp":"2025-08-07T01:16:29.040Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-07T01:16:29.825Z","username":"Admin"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: New Ticket Created\n\n\nStation ID: F604\nStation Name","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<1dbd7ba4-d555-fb3b-853f-33f6ef9e904f@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-07T01:29:18.793Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: Dear @Admin\nNew Ticket Created\n\n\nStation ID: F604\n","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":241,"timestamp":"2025-08-07T01:29:18.853Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-07T01:29:19.660Z","username":"Admin"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<cbf21c92-082b-4d00-1715-9a13a9a1428f@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-07T01:29:58.115Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":297,"timestamp":"2025-08-07T01:29:58.180Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-07T01:29:58.977Z","username":"kai"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<cfb66ff0-0666-baf8-b15d-01631a23daeb@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-07T01:35:25.070Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":297,"timestamp":"2025-08-07T01:35:25.130Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-07T01:35:25.889Z","username":"kai"}
+{"email":"rith@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"rith@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<3032aab2-e21f-de66-ddd2-d61a501147c7@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-07T01:40:58.614Z"}
+{"email":"wing.bank@site.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"wing.bank@site.com","level":"info","message":"Sent gmail alert","messageId":"<96e6be11-c34c-616e-5304-f1c49db25473@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-16T23:04:35.165Z"}
+{"botName":"Helpdesk bots","chatId":"-4856224116","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"Wing Bank"}
+{"botName":"Helpdesk bots","chatId":"-4856224116","level":"info","message":"Calling sendTelegramMessage","messageLength":303,"timestamp":"2025-08-16T23:04:35.823Z","username":"Wing Bank"}
+{"botName":"Helpdesk bots","chatId":"-4856224116","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-16T23:04:37.428Z","username":"Wing Bank"}
+{"email":"too.ch@ptt.com.kh","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"too.ch@ptt.com.kh","level":"info","message":"Sent gmail alert","messageId":"<733a5e39-d566-9fec-d9d6-a07126b16aca@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-21T12:15:10.251Z"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"Chhoy Too"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Calling sendTelegramMessage","messageLength":328,"timestamp":"2025-08-21T12:15:10.327Z","username":"Chhoy Too"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-21T12:15:11.612Z","username":"Chhoy Too"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: New Ticket Created\n\n\nStation ID: F601\nStation Name","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<b81e7f55-4df1-578b-bd94-db2e0530fa6a@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-22T06:18:03.453Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: Dear @Admin\nNew Ticket Created\n\n\nStation ID: F601\n","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":225,"timestamp":"2025-08-22T06:18:03.519Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-22T06:18:04.674Z","username":"Admin"}
+{"email":"too.ch@ptt.com.kh","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"too.ch@ptt.com.kh","level":"info","message":"Sent gmail alert","messageId":"<5f66efe6-21c1-a6f3-ab10-51aa8b66507e@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-22T06:19:32.348Z"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"Chhoy Too"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Calling sendTelegramMessage","messageLength":286,"timestamp":"2025-08-22T06:19:32.407Z","username":"Chhoy Too"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-22T06:19:33.258Z","username":"Chhoy Too"}
+{"email":"sd@site.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"sd@site.com","level":"info","message":"Sent gmail alert","messageId":"<8677954b-4b3c-d0f7-ebfc-314d49cb4361@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-22T06:20:11.397Z"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: New Ticket Created\n\n\nStation ID: F606\nStation Name","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<83f727c1-42fd-e524-0f4a-e822c714b0e5@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-23T03:59:25.385Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: Dear @Admin\nNew Ticket Created\n\n\nStation ID: F606\n","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":226,"timestamp":"2025-08-23T03:59:25.479Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-23T03:59:26.378Z","username":"Admin"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<1371f4f0-7c07-1ea2-269e-2dfe91ff6d6a@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-23T04:00:03.019Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":280,"timestamp":"2025-08-23T04:00:03.076Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-23T04:00:04.049Z","username":"kai"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: New Ticket Created\n\n\nStation ID: F601\nStation Name","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<03e6c95b-6b40-6b7f-60a3-ec586557f37b@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-23T07:05:01.505Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: Dear @Admin\nNew Ticket Created\n\n\nStation ID: F601\n","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":250,"timestamp":"2025-08-23T07:05:01.580Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-23T07:05:02.540Z","username":"Admin"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: \n=========================================\nNew Tic","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<b94c4f48-49b0-7698-36c2-e02a67091ca8@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-23T07:07:25.594Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: \n===========================================\nDear ","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":315,"timestamp":"2025-08-23T07:07:25.678Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-23T07:07:28.040Z","username":"Admin"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: \n=========================================\n\nNew Ti","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<664e3d25-8967-18db-b144-df62c15851e6@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-23T07:09:05.842Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: \n===========================================\n\nDear","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":329,"timestamp":"2025-08-23T07:09:05.993Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-23T07:09:06.925Z","username":"Admin"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: \nNew Ticket Created\nStation ID: F605\nStation Name:","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<11fb9d96-e8a6-6cf0-9cf1-7bcb0d1fd4f1@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-23T07:11:54.585Z"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sending alert with: \n===========================================\n\nDear","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Calling sendTelegramMessage","messageLength":324,"timestamp":"2025-08-23T07:11:54.654Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-23T07:11:56.223Z","username":"kai"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<8d762702-b63a-0ad2-2ded-daf7cfbafad5@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-25T03:14:49.279Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":293,"timestamp":"2025-08-25T03:14:49.343Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-25T03:14:50.454Z","username":"Admin"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<868d02b7-1d63-bd1d-a935-e254279f7b00@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-25T03:23:31.426Z"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Calling sendTelegramMessage","messageLength":291,"timestamp":"2025-08-25T03:23:31.486Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-25T03:23:32.508Z","username":"kai"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: \nNew Ticket Created\nStation ID: F604\nStation Name:","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<b49c2634-323c-81dd-4aa4-1a9c56b209ce@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-25T03:25:33.054Z"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sending alert with: \n===========================================\n\nDear","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Calling sendTelegramMessage","messageLength":314,"timestamp":"2025-08-25T03:25:33.136Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-25T03:25:34.031Z","username":"kai"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: \n=========================================\n\nNew Ti","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<b0157a0c-799a-e641-8eaa-808dfa91a454@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-25T03:31:34.708Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: \n===========================================\n\nDear","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":308,"timestamp":"2025-08-25T03:31:34.848Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-25T03:31:36.128Z","username":"Admin"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: \nNew Ticket Created\nStation ID: F606\nStation Name:","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<1912c40e-e4f1-3cfa-8dc5-b23dcbe05db2@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-25T03:32:00.803Z"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sending alert with: \n===========================================\n\nDear","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Calling sendTelegramMessage","messageLength":307,"timestamp":"2025-08-25T03:32:00.861Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-25T03:32:01.939Z","username":"kai"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<ff5e402c-2db3-987a-d8dc-a1205cd80a10@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-25T03:32:32.158Z"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Calling sendTelegramMessage","messageLength":283,"timestamp":"2025-08-25T03:32:32.223Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-25T03:32:33.188Z","username":"kai"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: \n=========================================\n\nNew Ti","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<71a5fa08-c8bc-3fc3-d630-03fa6c3643e8@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-25T08:55:43.772Z"}
+{"botName":"Helpdesk bots","chatId":"-4718912973","level":"info","message":"Sending alert with: \n===========================================\n\nDear","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4718912973","level":"info","message":"Calling sendTelegramMessage","messageLength":326,"timestamp":"2025-08-25T08:55:43.839Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4718912973","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-25T08:55:45.470Z","username":"Admin"}
+{"email":"dori@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"dori@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<af74aa28-4852-61f0-ef00-fdc189ef330d@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-25T09:00:12.698Z"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"doriya"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Calling sendTelegramMessage","messageLength":296,"timestamp":"2025-08-25T09:00:12.765Z","username":"doriya"}
+{"botName":"Helpdesk bots","chatId":"-4869829694","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-25T09:00:13.752Z","username":"doriya"}
+{"email":"chandara7273@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"chandara7273@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<833ae868-d538-77d6-678d-b820d96ea5b5@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-25T09:30:10.336Z"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: \n=========================================\n\nNew Ti","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<4422fa1c-cec8-0dd9-b83e-b6fea1118566@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-26T04:09:18.300Z"}
+{"botName":"Helpdesk bots","chatId":"-4718912973","level":"info","message":"Sending alert with: \n===========================================\n\nDear","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4718912973","level":"info","message":"Calling sendTelegramMessage","messageLength":323,"timestamp":"2025-08-26T04:09:18.355Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4718912973","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-26T04:09:19.521Z","username":"Admin"}
+{"email":"chandara7273@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"chandara7273@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<9fd8a965-4699-1dec-7cce-a353d25e7e22@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-26T04:11:14.176Z"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"Channdara"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Calling sendTelegramMessage","messageLength":296,"timestamp":"2025-08-26T04:11:14.228Z","username":"Channdara"}
+{"botName":"Helpdesk bots","chatId":"-4940370682","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-26T04:11:15.397Z","username":"Channdara"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: \nNew Ticket Created\nStation ID: F603\nStation Name:","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<e8fdabb7-2c17-a630-e35b-d7bb9102ca55@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-26T17:31:28.344Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: \n===========================================\n\nDear","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":313,"timestamp":"2025-08-26T17:31:28.470Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-26T17:31:29.292Z","username":"kai"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<74ce6c67-8872-97f2-9fcd-5f33b356e49c@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-26T17:32:16.061Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":285,"timestamp":"2025-08-26T17:32:16.130Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-26T17:32:16.908Z","username":"Admin"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sending alert with: \n=========================================\n\nNew Ti","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"dararithzone@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<a4468eb5-7b87-858a-92b3-0a34c639354f@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2025-08-26T17:47:33.367Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: \n===========================================\n\nDear","platform":"telegram","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":313,"timestamp":"2025-08-26T17:47:33.421Z","username":"Admin"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-26T17:47:34.221Z","username":"Admin"}
+{"email":"kai@gmail.com","level":"info","message":"Sending alert with: =======================================\n\n\n  Ticket","platform":"gmail","subject":"Ticket Assignment Update"}
+{"email":"kai@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<68f4edb3-31bd-c2f3-818d-7eff4968f67d@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2025-08-26T17:48:31.857Z"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sending alert with: ============================================\nDear ","platform":"telegram","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Calling sendTelegramMessage","messageLength":279,"timestamp":"2025-08-26T17:48:31.905Z","username":"kai"}
+{"botName":"Helpdesk bots","chatId":"-4976296485","level":"info","message":"Sent telegram alert","platform":"telegram","timestamp":"2025-08-26T17:48:32.725Z","username":"kai"}

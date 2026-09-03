@@ -19,10 +19,8 @@ export async function POST(request: { json: () => any }) {
     if (password.length < 6) {
       return NextResponse.json({ error: 'Password must be at least 6 characters.' }, { status: 400 });
     }
-
     // Connect to the database
     connection = await mysql.createConnection(dbConfig);
-
     // Check for duplicate email
     const [existingUsers] = await connection.execute('SELECT email FROM tbl_users WHERE email = ?', [email]);
     if ((existingUsers as any[]).length > 0) {

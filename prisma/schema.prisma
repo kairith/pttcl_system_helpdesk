@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  users_id Int     @id @default(autoincrement())
+  users_name String
+  email      String  @unique
+  password   String
+  code       Int     @default(0)
+  status     Int
+  rules_id   Int?
+  company    String
+
+  rule            UserRule?    @relation(fields: [rules_id], references: [rules_id])
+  ticketsCreated  Ticket[]     @relation("TicketCreator")
+  ticketsAssigned Ticket[]     @relation("TicketAssignee")
+  userImage       UserImage?
+  userGroup       UserGroup?
+
+  @@map("tbl_users")
+}
+
+model UserRule {
+  rules_id   Int    @id @default(autoincrement())
+  rules_name String
+
+  add_user_status    Int @default(0)
+  edit_user_status   Int @default(0)
+  delete_user_status Int @default(0)
+  list_user_status   Int @default(0)
+
+  add_ticket_status    Int @default(0)
+  edit_ticket_status   Int @default(0)
+  delete_ticket_status Int @default(0)
+  list_ticket_status   Int @default(0)
+  list_ticket_assign   Int @default(0)
+
+  add_user_rules    Int @default(0)
+  edit_user_rules   Int @default(0)
+  delete_user_rules Int @default(0)
+  list_user_rules   Int @default(0)
+
+  add_station    Int @default(0)
+  edit_station   Int @default(0)
+  delete_station Int @default(0)
+  list_station   Int @default(0)
+
+  list_dashboard Int @default(1)
+  list_track     Int @default(1)
+  list_report    Int @default(1)
+
+  users User[]
+
+  @@map("tbl_users_rules")
+}
+
+model Ticket {
+  id                    Int       @id @default(autoincrement())
+  ticket_id             String    @unique
+  user_create_ticket    Int
+  users_id              Int?
+  station_id            String
+  station_name          String
+  station_type          String
+  province              String
+  issue_type            String
+  issue_type_id         Int?
+  issue_description     String    @db.Text
+  status                String    @default("Open")
+  comment               String?   @db.Text
+  ticket_open           DateTime  @default(now())
+  ticket_on_hold        DateTime?
+  ticket_in_progress    DateTime?
+  ticket_pending_vendor DateTime?
+  ticket_close          DateTime?
+  ticket_time           DateTime? @updatedAt
+  SLA_category          String?
+
+  creator   User        @relation("TicketCreator", fields: [user_create_ticket], references: [users_id])
+  assignee  User?       @relation("TicketAssignee", fields: [users_id], references: [users_id])
+  issueType IssueType?  @relation(fields: [issue_type_id], references: [id])
+  images    TicketImage[]
+
+  @@map("tbl_ticket")
+}
+
+model TicketImage {
+  id         Int    @id @default(autoincrement())
+  ticket_id  String
+  image_path String
+
+  ticket Ticket @relation(fields: [ticket_id], references: [ticket_id])
+
+  @@map("tbl_ticket_images")
+}
+
+model Station {
+  id           Int    @id @default(autoincrement())
+  station_id   String @unique
+  station_name String
+  station_type String
+  province     String
+
+  @@map("tbl_station")
+}
+
+model UserImage {
+  id         Int    @id @default(autoincrement())
+  users_id   Int    @unique
+  image_path String
+
+  user User @relation(fields: [users_id], references: [users_id])
+
+  @@map("tbl_user_image")
+}
+
+model IssueType {
+  id         Int    @id @default(autoincrement())
+  issue_type String
+  category   String
+
+  tickets Ticket[]
+
+  @@unique([issue_type, category])
+  @@map("tbl_issue_types")
+}
+
+model TelegramGroup {
+  id         Int    @id @default(autoincrement())
+  group_id   String @unique
+  group_name String
+
+  userGroups UserGroup[]
+
+  @@map("tbl_telegramgroups")
+}
+
+model TelegramBot {
+  bot_id    Int    @id @default(autoincrement())
+  bot_name  String @unique
+  bot_token String
+
+  @@map("tbl_telegrambots")
+}
+
+model UserGroup {
+  users_id Int    @id
+  group_id String
+
+  user  User          @relation(fields: [users_id], references: [users_id])
+  group TelegramGroup @relation(fields: [group_id], references: [group_id])
+
+  @@map("tbl_user_groups")
+}

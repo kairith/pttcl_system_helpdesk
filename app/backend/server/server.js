@@ -2,7 +2,6 @@ const { sendTelegramMessage } = require("@/app/backend/server/telegram_server");
 const { sendGmailAlert } = require("@/app/backend/server/gmail_server");
 const winston = require("winston");
 require("dotenv").config({ path: [".env.local", ".env"] });
-
 const logger = winston.createLogger({
   transports: [new winston.transports.File({ filename: "alerts.log" })],
 });
@@ -49,6 +48,7 @@ const alertStrategies = {
     return await sendGmailAlert(email, message, subject);
   },
 };
+
 
 async function sendAlert(platform, params) {
   const { botName, chatId, threadId, email, message, subject, username, assigner } = params || {};

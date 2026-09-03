@@ -7,7 +7,9 @@ async function sendTelegramMessage(botName, chatId, message) {
   try {
     // Create MySQL connection
     connection = await mysql.createConnection(dbConfig);
-
+    if(!connection){
+      throw new Error("Failed to connect to the database");
+    }
     // Query to fetch bot_token based on bot_name
     const [rows] = await connection.execute(
       "SELECT bot_token FROM tbl_telegrambots WHERE bot_name = ?",

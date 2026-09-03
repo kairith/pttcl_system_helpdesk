@@ -8,6 +8,15 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "bcrypt",
+      "core-js",
+      "prisma"
+    ]
+  },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
@@ -52,8 +61,8 @@
     "sanitize-html": "^2.17.0",
     "telegraf": "^4.16.3",
     "uuid": "^11.1.0",
-    "xlsx": "^0.19.3",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -73,7 +82,9 @@
     "@types/sanitize-html": "^2.16.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.4",
+    "prisma": "6.19.3",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }

@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Header from "./head";
 import Sidebar from "./Sidebar";
 import ProfileDropdown from "./ProfileDropdown";
-import UserDataProvider, { useUserData } from "./UserDataProvider";
+import { useUserData } from "./UserDataProvider";
 
 interface HeaderWithSidebarProps {
   isSidebarOpen: boolean;
@@ -88,9 +88,7 @@ const HeaderWithSidebar: React.FC<HeaderWithSidebarProps> = ({
   isSidebarOpen,
   toggleSidebar,
 }) => (
-  <UserDataProvider>
-    <HeaderWithSidebarInner isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-  </UserDataProvider>
+  <HeaderWithSidebarInner isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 );
 
 export default HeaderWithSidebar;

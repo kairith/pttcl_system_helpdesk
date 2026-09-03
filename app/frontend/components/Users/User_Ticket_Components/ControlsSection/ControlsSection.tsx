@@ -26,7 +26,7 @@ export default function ControlsSection({
       {onCreateTicket && (
         <button
           onClick={onCreateTicket}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex-1 sm:flex-none sm:w-40 text-sm sm:text-base disabled:opacity-50"
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex-1 sm:flex-none sm:w-40 text-sm sm:text-base flex items-center justify-center disabled:opacity-50"
           disabled={isExporting}
         >
           <span className="mr-2">+</span> Create Ticket
@@ -36,7 +36,7 @@ export default function ControlsSection({
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-1 sm:flex-none">
           <button
             onClick={onFilterToggle}
-            className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 flex-1 sm:w-32 text-sm sm:text-base disabled:opacity-50"
+            className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 flex-1 sm:w-32 text-sm sm:text-base flex items-center justify-center disabled:opacity-50"
             disabled={isExporting}
           >
             <span className="mr-2">🔍</span> Filter
