@@ -35,7 +35,8 @@ export async function GET(request: NextResponse) {
              add_user_status, edit_user_status, delete_user_status, list_user_status,
              add_ticket_status, edit_ticket_status, delete_ticket_status, list_ticket_status, list_ticket_assign,
              add_user_rules, edit_user_rules, delete_user_rules, list_user_rules,
-             add_station, edit_station, delete_station, list_station
+             add_station, edit_station, delete_station, list_station,
+             add_department, edit_department, delete_department, list_department, scope_to_department
       FROM tbl_users_rules
     `);
     if (Array.isArray(rows)) {
@@ -63,6 +64,11 @@ export async function GET(request: NextResponse) {
       edit_station: Number(row.edit_station || 0),
       delete_station: Number(row.delete_station || 0),
       list_station: Number(row.list_station || 0),
+      add_department: Number(row.add_department || 0),
+      edit_department: Number(row.edit_department || 0),
+      delete_department: Number(row.delete_department || 0),
+      list_department: Number(row.list_department || 0),
+      scope_to_department: Number(row.scope_to_department || 0),
     }));
     return NextResponse.json({ rules, error: null }, { status: 200 });
   } catch (error) {

@@ -15,13 +15,20 @@ interface DoughnutChartData {
 
 interface DoughnutChartCardProps {
   title: string;
-  selectedYear: string;
+  timeFilter: string;
   doughnutChartData: DoughnutChartData[];
 }
 
+const timeFilterLabels: Record<string, string> = {
+  today: "Today",
+  week: "This Week",
+  month: "This Month",
+  year: "This Year",
+};
+
 const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
   title,
-  selectedYear,
+  timeFilter,
   doughnutChartData,
 }) => {
   const colorMap: { [key: string]: string } = {
@@ -38,7 +45,7 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
       <div className="relative w-full h-64 sm:h-80">
         {doughnutChartData.length === 0 ? (
           <p className="text-gray-500 text-center">
-            No data for {selectedYear === "ALL" ? "all years" : selectedYear}
+            No data for {timeFilterLabels[timeFilter] ?? timeFilter}
           </p>
         ) : (
           <Doughnut
@@ -63,7 +70,7 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
                 title: {
                   display: true,
                   text: `${title} - ${
-                    selectedYear === "ALL" ? "All Years" : selectedYear
+                    timeFilterLabels[timeFilter] ?? timeFilter
                   }`,
                 },
                 datalabels: {

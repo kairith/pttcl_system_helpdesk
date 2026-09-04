@@ -16,12 +16,19 @@ interface DoughnutChartData {
 
 interface DoughnutChartCardProps {
   title: string;
-  selectedYear: string;
+  timeFilter: string;
 }
+
+const timeFilterLabels: Record<string, string> = {
+  today: "Today",
+  week: "This Week",
+  month: "This Month",
+  year: "This Year",
+};
 
 const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
   title,
-  selectedYear,
+  timeFilter,
 }) => {
   const [doughnutChartData, setDoughnutChartData] = useState<
     DoughnutChartData[]
@@ -33,11 +40,11 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
       try {
         const { doughnutChartData, error } = await fetchDashboardData(
           undefined,
-          selectedYear
+          timeFilter
         );
         // console.log(
         //   "DoughnutChartCard data for",
-        //   selectedYear,
+        //   timeFilter,
         //   ":",
         //   doughnutChartData
         // );
@@ -59,7 +66,7 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
       }
     };
     loadData();
-  }, [selectedYear]);
+  }, [timeFilter]);
 
   const colorMap: { [key: string]: string } = {
     PTT_Digital: "rgb(72, 128, 255)", // Blue
@@ -71,7 +78,7 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
     <div
       className="flex-1 w-full max-w-full min-w-0 p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200"
       role="figure"
-      aria-label={`Doughnut chart showing ${title} for ${selectedYear === "ALL" ? "all years" : selectedYear}`}
+      aria-label={`Doughnut chart showing ${title} for ${timeFilterLabels[timeFilter] ?? timeFilter}`}
     >
       <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
         {title}
@@ -81,7 +88,7 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
           <p className="text-red-500 text-center">{error}</p>
         ) : doughnutChartData.length === 0 ? (
           <p className="text-gray-500 text-center">
-            No data for {selectedYear === "ALL" ? "all years" : selectedYear}
+            No data for {timeFilterLabels[timeFilter] ?? timeFilter}
           </p>
         ) : (
           <Doughnut
@@ -105,7 +112,7 @@ const DoughnutChartCard: React.FC<DoughnutChartCardProps> = ({
                 legend: { position: "bottom" },
                 title: {
                   display: true,
-                  text: `${title} - ${selectedYear === "ALL" ? "All Years" : selectedYear}`,
+                  text: `${title} - ${timeFilterLabels[timeFilter] ?? timeFilter}`,
                   font: { size: 16 },
                 },
                 datalabels: {

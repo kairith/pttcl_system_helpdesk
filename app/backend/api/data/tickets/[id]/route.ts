@@ -37,9 +37,14 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 
     connection = await mysql.createConnection(dbConfig);
 
-    // Fetch ticket details
+    // Fetch ticket details, joined to the assignee's name (tbl_ticket only
+    // stores users_id — without this join the edit form's Assign dropdown
+    // has no way to know who's currently assigned).
     const [rows] = await connection.execute(
-      "SELECT * FROM tbl_ticket WHERE id = ?",
+      `SELECT t.*, u.users_name AS users_name
+       FROM tbl_ticket t
+       LEFT JOIN tbl_users u ON t.users_id = u.users_id
+       WHERE t.id = ?`,
       [params.id]
     );
     const ticket = (rows as any[])[0];
@@ -57,16 +62,48 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       name: type.issue_type,
     }));
 
-    // Fetch available users for assignment
-    const [usersRows] = await connection.execute(
-      "SELECT users_id, users_name FROM tbl_users"
+    // Fetch available departments from tbl_departments
+    const [departmentsRows] = await connection.execute(
+      "SELECT department_name FROM tbl_departments ORDER BY department_name"
     );
+    const availableDepartments = (departmentsRows as any[]).map((dept) => dept.department_name);
+
+    // Fetch the requester's own assignment permissions, so the assignee list
+    // (and the frontend's read-only/editable decision) reflect what they're
+    // actually allowed to do: unrestricted, department-scoped, or not at all.
+    const [requesterRows] = await connection.execute(
+      `SELECT r.list_ticket_assign, r.scope_to_department, u.department_id
+       FROM tbl_users u
+       LEFT JOIN tbl_users_rules r ON u.rules_id = r.rules_id
+       WHERE u.users_id = ?`,
+      [userId]
+    );
+    const requester = (requesterRows as any[])[0] || {};
+    const canAssign = !!requester.list_ticket_assign;
+    const assignScopedToDepartment = !!requester.scope_to_department;
+
+    // Fetch available users for assignment, scoped to the requester's own
+    // department when their role restricts them to it.
+    let usersRows;
+    if (canAssign && assignScopedToDepartment && requester.department_id) {
+      [usersRows] = await connection.execute(
+        "SELECT users_id, users_name FROM tbl_users WHERE department_id = ?",
+        [requester.department_id]
+      );
+    } else if (canAssign) {
+      [usersRows] = await connection.execute("SELECT users_id, users_name FROM tbl_users");
+    } else {
+      usersRows = [];
+    }
     const availableUsers = (usersRows as any[]).map((user) => ({
       id: user.users_id,
       name: user.users_name,
     }));
 
-    return NextResponse.json({ ticket, availableIssueTypes, availableUsers }, { status: 200 });
+    return NextResponse.json(
+      { ticket, availableIssueTypes, availableDepartments, availableUsers, canAssign },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error("Error fetching ticket:", error);
     if (error.name === "JsonWebTokenError") {
@@ -116,9 +153,9 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     }
 
     const formData = await request.json();
-    const { station_id, station_name, users_name, issue_type, issue_description, comment, status } = formData;
+    const { station_id, station_name, users_name, issue_type, issue_description, department, comment, status } = formData;
 
-    if (!station_id || !station_name || !issue_type || !issue_description || !status) {
+    if (!station_id || !station_name || !issue_type || !issue_description || !department || !status) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
     if (!["open", "in progress", "close"].includes(status.toLowerCase())) {
@@ -134,16 +171,53 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       return NextResponse.json({ error: "Invalid issue type" }, { status: 400 });
     }
 
-    // Look up users_id based on users_name
+    // Validate department against tbl_departments
+    const [departmentRows] = await connection.execute(
+      "SELECT department_name FROM tbl_departments WHERE department_name = ?",
+      [department]
+    );
+    if ((departmentRows as any[]).length === 0) {
+      return NextResponse.json({ error: "Invalid department" }, { status: 400 });
+    }
+
+    // Look up users_id (and department) based on users_name
     let assignedUserId = null;
     if (users_name) {
       const [userRows] = await connection.execute(
-        "SELECT users_id FROM tbl_users WHERE users_name = ?",
+        "SELECT users_id, department_id FROM tbl_users WHERE users_name = ?",
         [users_name]
       );
       const user = (userRows as any[])[0];
       if (user) {
         assignedUserId = user.users_id;
+
+        // Only enforce assignment rules if this is actually a reassignment.
+        if (assignedUserId !== ticket.users_id) {
+          const [requesterRows] = await connection.execute(
+            `SELECT r.list_ticket_assign, r.scope_to_department, u.department_id
+             FROM tbl_users u
+             LEFT JOIN tbl_users_rules r ON u.rules_id = r.rules_id
+             WHERE u.users_id = ?`,
+            [userId]
+          );
+          const requester = (requesterRows as any[])[0];
+
+          if (!requester || !requester.list_ticket_assign) {
+            return NextResponse.json(
+              { error: "You do not have permission to assign tickets." },
+              { status: 403 }
+            );
+          }
+
+          if (requester.scope_to_department) {
+            if (!requester.department_id || user.department_id !== requester.department_id) {
+              return NextResponse.json(
+                { error: "You can only assign tickets to users in your own department." },
+                { status: 403 }
+              );
+            }
+          }
+        }
       } else {
         return NextResponse.json({ error: "Invalid user name" }, { status: 400 });
       }
@@ -153,7 +227,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
 
     const updateQuery = `
       UPDATE tbl_ticket
-      SET station_id = ?, station_name = ?, users_id = ?, issue_type = ?, issue_description = ?, comment = ?, status = ?, ticket_time = NOW()
+      SET station_id = ?, station_name = ?, users_id = ?, issue_type = ?, issue_description = ?, department = ?, comment = ?, status = ?, ticket_time = NOW()
       WHERE id = ?
     `;
     await connection.execute(updateQuery, [
@@ -162,6 +236,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       assignedUserId || ticket.users_id, // Use existing users_id if no new assignment
       issue_type,
       issue_description,
+      department,
       comment,
       status,
       params.id,

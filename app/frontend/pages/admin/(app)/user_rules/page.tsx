@@ -15,6 +15,8 @@ interface Permissions {
   users: { add: boolean; edit: boolean; delete: boolean; list: boolean };
   tickets: { add: boolean; edit: boolean; delete: boolean; list: boolean; listAssign: boolean };
   stations: { add: boolean; edit: boolean; delete: boolean; list: boolean };
+  departments: { add: boolean; edit: boolean; delete: boolean; list: boolean };
+  scopeToDepartment: boolean;
   userRules: { add: boolean; edit: boolean; delete: boolean; list: boolean };
 }
 
@@ -31,6 +33,8 @@ export default function UserRules() {
     users: { add: false, edit: false, delete: false, list: false },
     tickets: { add: false, edit: false, delete: false, list: false, listAssign: false },
     stations: { add: false, edit: false, delete: false, list: false },
+    departments: { add: false, edit: false, delete: false, list: false },
+    scopeToDepartment: false,
     userRules: { add: false, edit: false, delete: false, list: false },
   });
   const [filterId, setFilterId] = useState("");
@@ -62,6 +66,13 @@ export default function UserRules() {
         delete: !!rawRules.delete_station,
         list: !!rawRules.list_station,
       },
+      departments: {
+        add: !!rawRules.add_department,
+        edit: !!rawRules.edit_department,
+        delete: !!rawRules.delete_department,
+        list: !!rawRules.list_department,
+      },
+      scopeToDepartment: !!rawRules.scope_to_department,
       userRules: {
         add: !!rawRules.add_user_rules,
         edit: !!rawRules.edit_user_rules,
@@ -122,6 +133,13 @@ export default function UserRules() {
       delete: !!rule.delete_station,
       list: !!rule.list_station,
     },
+    departments: {
+      add: !!rule.add_department,
+      edit: !!rule.edit_department,
+      delete: !!rule.delete_department,
+      list: !!rule.list_department,
+    },
+    scopeToDepartment: !!rule.scope_to_department,
     userRules: {
       add: !!rule.add_user_rules,
       edit: !!rule.edit_user_rules,
@@ -153,10 +171,11 @@ export default function UserRules() {
     | keyof Permissions["users"]
     | keyof Permissions["tickets"]
     | keyof Permissions["stations"]
+    | keyof Permissions["departments"]
     | keyof Permissions["userRules"];
 
   const handlePermissionChange = useCallback(
-    (category: keyof Permissions, permission: PermissionKey) => {
+    (category: Exclude<keyof Permissions, "scopeToDepartment">, permission: PermissionKey) => {
       setEditPermissions((prev) => ({
         ...prev,
         [category]: {
@@ -225,6 +244,11 @@ export default function UserRules() {
                   edit_station: editPermissions.stations.edit ? 1 : 0,
                   delete_station: editPermissions.stations.delete ? 1 : 0,
                   list_station: editPermissions.stations.list ? 1 : 0,
+                  add_department: editPermissions.departments.add ? 1 : 0,
+                  edit_department: editPermissions.departments.edit ? 1 : 0,
+                  delete_department: editPermissions.departments.delete ? 1 : 0,
+                  list_department: editPermissions.departments.list ? 1 : 0,
+                  scope_to_department: editPermissions.scopeToDepartment ? 1 : 0,
                 }
               : r
           )
@@ -236,6 +260,8 @@ export default function UserRules() {
           users: { add: false, edit: false, delete: false, list: false },
           tickets: { add: false, edit: false, delete: false, list: false, listAssign: false },
           stations: { add: false, edit: false, delete: false, list: false },
+          departments: { add: false, edit: false, delete: false, list: false },
+          scopeToDepartment: false,
           userRules: { add: false, edit: false, delete: false, list: false },
         });
         toast.success(`Rule ${editRuleName} updated successfully`, {
@@ -569,6 +595,8 @@ export default function UserRules() {
                     users: { add: false, edit: false, delete: false, list: false },
                     tickets: { add: false, edit: false, delete: false, list: false, listAssign: false },
                     stations: { add: false, edit: false, delete: false, list: false },
+                    departments: { add: false, edit: false, delete: false, list: false },
+                    scopeToDepartment: false,
                     userRules: { add: false, edit: false, delete: false, list: false },
                   });
                 }}
@@ -614,7 +642,7 @@ export default function UserRules() {
                       </div>
                       <div className="mt-4">
                         <h4 className="text-sm font-semibold text-gray-700">Permissions</h4>
-                        <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
                           <div>
                             <h5 className="text-sm font-semibold text-gray-600">Users</h5>
                             {(["add", "edit", "delete", "list"] as Array<keyof Permissions["users"]>).map(
@@ -687,6 +715,29 @@ export default function UserRules() {
                             )}
                           </div>
                           <div>
+                            <h5 className="text-sm font-semibold text-gray-600">Departments</h5>
+                            {(["add", "edit", "delete", "list"] as Array<keyof Permissions["departments"]>).map(
+                              (perm) => (
+                                <div key={`departments-${perm}`} className="flex items-center mt-1">
+                                  <input
+                                    type="checkbox"
+                                    id={`departments-${perm}`}
+                                    checked={editPermissions.departments[perm]}
+                                    onChange={() => handlePermissionChange("departments", perm)}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    aria-label={`Departments ${perm} permission`}
+                                  />
+                                  <label
+                                    htmlFor={`departments-${perm}`}
+                                    className="ml-2 text-sm text-gray-600 capitalize"
+                                  >
+                                    {perm}
+                                  </label>
+                                </div>
+                              )
+                            )}
+                          </div>
+                          <div>
                             <h5 className="text-sm font-semibold text-gray-600">User Rules</h5>
                             {(["add", "edit", "delete", "list"] as Array<keyof Permissions["userRules"]>).map(
                               (perm) => (
@@ -710,6 +761,27 @@ export default function UserRules() {
                             )}
                           </div>
                         </div>
+                        <div className="mt-4 flex items-center">
+                          <input
+                            type="checkbox"
+                            id="scopeToDepartment"
+                            checked={editPermissions.scopeToDepartment}
+                            onChange={() =>
+                              setEditPermissions((prev) => ({
+                                ...prev,
+                                scopeToDepartment: !prev.scopeToDepartment,
+                              }))
+                            }
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            aria-label="Scope to assigned department only"
+                          />
+                          <label
+                            htmlFor="scopeToDepartment"
+                            className="ml-2 text-sm text-gray-600"
+                          >
+                            Scope to assigned department only (Department Admin)
+                          </label>
+                        </div>
                       </div>
                       <div className="mt-6 flex justify-end space-x-3">
                         <button
@@ -722,6 +794,8 @@ export default function UserRules() {
                               users: { add: false, edit: false, delete: false, list: false },
                               tickets: { add: false, edit: false, delete: false, list: false, listAssign: false },
                               stations: { add: false, edit: false, delete: false, list: false },
+                              departments: { add: false, edit: false, delete: false, list: false },
+                              scopeToDepartment: false,
                               userRules: { add: false, edit: false, delete: false, list: false },
                             });
                           }}

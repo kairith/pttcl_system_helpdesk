@@ -21,13 +21,20 @@ interface BarChartData {
 
 interface BarChartCardProps {
   title: string;
-  selectedYear: string;
+  timeFilter: string;
   barChartData: BarChartData[];
 }
 
+const timeFilterLabels: Record<string, string> = {
+  today: "Today",
+  week: "This Week",
+  month: "This Month",
+  year: "This Year",
+};
+
 const BarChartCard: React.FC<BarChartCardProps> = ({
   title,
-  selectedYear,
+  timeFilter,
   barChartData,
 }) => {
   const colorMap: { [key: string]: string } = {
@@ -46,7 +53,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
     <div
       className="flex-1 p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200"
       role="figure"
-      aria-label={`Bar chart showing ${title} for ${selectedYear === "ALL" ? "all years" : selectedYear}`}
+      aria-label={`Bar chart showing ${title} for ${timeFilterLabels[timeFilter] ?? timeFilter}`}
     >
       <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
         {title}
@@ -54,7 +61,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
       <div className="relative w-full h-72 sm:h-96">
         {barChartData.length === 0 ? (
           <p className="text-gray-500 text-center">
-            No data for {selectedYear === "ALL" ? "all years" : selectedYear}
+            No data for {timeFilterLabels[timeFilter] ?? timeFilter}
           </p>
         ) : (
           <>
@@ -83,7 +90,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
                   legend: { display: false },
                   title: {
                     display: true,
-                    text: `${title} - ${selectedYear === "ALL" ? "All Years" : selectedYear}`,
+                    text: `${title} - ${timeFilterLabels[timeFilter] ?? timeFilter}`,
                   },
                   datalabels: {
                     display: (context) => {
@@ -116,7 +123,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({
             />
             <table className="sr-only">
               <caption>
-                {title} - {selectedYear === "ALL" ? "All Years" : selectedYear}
+                {title} - {timeFilterLabels[timeFilter] ?? timeFilter}
               </caption>
               <thead>
                 <tr>

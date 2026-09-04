@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Ticket } from "@/app/backend/types/ticket";
 import { Toaster, toast } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
+import { useUserData } from "@/app/frontend/components/common/Header/UserDataProvider";
 
 interface User {
   id: string;
@@ -115,6 +116,8 @@ export default function EditTicketPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
   const { id } = useParams() as { id: string };
+  const { rules } = useUserData();
+  const canAssign = !!rules?.list_ticket_assign;
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [formData, setFormData] = useState({
     station_id: "",
@@ -122,12 +125,14 @@ export default function EditTicketPage() {
     users_name: "",
     issue_type: "",
     issue_description: "",
+    department: "",
     comment: "",
     status: "",
   });
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [dbUsers, setDbUsers] = useState<DbUser[]>([]);
   const [availableIssueTypes, setAvailableIssueTypes] = useState<{ id: string; name: string }[]>([]);
+  const [availableDepartments, setAvailableDepartments] = useState<string[]>([]);
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
   const [botNames, setBotNames] = useState<string[]>([]);
   const [currentUserId, setCurrentUserId] = useState("");
@@ -205,10 +210,12 @@ export default function EditTicketPage() {
           users_name: data.ticket.users_name || "",
           issue_type: data.ticket.issue_type || "",
           issue_description: data.ticket.issue_description || "",
+          department: data.ticket.department || "",
           comment: data.ticket.comment || "",
           status: data.ticket.status || "",
         });
         setAvailableIssueTypes(data.availableIssueTypes || []);
+        setAvailableDepartments(data.availableDepartments || []);
 
         if (!usersResponse.ok) {
           const errorData = await usersResponse.json();
@@ -287,8 +294,9 @@ export default function EditTicketPage() {
     const errors: string[] = [];
     if (!formData.station_id.trim()) errors.push("Station ID is required.");
     if (!formData.station_name.trim()) errors.push("Station Name is required.");
-    if (!formData.users_name.trim()) errors.push("Assigned user is required.");
+    if (canAssign && !formData.users_name.trim()) errors.push("Assigned user is required.");
     if (!formData.issue_type.trim()) errors.push("Issue type is required.");
+    if (!formData.department.trim()) errors.push("Department is required.");
     if (!formData.status.trim()) errors.push("Status is required.");
     return errors;
   };
@@ -582,7 +590,8 @@ export default function EditTicketPage() {
                       name="users_name"
                       value={formData.users_name}
                       onChange={handleChange}
-                      className="w-full max-w-full min-w-0 p-2 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={!canAssign}
+                      className="w-full max-w-full min-w-0 p-2 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                       aria-label="Assign User"
                       required
                     >
@@ -593,9 +602,15 @@ export default function EditTicketPage() {
                         </option>
                       ))}
                     </select>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Available Users: {availableUsers.length}
-                    </p>
+                    {canAssign ? (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Available Users: {availableUsers.length}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-500 mt-1">
+                        You do not have permission to assign tickets.
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-col">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -613,6 +628,26 @@ export default function EditTicketPage() {
                       {availableIssueTypes.map((type) => (
                         <option key={type.id} value={type.name}>
                           {type.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Department <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="department"
+                      value={formData.department}
+                      onChange={handleChange}
+                      className="w-full max-w-full min-w-0 p-2 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Department"
+                      required
+                    >
+                      <option value="">Select Department</option>
+                      {availableDepartments.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
                         </option>
                       ))}
                     </select>

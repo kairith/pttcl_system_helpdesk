@@ -26,16 +26,23 @@ interface LineChartCardProps {
   title: string;
 }
 
+const timeFilterLabels: Record<string, string> = {
+  today: "Today",
+  week: "This Week",
+  month: "This Month",
+  year: "This Year",
+};
+
 const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
-  const [selectedYear, setSelectedYear] = useState("2024");
+  const [timeFilter, setTimeFilter] = useState("month");
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadChartData() {
       try {
-        const { chartData, error } = await fetchDashboardData(undefined, selectedYear);
-        // console.log("LineChartCard received chartData for", selectedYear, ":", chartData);
+        const { chartData, error } = await fetchDashboardData(undefined, timeFilter);
+        // console.log("LineChartCard received chartData for", timeFilter, ":", chartData);
         setChartData(chartData);
         setError(error);
       } catch (err) {
@@ -43,10 +50,10 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
       }
     }
     loadChartData();
-  }, [selectedYear]);
+  }, [timeFilter]);
 
-  const handleYearChange = (year: string) => {
-    setSelectedYear(year);
+  const handleTimeFilterChange = (value: string) => {
+    setTimeFilter(value);
   };
 
   // Ensure all months are displayed, even with zero tickets
@@ -83,7 +90,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
       labels: formattedData.map((item) => item.month),
       datasets: [
         {
-          label: `All Tickets in ${selectedYear}`,
+          label: `All Tickets - ${timeFilterLabels[timeFilter] ?? timeFilter}`,
           data: formattedData.map((item) => item.value),
           fill: true,
           borderColor: "rgb(59, 130, 246)",
@@ -113,7 +120,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
         },
         title: {
           display: true,
-          // text: `${title} : ${selectedYear}`,
+          // text: `${title} : ${timeFilter}`,
           font: {
             size: 18,
             family: "'Inter', sans-serif",
@@ -195,18 +202,19 @@ const LineChartCard: React.FC<LineChartCardProps> = ({ title }) => {
           {title}
         </h1>
         <select
-          value={selectedYear}
-          onChange={(e) => handleYearChange(e.target.value)}
+          value={timeFilter}
+          onChange={(e) => handleTimeFilterChange(e.target.value)}
           className="w-full sm:w-48 px-2 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="2024">2024</option>
-          <option value="2025">2025</option>
-          <option value="2026">2026</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="year">This Year</option>
         </select>
       </div>
       <div className="relative h-80 sm:h-96">
         {chartData.length === 0 ? (
-          <p className="text-gray-500 text-center">No tickets found for {selectedYear}</p>
+          <p className="text-gray-500 text-center">No tickets found for {timeFilterLabels[timeFilter] ?? timeFilter}</p>
         ) : (
           <Line data={chartConfig.data} options={chartConfig.options} />
         )}

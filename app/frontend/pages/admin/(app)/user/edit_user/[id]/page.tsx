@@ -16,12 +16,19 @@ interface User {
   status: boolean;
   rules_id?: number;
   company?: string;
+  department_id?: number | null;
+}
+
+interface Department {
+  id: number;
+  department_name: string;
 }
 
 export default function EditUser() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [rules, setRules] = useState<Rule[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { id } = useParams();
   const router = useRouter();
@@ -55,6 +62,7 @@ export default function EditUser() {
           status: userData.status === 1,
           rules_id: userData.rules_id,
           company: userData.company,
+          department_id: userData.department_id ?? null,
         });
 
         const rulesResponse = await fetch("/api/data/rules", {
@@ -64,6 +72,16 @@ export default function EditUser() {
         const rulesData = await rulesResponse.json();
         if (!Array.isArray(rulesData)) throw new Error("Invalid rules data format");
         setRules(rulesData);
+
+        const departmentsResponse = await fetch("/api/data/departments", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (departmentsResponse.ok) {
+          const departmentsData = await departmentsResponse.json();
+          setDepartments(Array.isArray(departmentsData.departments) ? departmentsData.departments : []);
+        } else {
+          setDepartments([]);
+        }
       } catch (err) {
         console.error("Fetch error:", err);
         setError("Failed to load user or rules");
@@ -93,6 +111,7 @@ export default function EditUser() {
           rules_id: user.rules_id,
           company: user.company,
           status: user.status ? 1 : 0,
+          departmentId: user.department_id ?? null,
         }),
       });
       if (!response.ok) {
@@ -221,6 +240,27 @@ export default function EditUser() {
                     {rules.map((rule) => (
                       <option key={rule.rules_id} value={rule.rules_id}>
                         {rule.rules_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                    Department
+                  </label>
+                  <select
+                    id="department"
+                    value={user.department_id ?? ""}
+                    onChange={(e) =>
+                      setUser({ ...user, department_id: e.target.value ? parseInt(e.target.value) : null })
+                    }
+                    className="w-full max-w-full min-w-0 p-2 bg-gray-100 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Department"
+                  >
+                    <option value="">None</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.department_name}
                       </option>
                     ))}
                   </select>

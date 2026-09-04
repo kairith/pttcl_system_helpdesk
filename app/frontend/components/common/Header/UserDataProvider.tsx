@@ -9,6 +9,7 @@ export interface User {
   users_name?: string;
   email?: string;
   rules_id?: number;
+  department_id?: number;
 }
 
 // Raw permission flags exactly as returned by GET /api/data/user's `rules` field.
@@ -32,6 +33,11 @@ export interface RawRules {
   edit_station: number;
   delete_station: number;
   list_station: number;
+  add_department: number;
+  edit_department: number;
+  delete_department: number;
+  list_department: number;
+  scope_to_department: number;
   list_dashboard?: number;
   list_track?: number;
   list_report?: number;

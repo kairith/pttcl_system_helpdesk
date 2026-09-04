@@ -24,18 +24,25 @@ interface BarChartData {
 
 interface BarChartCardProps {
   title: string;
-  selectedYear: string;
+  timeFilter: string;
 }
 
-const BarChartCard: React.FC<BarChartCardProps> = ({ title, selectedYear }) => {
+const timeFilterLabels: Record<string, string> = {
+  today: "Today",
+  week: "This Week",
+  month: "This Month",
+  year: "This Year",
+};
+
+const BarChartCard: React.FC<BarChartCardProps> = ({ title, timeFilter }) => {
   const [barChartData, setBarChartData] = useState<BarChartData[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const { barChartData, error } = await fetchDashboardData(undefined, selectedYear);
-        // console.log("BarChartCard received data for", selectedYear, ":", barChartData);
+        const { barChartData, error } = await fetchDashboardData(undefined, timeFilter);
+        // console.log("BarChartCard received data for", timeFilter, ":", barChartData);
         if (error) {
           setError(error);
           setBarChartData([]);
@@ -54,7 +61,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({ title, selectedYear }) => {
       }
     };
     loadData();
-  }, [selectedYear]);
+  }, [timeFilter]);
 
   const colorMap: { [key: string]: string } = {
     ABA: "rgb(254, 197, 61)",
@@ -69,7 +76,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({ title, selectedYear }) => {
     <div
       className="flex-1 w-full max-w-full min-w-0 p-4 sm:p-6 bg-white rounded-xl shadow-lg border border-gray-200"
       role="figure"
-      aria-label={`Bar chart showing ${title} for ${selectedYear === "ALL" ? "all years" : selectedYear}`}
+      aria-label={`Bar chart showing ${title} for ${timeFilterLabels[timeFilter] ?? timeFilter}`}
     >
       <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
         {title}
@@ -79,7 +86,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({ title, selectedYear }) => {
           <p className="text-red-500 text-center">{error}</p>
         ) : barChartData.length === 0 ? (
           <p className="text-gray-500 text-center">
-            No data for {selectedYear === "ALL" ? "all years" : selectedYear}
+            No data for {timeFilterLabels[timeFilter] ?? timeFilter}
           </p>
         ) : (
           <>
@@ -108,7 +115,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({ title, selectedYear }) => {
                   legend: { display: false },
                   title: {
                     display: true,
-                    text: `${title} - ${selectedYear === "ALL" ? "All Years" : selectedYear}`,
+                    text: `${title} - ${timeFilterLabels[timeFilter] ?? timeFilter}`,
                     font: { size: 16 },
                   },
                   datalabels: {
@@ -145,7 +152,7 @@ const BarChartCard: React.FC<BarChartCardProps> = ({ title, selectedYear }) => {
             />
             <table className="sr-only">
               <caption>
-                {title} - {selectedYear === "ALL" ? "All Years" : selectedYear}
+                {title} - {timeFilterLabels[timeFilter] ?? timeFilter}
               </caption>
               <thead>
                 <tr>

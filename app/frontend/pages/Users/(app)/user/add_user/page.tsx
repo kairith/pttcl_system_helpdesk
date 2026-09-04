@@ -13,6 +13,8 @@ export default function CreateUserPage() {
   const [status, setStatus] = useState(1);
   const [rulesId, setRulesId] = useState("");
   const [roles, setRoles] = useState<tbl_users_rules[]>([]);
+  const [departmentId, setDepartmentId] = useState("");
+  const [departments, setDepartments] = useState<{ id: number; department_name: string }[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePath, setImagePath] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
@@ -50,6 +52,26 @@ export default function CreateUserPage() {
         const errorMsg = err instanceof Error ? err.message : "Unknown error";
         setErrors([`Failed to load roles: ${errorMsg}`]);
         setRoles([]);
+      }
+
+      try {
+        const departmentsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"}/api/data/departments`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store",
+        });
+        const departmentsData = await departmentsResponse.json();
+        setDepartments(
+          departmentsResponse.ok && Array.isArray(departmentsData.departments)
+            ? departmentsData.departments
+            : []
+        );
+      } catch (err) {
+        console.error("Failed to load departments:", err);
+        setDepartments([]);
       } finally {
         setIsLoading(false);
       }
@@ -141,7 +163,16 @@ export default function CreateUserPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ usersName, email, password, company, status, rulesId: Number(rulesId), imagePath: uploadedImagePath }),
+        body: JSON.stringify({
+          usersName,
+          email,
+          password,
+          company,
+          status,
+          rulesId: Number(rulesId),
+          imagePath: uploadedImagePath,
+          departmentId: departmentId ? Number(departmentId) : null,
+        }),
       });
 
       const data = await response.json();
@@ -325,6 +356,25 @@ export default function CreateUserPage() {
                       {roles.map((role) => (
                         <option key={role.rules_id} value={role.rules_id}>
                           {role.rules_name.charAt(0).toUpperCase() + role.rules_name.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col">
+                    <label htmlFor="department" className="text-sm font-medium text-gray-700 mb-1">
+                      Department (Optional)
+                    </label>
+                    <select
+                      id="department"
+                      value={departmentId}
+                      onChange={(e) => setDepartmentId(e.target.value)}
+                      className="w-full max-w-full min-w-0 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                      aria-label="Department"
+                    >
+                      <option value="">None</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>
+                          {dept.department_name}
                         </option>
                       ))}
                     </select>

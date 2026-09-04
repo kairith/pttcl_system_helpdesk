@@ -40,11 +40,26 @@ interface StatsData {
   close: number;
 }
 
-export async function fetchTicketsCount(undefined: undefined, selectedYear: string) {
+export async function fetchTicketsCount(undefined: undefined, timeFilter: string) {
   try {
     const connection = await mysql.createConnection(dbConfig);
-    const whereClause = " WHERE ticket_open IS NOT NULL";
+    let whereClause = " WHERE ticket_open IS NOT NULL";
     const params: string[] = [];
+
+    switch (timeFilter) {
+      case "today":
+        whereClause += " AND DATE(ticket_open) = CURDATE()";
+        break;
+      case "week":
+        whereClause += " AND YEARWEEK(ticket_open, 1) = YEARWEEK(CURDATE(), 1)";
+        break;
+      case "month":
+        whereClause += " AND YEAR(ticket_open) = YEAR(CURDATE()) AND MONTH(ticket_open) = MONTH(CURDATE())";
+        break;
+      case "year":
+        whereClause += " AND YEAR(ticket_open) = YEAR(CURDATE())";
+        break;
+    }
 
     const [rows] = await connection.execute<RowDataPacket[]>(
       `SELECT 
@@ -79,16 +94,24 @@ export async function fetchTicketsCount(undefined: undefined, selectedYear: stri
   }
 }
 
-export async function fetchDashboardData(period?: string, selectedYear?: string, limit: number = 1000) {
+export async function fetchDashboardData(period?: string, timeFilter?: string, limit: number = 1000) {
   try {
     const connection = await mysql.createConnection(dbConfig);
     let whereClause = " WHERE ticket_open IS NOT NULL";
     const params: string[] = [];
-    if (selectedYear && selectedYear !== "ALL") {
-      whereClause += " AND YEAR(ticket_open) = ?";
-      params.push(selectedYear);
-    } else if (selectedYear === "ALL") {
-      whereClause += " AND YEAR(ticket_open) IN (2024, 2025)";
+    switch (timeFilter) {
+      case "today":
+        whereClause += " AND DATE(ticket_open) = CURDATE()";
+        break;
+      case "week":
+        whereClause += " AND YEARWEEK(ticket_open, 1) = YEARWEEK(CURDATE(), 1)";
+        break;
+      case "month":
+        whereClause += " AND YEAR(ticket_open) = YEAR(CURDATE()) AND MONTH(ticket_open) = MONTH(CURDATE())";
+        break;
+      case "year":
+        whereClause += " AND YEAR(ticket_open) = YEAR(CURDATE())";
+        break;
     }
     if (period) {
       whereClause += " AND DATE_FORMAT(ticket_open, '%M') = ?";
@@ -160,7 +183,7 @@ export async function fetchDashboardData(period?: string, selectedYear?: string,
 
     await connection.end();
 
-    // console.log(`fetchDashboardData (year: ${selectedYear || "ALL"}, period: ${period || "none"}, limit: ${limit}) - Total: ${totalCount[0].total}, Tickets: ${tickets.length}, BarChart: ${barChartData.length}, DoughnutChart: ${doughnutChartData.length}`);
+    // console.log(`fetchDashboardData (timeFilter: ${timeFilter || "none"}, period: ${period || "none"}, limit: ${limit}) - Total: ${totalCount[0].total}, Tickets: ${tickets.length}, BarChart: ${barChartData.length}, DoughnutChart: ${doughnutChartData.length}`);
 
     return {
       ticketData: tickets as TicketData[],
@@ -170,7 +193,7 @@ export async function fetchDashboardData(period?: string, selectedYear?: string,
       error: null,
     };
   } catch (err) {
-    const errorMessage = `Error fetching dashboard data (year: ${selectedYear || "ALL"}, period: ${period || "none"}, limit: ${limit}): ${(err as Error).message}`;
+    const errorMessage = `Error fetching dashboard data (timeFilter: ${timeFilter || "none"}, period: ${period || "none"}, limit: ${limit}): ${(err as Error).message}`;
     console.error(errorMessage);
     return {
       ticketData: [],

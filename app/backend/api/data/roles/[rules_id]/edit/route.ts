@@ -46,7 +46,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ru
         add_user_status = ?, edit_user_status = ?, delete_user_status = ?, list_user_status = ?,
         add_ticket_status = ?, edit_ticket_status = ?, delete_ticket_status = ?, list_ticket_status = ?, list_ticket_assign = ?,
         add_user_rules = ?, edit_user_rules = ?, delete_user_rules = ?, list_user_rules = ?,
-        add_station = ?, edit_station = ?, delete_station = ?, list_station = ?
+        add_station = ?, edit_station = ?, delete_station = ?, list_station = ?,
+        add_department = ?, edit_department = ?, delete_department = ?, list_department = ?, scope_to_department = ?
       WHERE rules_id = ?`,
       [
         rules_name,
@@ -67,6 +68,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ru
         permissions.stations?.edit ? 1 : 0,
         permissions.stations?.delete ? 1 : 0,
         permissions.stations?.list ? 1 : 0,
+        permissions.departments?.add ? 1 : 0,
+        permissions.departments?.edit ? 1 : 0,
+        permissions.departments?.delete ? 1 : 0,
+        permissions.departments?.list ? 1 : 0,
+        permissions.scopeToDepartment ? 1 : 0,
         ruleId,
       ]
     );

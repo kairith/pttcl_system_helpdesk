@@ -41,13 +41,15 @@ export async function GET(request: Request) {
     // Fetch user permissions
     connection = await pool.getConnection();
     const [userRows] = await connection.execute(
-      `SELECT rules.* 
-       FROM tbl_users u 
+      `SELECT rules.*, u.department_id
+       FROM tbl_users u
        LEFT JOIN tbl_users_rules rules ON u.rules_id = rules.rules_id
        WHERE u.users_id = ?`,
       [usersIdStr]
     );
-    const userRules = Array.isArray(userRows) && userRows.length > 0 ? userRows[0] as { list_ticket_status?: any } : null;
+    const userRules = Array.isArray(userRows) && userRows.length > 0
+      ? userRows[0] as { list_ticket_status?: any; scope_to_department?: any; department_id?: number | null }
+      : null;
     if (!userRules) {
       console.error("No user or permissions found for users_id:", usersIdStr);
       return NextResponse.json({ error: "User not found or no permissions assigned." }, { status: 404 });
@@ -60,15 +62,18 @@ export async function GET(request: Request) {
       );
     }
 
-    // Fetch tickets
+    // Fetch tickets. A "Department Admin" role (scope_to_department = 1) sees every
+    // ticket in its own assigned department, instead of only tickets assigned to them.
+    const isDepartmentScoped = !!userRules.scope_to_department;
     const ticketQuery = `
       SELECT t.*, u.users_name, u2.users_name AS creator_name
       FROM tbl_ticket t
       LEFT JOIN tbl_users u ON t.users_id = u.users_id
       LEFT JOIN tbl_users u2 ON t.user_create_ticket = u2.users_id
-      WHERE t.users_id = ?
+      WHERE ${isDepartmentScoped ? "t.department_id = ?" : "t.users_id = ?"}
     `;
-    
+    const queryParam = isDepartmentScoped ? (userRules.department_id ?? -1) : usersIdStr;
+
     interface TicketRow {
       ticket_id?: string;
       station_id?: string;
@@ -79,7 +84,7 @@ export async function GET(request: Request) {
       creator_name?: string;
       [key: string]: any;
     }
-    const [ticketRows] = await connection.execute(ticketQuery, [usersIdStr]);
+    const [ticketRows] = await connection.execute(ticketQuery, [queryParam]);
     const tickets: TicketRow[] = Array.isArray(ticketRows) ? ticketRows as TicketRow[] : [];
     // console.log("Fetched tickets for users_id:", usersIdStr, "Count:", tickets.length);
 

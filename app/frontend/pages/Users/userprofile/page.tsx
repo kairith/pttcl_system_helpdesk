@@ -11,6 +11,7 @@ interface User {
   users_name: string;
   email: string;
   company?: string | null;
+  department_name?: string | null;
   user_image?: string | null;
 }
 
@@ -136,6 +137,9 @@ export default function UserProfilePage() {
             </div>
             {user.email && <p className="text-gray-500">{user.email}</p>}
             {user.company && <p className="text-gray-500">{user.company}</p>}
+            {user.department_name && (
+              <p className="text-gray-500">Department {user.department_name}</p>
+            )}
           </div>
         </div>
 

@@ -74,6 +74,7 @@ export default function Tickets() {
   const [showFilterInput, setShowFilterInput] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -98,7 +99,8 @@ export default function Tickets() {
       try {
         setIsLoading(true);
         if (currentPermissions.tickets.list) {
-          const { tickets, error } = await fetchTickets();
+          const token = sessionStorage.getItem("token") || undefined;
+          const { tickets, error } = await fetchTickets(token);
           if (error) {
             setError(error);
             toast.error(error);
@@ -325,9 +327,29 @@ export default function Tickets() {
 
   return (
     <Card className="p-4 sm:p-6">
-      <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Tickets</h1>
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Tickets</h1>
+        <div className="flex items-center space-x-2">
+          <label htmlFor="rowsPerPage" className="text-gray-600 text-sm">
+            Rows per page:
+          </label>
+          <select
+            id="rowsPerPage"
+            value={rowsPerPage}
+            onChange={(e) => setRowsPerPage(Number(e.target.value))}
+            className="border border-gray-300 rounded px-2 py-1 text-sm"
+            aria-label="Select rows per page"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+      </div>
       {(permissions.tickets.add || permissions.tickets.list) && (
-        <div className="mt-4 w-full max-w-full">
+        <div className="w-full max-w-full">
           <ControlsSection
             onCreateTicket={permissions.tickets.add ? handleCreateTicket : undefined}
             onFilterToggle={permissions.tickets.list ? handleFilterToggle : undefined}
@@ -373,6 +395,7 @@ export default function Tickets() {
                 filteredTickets={filteredTickets}
                 permissions={permissions.tickets}
                 onTicketDeleted={handleTicketDeleted}
+                rowsPerPage={rowsPerPage}
               />
             </>
           )}
