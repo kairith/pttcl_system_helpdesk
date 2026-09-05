@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 import Image from "next/image";
 import Link from "next/link";
+import { DEFAULT_AVATAR_URL } from "@/app/shared/constants";
 
 interface User {
   users_id: number;
@@ -116,7 +117,7 @@ export default function UserProfilePage() {
           {/* Avatar */}
           <div className="w-40 h-40 relative -mt-16">
             <img
-              src={user.user_image || "/Uploads/user_image/Default-avatar.jpg"}
+              src={user.user_image || DEFAULT_AVATAR_URL}
               alt={`Profile of ${user.users_name}`}
               className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
             />

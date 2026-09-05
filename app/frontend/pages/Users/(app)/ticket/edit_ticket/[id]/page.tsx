@@ -119,6 +119,7 @@ export default function EditTicketPage() {
   const { rules } = useUserData();
   const canAssign = !!rules?.list_ticket_assign;
   const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [originalAssigneeName, setOriginalAssigneeName] = useState("");
   const [formData, setFormData] = useState({
     station_id: "",
     station_name: "",
@@ -204,6 +205,7 @@ export default function EditTicketPage() {
         // console.log("Ticket ID from URL:", id);
         // console.log("Ticket ID from Response:", data.ticket?.ticket_id);
         setTicket(data.ticket);
+        setOriginalAssigneeName(data.ticket.users_name || "");
         setFormData({
           station_id: data.ticket.station_id || "",
           station_name: data.ticket.station_name || "",
@@ -212,7 +214,7 @@ export default function EditTicketPage() {
           issue_description: data.ticket.issue_description || "",
           department: data.ticket.department || "",
           comment: data.ticket.comment || "",
-          status: data.ticket.status || "",
+          status: (data.ticket.status || "").toLowerCase(),
         });
         setAvailableIssueTypes(data.availableIssueTypes || []);
         setAvailableDepartments(data.availableDepartments || []);
@@ -344,6 +346,16 @@ export default function EditTicketPage() {
         duration: 1000,
         position: "top-right",
       });
+
+      // Only notify the assignee when the assignment actually changed on this
+      // save — not on every field edit, and not for editors who don't have
+      // assign permission (their `availableUsers`/`dbUsers` lists are scoped
+      // to what THEY can assign, which has no bearing on who's already
+      // assigned when that value didn't change).
+      if (formData.users_name === originalAssigneeName) {
+        setTimeout(() => router.push("/pages/Users/ticket"), 1000);
+        return;
+      }
 
       const assignedUser = availableUsers.find((user) => user.name === formData.users_name);
       if (!assignedUser) {

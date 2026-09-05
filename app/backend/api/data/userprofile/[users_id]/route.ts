@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
+import { DEFAULT_AVATAR_URL } from "@/app/shared/constants";
 // display user profile but not so important 
 // Database connection configuration
 const pool = mysql.createPool(dbConfig);
@@ -61,8 +62,7 @@ export async function GET(
       email: userResult.email,
       company: userResult.company || null,
       department_name: userResult.department_name || null,
-      user_image:
-        userResult.user_image || "/Uploads/user_image/Default-avatar.jpg",
+      user_image: userResult.user_image || DEFAULT_AVATAR_URL,
     };
 
     return NextResponse.json({ user: userData, tickets: ticketsResult }, { status: 200 });

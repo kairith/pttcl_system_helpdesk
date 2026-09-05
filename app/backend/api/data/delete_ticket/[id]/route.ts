@@ -2,12 +2,8 @@
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import jwt from "jsonwebtoken";
-import fs from "fs/promises";
-import path from "path";
 import { dbConfig } from "@/app/database/db-config";
-
-// Path to the ticket_image folder
-const TICKET_IMAGE_FOLDER = path.join(process.cwd(), "public/uploads/ticket_image");
+import { deleteFromMinio } from "@/app/backend/lib/minio";
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   let connection;
@@ -68,17 +64,10 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     // Step 4: Commit the transaction
     await connection.commit();
 
-    // Step 5: Delete physical image files
+    // Step 5: Delete objects from MinIO (errors are logged and swallowed inside
+    // deleteFromMinio, so a missing/already-deleted object never fails this request)
     for (const row of imageRows as any[]) {
-      const relativePath = row.image_path.replace(/^\/+/, ""); // Remove leading slashes
-      const imagePath = path.join(TICKET_IMAGE_FOLDER, path.basename(relativePath));
-      try {
-        await fs.unlink(imagePath);
-        // console.log(`Deleted file: ${imagePath}`);
-      } catch (fileError) {
-        console.error(`Failed to delete file ${imagePath}:`, fileError);
-        // Continue even if file deletion fails (e.g., file doesn't exist)
-      }
+      await deleteFromMinio(row.image_path);
     }
 
     return NextResponse.json({ message: "Ticket and associated images deleted successfully" }, { status: 200 });

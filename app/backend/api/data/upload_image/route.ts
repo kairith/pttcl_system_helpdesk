@@ -1,7 +1,6 @@
 // app/api/data/upload_image/route.ts
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { uploadToMinio } from '@/app/backend/lib/minio';
 
 export async function POST(request: Request) {
   try {
@@ -14,24 +13,14 @@ export async function POST(request: Request) {
 
     const timestamp = Date.now();
     const fileExtension = file.name.split('.').pop();
-    const fileName = `ticket_${timestamp}.${fileExtension}`;
-    const uploadDir = join(process.cwd(), 'public/uploads/ticket_image');
-    const filePath = join(uploadDir, fileName);
+    const objectKey = `ticket-images/ticket_${timestamp}.${fileExtension}`;
 
-    await ensureDirectoryExistence(uploadDir);
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(filePath, buffer);
+    const imagePath = await uploadToMinio(buffer, objectKey, file.type || 'application/octet-stream');
 
-    const relativePath = `/uploads/ticket_image/${fileName}`;
-    // console.log('Uploaded image:', relativePath);
-    return NextResponse.json({ imagePath: relativePath }, { status: 200 });
+    return NextResponse.json({ imagePath }, { status: 200 });
   } catch (error) {
     console.error('Image upload error:', error);
     return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
   }
-}
-
-async function ensureDirectoryExistence(dirPath: string) {
-  const { mkdir } = await import('fs/promises');
-  await mkdir(dirPath, { recursive: true });
 }

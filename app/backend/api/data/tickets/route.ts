@@ -3,6 +3,10 @@ import mysql from "mysql2/promise";
 import jwt from "jsonwebtoken";
 import { dbConfig } from "@/app/database/db-config";
 
+const TICKET_IMAGE_URL_PREFIX = `${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL || "http://localhost:9000"}/${
+  process.env.NEXT_PUBLIC_MINIO_BUCKET || "pttcl-uploads"
+}/ticket-images/`;
+
 export async function POST(request: Request) {
   let connection;
   
@@ -102,7 +106,7 @@ export async function POST(request: Request) {
     const departmentId = departmentRecord.id;
 
     // Validate image path
-    if (imagePath && !imagePath.startsWith("/uploads/ticket_image/")) {
+    if (imagePath && !imagePath.startsWith(TICKET_IMAGE_URL_PREFIX)) {
       return NextResponse.json({ error: "Invalid image path format" }, { status: 400 });
     }
 

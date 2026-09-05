@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 import Image from "next/image";
+import { DEFAULT_AVATAR_URL } from "@/app/shared/constants";
 
 interface User {
   users_id: number;
@@ -66,7 +67,7 @@ export default function EditUserProfilePage() {
           confirmPassword: "",
           company: data.company || "",
         });
-        const imagePath = data.user_image || "/Uploads/user_image/Default-avatar.jpg";
+        const imagePath = data.user_image || DEFAULT_AVATAR_URL;
         setImagePreview(imagePath);
         sessionStorage.setItem("userImage", imagePath);
       } catch (err) {
@@ -102,14 +103,14 @@ export default function EditUserProfilePage() {
       };
       reader.readAsDataURL(selectedImage);
     } else if (removeImage) {
-      setImagePreview("/Uploads/user_image/Default-avatar.jpg");
-      sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
+      setImagePreview(DEFAULT_AVATAR_URL);
+      sessionStorage.setItem("userImage", DEFAULT_AVATAR_URL);
     } else if (!selectedImage && !removeImage && user?.user_image) {
       setImagePreview(user.user_image);
       sessionStorage.setItem("userImage", user.user_image);
     } else {
-      setImagePreview("/Uploads/user_image/Default-avatar.jpg");
-      sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
+      setImagePreview(DEFAULT_AVATAR_URL);
+      sessionStorage.setItem("userImage", DEFAULT_AVATAR_URL);
     }
     console.log("Current imagePreview:", imagePreview);
   }, [selectedImage, removeImage, user?.user_image]);
@@ -147,7 +148,7 @@ export default function EditUserProfilePage() {
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setRemoveImage(true);
-    sessionStorage.setItem("userImage", "/Uploads/user_image/Default-avatar.jpg");
+    sessionStorage.setItem("userImage", DEFAULT_AVATAR_URL);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -233,7 +234,7 @@ export default function EditUserProfilePage() {
       const updatedUser: User = await response.json();
       setUser(updatedUser);
       sessionStorage.setItem("user", JSON.stringify(updatedUser));
-      const newImage = updatedUser.user_image || "/Uploads/user_image/Default-avatar.jpg";
+      const newImage = updatedUser.user_image || DEFAULT_AVATAR_URL;
       sessionStorage.setItem("userImage", newImage);
       setImagePreview(newImage);
       toast.success("Profile updated successfully!");
@@ -276,12 +277,12 @@ export default function EditUserProfilePage() {
                 className="rounded-full object-cover w-full h-full"
                 onError={() => {
                   console.error("Failed to load base64 profile image:", imagePreview);
-                  setImagePreview("/Uploads/user_image/Default-avatar.jpg");
+                  setImagePreview(DEFAULT_AVATAR_URL);
                 }}
               />
             ) : (
               <Image
-                src={imagePreview || "/Uploads/user_image/Default-avatar.jpg"}
+                src={imagePreview || DEFAULT_AVATAR_URL}
                 alt={`Profile picture of ${formData.users_name || "user"}`}
                 fill
                 className="rounded-full object-cover"
@@ -289,7 +290,7 @@ export default function EditUserProfilePage() {
                 priority
                 onError={() => {
                   console.error("Failed to load profile image:", imagePreview);
-                  setImagePreview("/Uploads/user_image/Default-avatar.jpg");
+                  setImagePreview(DEFAULT_AVATAR_URL);
                 }}
               />
             )}
@@ -317,7 +318,7 @@ export default function EditUserProfilePage() {
             id="user_image"
             aria-label="Upload profile picture"
           />
-          {imagePreview && imagePreview !== "/Uploads/user_image/Default-avatar.jpg" && (
+          {imagePreview && imagePreview !== DEFAULT_AVATAR_URL && (
             <button
               onClick={handleRemoveImage}
               className="text-sm text-red-600 hover:underline"

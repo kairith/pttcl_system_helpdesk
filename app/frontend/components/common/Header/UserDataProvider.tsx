@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
+import { DEFAULT_AVATAR_URL } from "@/app/shared/constants";
 
 export interface User {
   users_id?: number;
@@ -97,7 +98,7 @@ const UserDataProvider: React.FC<UserDataProviderProps> = ({ children }) => {
       const response = await fetch(`/api/data/user_image?users_id=${usersId}`);
       const data = await response.json();
       if (isCancelled) return;
-      const imagePath = response.ok ? data.imagePath : "/Uploads/user_image/Default-avatar.jpg";
+      const imagePath = response.ok ? data.imagePath : DEFAULT_AVATAR_URL;
       setUserImage(imagePath);
       sessionStorage.setItem("userImage", imagePath);
     }
