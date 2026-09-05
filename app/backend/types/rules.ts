@@ -22,6 +22,12 @@ export interface tbl_users_rules {
   edit_station: number;
   delete_station: number;
   list_station: number;
+
+  add_department: number;
+  edit_department: number;
+  delete_department: number;
+  list_department: number;
+  scope_to_department: number;
 }
 
 

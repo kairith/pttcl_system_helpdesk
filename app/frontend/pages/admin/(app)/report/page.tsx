@@ -229,6 +229,15 @@ export default function Reports() {
     },
   };
 
+  const handleResetFilters = () => {
+    setReportType("status");
+    setFilterStatus("");
+    setFilterIssueType("");
+    setFilterUserId("");
+    setStartDate("");
+    setEndDate("");
+  };
+
   if (error) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -268,23 +277,34 @@ export default function Reports() {
   return (
     <Card className="p-4 sm:p-6">
       <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Reports</h1>
-            <div className="flex flex-col sm:flex-row gap-3 mb-6 sm:mb-8 w-full max-w-full flex-wrap">
-              <div className="flex-1 min-w-0">
+            <div className="flex items-end justify-between gap-4 mb-6 sm:mb-8 w-full max-w-full flex-wrap">
+            <div className="flex flex-wrap items-end gap-4">
+              <div className="flex flex-col min-w-[190px]">
+                <label htmlFor="reportType" className="text-xs text-gray-500 mb-1">
+                  Report
+                </label>
                 <select
+                  id="reportType"
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value as "status" | "issue_type")}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  title={reportType === "status" ? "Ticket Count by Status" : "Ticket Count by Issue Type"}
+                  className="min-w-[190px] p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base truncate"
                   aria-label="Select report type"
                 >
                   <option value="status">Ticket Count by Status</option>
                   <option value="issue_type">Ticket Count by Issue Type</option>
                 </select>
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex flex-col min-w-[120px]">
+                <label htmlFor="filterStatus" className="text-xs text-gray-500 mb-1">
+                  Status
+                </label>
                 <select
+                  id="filterStatus"
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  title={filterStatus || "All Statuses"}
+                  className="min-w-[120px] p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base truncate"
                   aria-label="Filter by status"
                 >
                   <option value="">All Statuses</option>
@@ -295,11 +315,16 @@ export default function Reports() {
                   ))}
                 </select>
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex flex-col min-w-[130px]">
+                <label htmlFor="filterIssueType" className="text-xs text-gray-500 mb-1">
+                  Issue type
+                </label>
                 <select
+                  id="filterIssueType"
                   value={filterIssueType}
                   onChange={(e) => setFilterIssueType(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  title={filterIssueType || "All Issue Types"}
+                  className="min-w-[130px] p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base truncate"
                   aria-label="Filter by issue type"
                 >
                   <option value="">All Issue Types</option>
@@ -310,11 +335,20 @@ export default function Reports() {
                   ))}
                 </select>
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex flex-col min-w-[130px]">
+                <label htmlFor="filterUserId" className="text-xs text-gray-500 mb-1">
+                  User
+                </label>
                 <select
+                  id="filterUserId"
                   value={filterUserId}
                   onChange={(e) => setFilterUserId(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  title={
+                    filterUserId
+                      ? users.find((u) => String(u.users_id) === String(filterUserId))?.users_name || "All Users"
+                      : "All Users"
+                  }
+                  className="min-w-[130px] p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base truncate"
                   aria-label="Filter by user"
                 >
                   <option value="">All Users</option>
@@ -325,23 +359,38 @@ export default function Reports() {
                   ))}
                 </select>
               </div>
-              <div className="flex-1 min-w-0">
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                  aria-label="Start date"
-                />
+              <div className="flex flex-col">
+                <label className="text-xs text-gray-500 mb-1">Date range</label>
+                <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-2 py-1 focus-within:ring-2 focus-within:ring-blue-500">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="p-1 border-0 focus:outline-none focus:ring-0 text-sm sm:text-base"
+                    aria-label="Start date"
+                  />
+                  <span className="text-gray-400 text-sm">to</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="p-1 border-0 focus:outline-none focus:ring-0 text-sm sm:text-base"
+                    aria-label="End date"
+                  />
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                  aria-label="End date"
-                />
+            </div>
+              <div className="flex flex-col shrink-0">
+                <label className="text-xs mb-1 invisible" aria-hidden="true">
+                  Reset
+                </label>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm sm:text-base"
+                >
+                  Reset filters
+                </button>
               </div>
             </div>
             <div className="mb-8">

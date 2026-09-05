@@ -3,6 +3,10 @@ import mysql from "mysql2/promise";
 import jwt from "jsonwebtoken";
 import { dbConfig } from "@/app/database/db-config";
 
+const TICKET_IMAGE_URL_PREFIX = `${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL || "http://localhost:9000"}/${
+  process.env.NEXT_PUBLIC_MINIO_BUCKET || "pttcl-uploads"
+}/ticket-images/`;
+
 export async function POST(request: Request) {
   let connection;
   
@@ -57,10 +61,11 @@ export async function POST(request: Request) {
     const issueOn = formData.get("issue_on") as string;
     const issueType = formData.get("issue_type") as string;
     const issueDescription = formData.get("issue_description") as string;
+    const department = formData.get("department") as string;
     const imagePath = formData.get("image") as string | null;
 
     // Validate inputs
-    if (!stationId || !stationName || !stationType || !province || !issueOn || !issueType || !issueDescription) {
+    if (!stationId || !stationName || !stationType || !province || !issueOn || !issueType || !issueDescription || !department) {
       return NextResponse.json({ error: "All fields (except image) are required" }, { status: 400 });
     }
     if (!["PTT_Digital", "Third_Party"].includes(issueOn)) {
@@ -82,8 +87,26 @@ export async function POST(request: Request) {
     }
     const issueTypeId = issueTypeRecord.id;
 
+    // Validate department against tbl_departments
+    const [departmentRows] = await connection.execute(
+      "SELECT id, department_name FROM tbl_departments WHERE department_name = ?",
+      [department]
+    );
+    const departmentRecord = (departmentRows as any[])[0];
+    if (!departmentRecord) {
+      const [allDepartmentRows] = await connection.execute(
+        "SELECT department_name FROM tbl_departments ORDER BY department_name"
+      );
+      const validDepartments = (allDepartmentRows as any[]).map((row) => row.department_name);
+      return NextResponse.json(
+        { error: `Invalid department: must be one of ${validDepartments.join(", ")}` },
+        { status: 400 }
+      );
+    }
+    const departmentId = departmentRecord.id;
+
     // Validate image path
-    if (imagePath && !imagePath.startsWith("/uploads/ticket_image/")) {
+    if (imagePath && !imagePath.startsWith(TICKET_IMAGE_URL_PREFIX)) {
       return NextResponse.json({ error: "Invalid image path format" }, { status: 400 });
     }
 
@@ -112,8 +135,8 @@ export async function POST(request: Request) {
 
     // Insert ticket with users_id (for assignment) and user_create_ticket
     const ticketQuery = `
-      INSERT INTO tbl_ticket (ticket_id, user_create_ticket, users_id, station_id, station_name, station_type, province, issue_description, issue_type, issue_type_id, ticket_open, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'Open')
+      INSERT INTO tbl_ticket (ticket_id, user_create_ticket, users_id, station_id, station_name, station_type, province, issue_description, issue_type, issue_type_id, department, department_id, ticket_open, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'Open')
     `;
     await connection.execute(ticketQuery, [
       ticketId,
@@ -126,6 +149,8 @@ export async function POST(request: Request) {
       issueDescription,
       issueType,
       issueTypeId,
+      departmentRecord.department_name,
+      departmentId,
     ]);
 
     // Insert image path if provided

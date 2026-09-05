@@ -13,7 +13,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     const body = await request.json();
-    const { users_name, email, rules_id, company } = body;
+    const { users_name, email, rules_id, company, departmentId } = body;
 
     if (!users_name || !email) {
       return NextResponse.json({ error: "Users name and email are required" }, { status: 400 });
@@ -22,8 +22,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const connection = await createConnection(dbConfig);
 
     const [result] = await connection.execute(
-      `UPDATE ${TABLE_NAME} SET users_name = ?, email = ?, rules_id = ?, company = ? WHERE users_id = ?`,
-      [users_name, email, rules_id, company, id]
+      `UPDATE ${TABLE_NAME} SET users_name = ?, email = ?, rules_id = ?, company = ?, department_id = ? WHERE users_id = ?`,
+      [users_name, email, rules_id, company, departmentId !== undefined && departmentId !== null ? Number(departmentId) : null, id]
     );
     await connection.end();
 

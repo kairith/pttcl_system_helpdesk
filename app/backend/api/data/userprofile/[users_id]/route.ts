@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import { dbConfig } from "@/app/database/db-config";
+import { DEFAULT_AVATAR_URL } from "@/app/shared/constants";
 // display user profile but not so important 
 // Database connection configuration
 const pool = mysql.createPool(dbConfig);
@@ -32,9 +33,10 @@ export async function GET(
   try {
     const [userResult] = await dbQuery(
       `
-        SELECT u.users_id, u.users_name, u.email, u.company, i.image_path AS user_image
+        SELECT u.users_id, u.users_name, u.email, u.company, d.department_name, i.image_path AS user_image
         FROM tbl_users u
         LEFT JOIN tbl_user_image i ON u.users_id = i.users_id
+        LEFT JOIN tbl_departments d ON u.department_id = d.id
         WHERE u.users_id = ?
       `,
       [users_id]
@@ -59,8 +61,8 @@ export async function GET(
       users_name: userResult.users_name,
       email: userResult.email,
       company: userResult.company || null,
-      user_image:
-        userResult.user_image || "/Uploads/user_image/Default-avatar.jpg",
+      department_name: userResult.department_name || null,
+      user_image: userResult.user_image || DEFAULT_AVATAR_URL,
     };
 
     return NextResponse.json({ user: userData, tickets: ticketsResult }, { status: 200 });

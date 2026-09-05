@@ -55,7 +55,7 @@ interface StatsData {
 
 const Dashboard: React.FC = () => {
   
-  const [selectedYear, setSelectedYear] = useState("ALL");
+  const [timeFilter, setTimeFilter] = useState("month");
   const [isLoading, setIsLoading] = useState(true);
   const [ticketData, setTicketData] = useState<TicketData[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
@@ -86,11 +86,11 @@ const Dashboard: React.FC = () => {
         return;
       }
 
-      console.log(`Dashboard: Loading data for users_id: ${userId}, selectedYear: ${selectedYear}`);
+      console.log(`Dashboard: Loading data for users_id: ${userId}, timeFilter: ${timeFilter}`);
 
       const loadData = async () => {
         try {
-          const countResult = await fetchTicketsCount(userId, selectedYear);
+          const countResult = await fetchTicketsCount(userId, timeFilter);
           if (countResult.error) {
             setError(countResult.error);
             return;
@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
           setStats(countResult.stats);
           console.log(`Dashboard: Stats data:`, countResult.stats);
 
-          const dashboardResult = await fetchDashboardData(userId, undefined, selectedYear);
+          const dashboardResult = await fetchDashboardData(userId, undefined, timeFilter);
           if (dashboardResult.error) {
             setError(dashboardResult.error);
             return;
@@ -122,10 +122,10 @@ const Dashboard: React.FC = () => {
 
       loadData();
     }
-  }, [selectedYear, router]);
+  }, [timeFilter, router]);
 
-  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedYear(e.target.value);
+  const handleTimeFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTimeFilter(e.target.value);
   };
   if (isLoading) {
     return (
@@ -163,20 +163,21 @@ const Dashboard: React.FC = () => {
           Dashboard
         </h1>
         <select
-          value={selectedYear}
-          onChange={handleYearChange}
+          value={timeFilter}
+          onChange={handleTimeFilterChange}
           className="w-full sm:w-48 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-0"
         >
-          <option value="ALL">All Years</option>
-          <option value="2024">2024</option>
-          <option value="2025">2025</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="year">This Year</option>
         </select>
       </div>
       <StatsCards stats={stats} />
       <LineChartCard
         title="Ticket Trends"
         chartData={chartData}
-        selectedYear={selectedYear}
+        timeFilter={timeFilter}
       />
       <Card className="mb-6 mt-9 sm:mb-8 p-4 sm:p-6 w-full max-w-full min-w-0">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
@@ -185,12 +186,12 @@ const Dashboard: React.FC = () => {
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 w-full max-w-full">
           <BarChartCard
             title="Tickets by Issue Type"
-            selectedYear={selectedYear}
+            timeFilter={timeFilter}
             barChartData={barChartData}
           />
           <DoughnutChartCard
             title="Ticket Categories"
-            selectedYear={selectedYear}
+            timeFilter={timeFilter}
             doughnutChartData={doughnutChartData}
           />
         </div>

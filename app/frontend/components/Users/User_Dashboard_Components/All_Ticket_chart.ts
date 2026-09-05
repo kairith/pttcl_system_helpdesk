@@ -41,7 +41,7 @@ interface StatsData {
   close: number;
 }
 
-export async function fetchTicketsCount(users_id: string, selectedYear: string) {
+export async function fetchTicketsCount(users_id: string, timeFilter: string) {
   if (!users_id) {
     return {
       stats: { open: 0, on_hold: 0, in_progress: 0, close: 0 },
@@ -51,8 +51,23 @@ export async function fetchTicketsCount(users_id: string, selectedYear: string) 
 
   try {
     const connection = await mysql.createConnection(dbConfig);
-    const whereClause = " WHERE t.ticket_open IS NOT NULL AND t.users_id = ?";
+    let whereClause = " WHERE t.ticket_open IS NOT NULL AND t.users_id = ?";
     const params: string[] = [users_id];
+
+    switch (timeFilter) {
+      case "today":
+        whereClause += " AND DATE(t.ticket_open) = CURDATE()";
+        break;
+      case "week":
+        whereClause += " AND YEARWEEK(t.ticket_open, 1) = YEARWEEK(CURDATE(), 1)";
+        break;
+      case "month":
+        whereClause += " AND YEAR(t.ticket_open) = YEAR(CURDATE()) AND MONTH(t.ticket_open) = MONTH(CURDATE())";
+        break;
+      case "year":
+        whereClause += " AND YEAR(t.ticket_open) = YEAR(CURDATE())";
+        break;
+    }
 
     const [rows] = await connection.execute<RowDataPacket[]>(
       `SELECT 
@@ -89,7 +104,7 @@ export async function fetchTicketsCount(users_id: string, selectedYear: string) 
   }
 }
 
-export async function fetchDashboardData(users_id: string, period?: string, selectedYear?: string, limit: number = 1000) {
+export async function fetchDashboardData(users_id: string, period?: string, timeFilter?: string, limit: number = 1000) {
   if (!users_id) {
     return {
       ticketData: [],
@@ -104,11 +119,19 @@ export async function fetchDashboardData(users_id: string, period?: string, sele
     const connection = await mysql.createConnection(dbConfig);
     let whereClause = " WHERE t.ticket_open IS NOT NULL AND t.users_id = ?";
     const params: string[] = [users_id];
-    if (selectedYear && selectedYear !== "ALL") {
-      whereClause += " AND YEAR(t.ticket_open) = ?";
-      params.push(selectedYear);
-    } else if (selectedYear === "ALL") {
-      whereClause += " AND YEAR(t.ticket_open) IN (2024, 2025)";
+    switch (timeFilter) {
+      case "today":
+        whereClause += " AND DATE(t.ticket_open) = CURDATE()";
+        break;
+      case "week":
+        whereClause += " AND YEARWEEK(t.ticket_open, 1) = YEARWEEK(CURDATE(), 1)";
+        break;
+      case "month":
+        whereClause += " AND YEAR(t.ticket_open) = YEAR(CURDATE()) AND MONTH(t.ticket_open) = MONTH(CURDATE())";
+        break;
+      case "year":
+        whereClause += " AND YEAR(t.ticket_open) = YEAR(CURDATE())";
+        break;
     }
     if (period) {
       whereClause += " AND DATE_FORMAT(t.ticket_open, '%M') = ?";
@@ -181,7 +204,7 @@ export async function fetchDashboardData(users_id: string, period?: string, sele
 
     await connection.end();
 
-    console.log(`fetchDashboardData (users_id: ${users_id}, year: ${selectedYear || "ALL"}, period: ${period || "none"}, limit: ${limit}) - Total: ${totalCount[0].total}, Tickets: ${tickets.length}, BarChart: ${barChartData.length}, DoughnutChart: ${doughnutChartData.length}`);
+    console.log(`fetchDashboardData (users_id: ${users_id}, timeFilter: ${timeFilter || "none"}, period: ${period || "none"}, limit: ${limit}) - Total: ${totalCount[0].total}, Tickets: ${tickets.length}, BarChart: ${barChartData.length}, DoughnutChart: ${doughnutChartData.length}`);
 
     return {
       ticketData: tickets as TicketData[],
@@ -191,7 +214,7 @@ export async function fetchDashboardData(users_id: string, period?: string, sele
       error: null,
     };
   } catch (err) {
-    const errorMessage = `Error fetching dashboard data for user ${users_id} (year: ${selectedYear || "ALL"}, period: ${period || "none"}, limit: ${limit}): ${(err as Error).message}`;
+    const errorMessage = `Error fetching dashboard data for user ${users_id} (timeFilter: ${timeFilter || "none"}, period: ${period || "none"}, limit: ${limit}): ${(err as Error).message}`;
     console.error(errorMessage);
     return {
       ticketData: [],

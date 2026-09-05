@@ -52,6 +52,7 @@ export async function middleware(request: NextRequest) {
               add_user_status, edit_user_status, delete_user_status, list_user_status,
               add_ticket_status, edit_ticket_status, delete_ticket_status, list_ticket_status, list_ticket_assign,
               add_station, edit_station, delete_station, list_station,
+              add_department, edit_department, delete_department, list_department, scope_to_department,
               add_user_rules, edit_user_rules, delete_user_rules, list_user_rules
        FROM tbl_users_rules WHERE rules_id = ?`,
       [decoded.rules_id]
@@ -83,6 +84,13 @@ export async function middleware(request: NextRequest) {
         delete: !!rule.delete_station,
         list: !!rule.list_station,
       },
+      departments: {
+        add: !!rule.add_department,
+        edit: !!rule.edit_department,
+        delete: !!rule.delete_department,
+        list: !!rule.list_department,
+      },
+      scope_to_department: !!rule.scope_to_department,
       userRules: {
         add: !!rule.add_user_rules,
         edit: !!rule.edit_user_rules,

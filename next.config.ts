@@ -23,6 +23,16 @@ const nextConfig = {
       bodySizeLimit: '15mb',
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '9000',
+        pathname: '/pttcl-uploads/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

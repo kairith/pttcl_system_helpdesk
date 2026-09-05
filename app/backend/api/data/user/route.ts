@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
     const [rows] = await connection.execute(
       `
-      SELECT u.users_id, u.users_name, u.email, u.rules_id, r.*
+      SELECT u.users_id, u.users_name, u.email, u.rules_id, u.department_id, r.*
       FROM tbl_users u
       LEFT JOIN tbl_users_rules r ON u.rules_id = r.rules_id
       WHERE u.users_id = ?
@@ -42,6 +42,7 @@ export async function GET(request: Request) {
         users_name: user.users_name,
         email: user.email,
         rules_id: user.rules_id,
+        department_id: user.department_id,
       },
       rules: {
         rules_id: user.rules_id,
@@ -63,6 +64,11 @@ export async function GET(request: Request) {
         edit_station: user.edit_station,
         delete_station: user.delete_station,
         list_station: user.list_station,
+        add_department: user.add_department,
+        edit_department: user.edit_department,
+        delete_department: user.delete_department,
+        list_department: user.list_department,
+        scope_to_department: user.scope_to_department,
         list_dashboard: user.list_dashboard !== undefined ? user.list_dashboard : 1,
         list_track: user.list_track !== undefined ? user.list_track : 1,
         list_report: user.list_report !== undefined ? user.list_report : 1,

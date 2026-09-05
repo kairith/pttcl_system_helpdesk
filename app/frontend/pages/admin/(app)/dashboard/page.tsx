@@ -52,7 +52,7 @@ interface StatsData {
 }
 
 const Dashboard: React.FC = () => {
-  const [selectedYear, setSelectedYear] = useState("2024");
+  const [timeFilter, setTimeFilter] = useState("month");
   const [ticketData, setTicketData] = useState<TicketData[]>([]);
   const [stats, setStats] = useState<StatsData>({
     open: 0,
@@ -65,7 +65,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const countResult = await fetchTicketsCount(undefined, selectedYear);
+        const countResult = await fetchTicketsCount(undefined, timeFilter);
         if (countResult.error) {
           setError(countResult.error);
         } else {
@@ -74,7 +74,7 @@ const Dashboard: React.FC = () => {
 
         const { ticketData, error } = await fetchDashboardData(
           undefined,
-          selectedYear
+          timeFilter
         );
         if (error) {
           setError(error);
@@ -87,10 +87,10 @@ const Dashboard: React.FC = () => {
     };
 
     loadData();
-  }, [selectedYear]);
+  }, [timeFilter]);
 
-  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedYear(e.target.value);
+  const handleTimeFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTimeFilter(e.target.value);
   };
 
   return (
@@ -109,25 +109,25 @@ const Dashboard: React.FC = () => {
             Ticket Summary
           </h2>
           <select
-            value={selectedYear}
-            onChange={handleYearChange}
+            value={timeFilter}
+            onChange={handleTimeFilterChange}
             className="w-full sm:w-48 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="ALL">All Years</option>
-            <option value="2024">2024</option>
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
           </select>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           <BarChartCard
             title="Tickets by Issue Type"
-            selectedYear={selectedYear}
+            timeFilter={timeFilter}
           />
           <DoughnutChartCard
             title="Ticket Categories"
-            selectedYear={selectedYear}
+            timeFilter={timeFilter}
           />
         </div>
       </Card>

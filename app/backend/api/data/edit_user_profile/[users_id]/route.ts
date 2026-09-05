@@ -2,34 +2,9 @@ import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
 import bcrypt from "bcryptjs";
 import { dbConfig } from "@/app/database/db-config";
-import multer from "multer";
-import { promises as fs } from "fs";
-import path from "path";
-// route for update profile 
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: "./public/uploads/user_image/",
-    filename: (req, file, cb) => {
-      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-      cb(null, `user_${uniqueSuffix}${path.extname(file.originalname)}`);
-    },
-  }),
-  fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith("image/")) {
-      return ("");
-    }
-    cb(null, true);
-  },
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-});
-
-const uploadMiddleware = (req: Request): Promise<{ fields: any; file: any }> =>
-  new Promise((resolve, reject) => {
-    upload.single("user_image")(req as any, {} as any, (err: any) => {
-      if (err) return reject(err);
-      resolve({ fields: (req as any).body, file: (req as any).file });
-    });
-  });
+import { v4 as uuidv4 } from "uuid";
+import { uploadToMinio, deleteFromMinio } from "@/app/backend/lib/minio";
+// route for update profile
 
 export async function GET(request: Request, { params }: { params: Promise<{ users_id: string }> }) {
   const paramsData = await params;
@@ -114,10 +89,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
       );
 
       if (user_image) {
-        const fileName = `user_${paramsData.users_id}_${Date.now()}${path.extname(user_image.name)}`;
-        const filePath = path.join(process.cwd(), "public/uploads/user_image", fileName);
-        await fs.writeFile(filePath, Buffer.from(await user_image.arrayBuffer()));
-        const imagePath = `/uploads/user_image/${fileName}`;
+        const fileExtension = user_image.name.split(".").pop();
+        const objectKey = `user-images/user_${uuidv4()}.${fileExtension}`;
+        const imagePath = await uploadToMinio(
+          Buffer.from(await user_image.arrayBuffer()),
+          objectKey,
+          user_image.type || "application/octet-stream"
+        );
 
         await connection.execute(
           `INSERT INTO tbl_user_image (users_id, image_path)
@@ -131,12 +109,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
           [paramsData.users_id]
         );
         if (imageRows.length > 0 && imageRows[0].image_path) {
-          const oldImagePath = path.join(process.cwd(), "public", imageRows[0].image_path);
-          try {
-            await fs.unlink(oldImagePath);
-          } catch (err) {
-            console.error("Failed to delete old image:", err);
-          }
+          await deleteFromMinio(imageRows[0].image_path);
         }
         await connection.execute("DELETE FROM tbl_user_image WHERE users_id = ?", [
           paramsData.users_id,

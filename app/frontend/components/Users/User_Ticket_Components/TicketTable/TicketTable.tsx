@@ -269,13 +269,14 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Station Name</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Assign</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Issue</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Department</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {sortedTickets.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-4 text-center text-gray-500">
+                <td colSpan={10} className="px-4 py-4 text-center text-gray-500">
                   No tickets found.
                 </td>
               </tr>
@@ -317,6 +318,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                   <td className="px-4 py-3 text-sm text-gray-800">{ticket.station_name || "N/A"}</td>
                   <td className="px-4 py-3 text-sm text-gray-800">{ticket.users_name || "Not Assigned"}</td>
                   <td className="px-4 py-3 text-sm text-gray-800">{ticket.issue_type || "N/A"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-800">{ticket.department || "N/A"}</td>
                   <td className="px-4 py-3 text-sm">
                     <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>
                       {ticket.status || "N/A"}
@@ -341,6 +343,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                 <div className="mb-2 text-sm text-gray-800 font-medium">Station Name: {ticket.station_name || "N/A"}</div>
                 <div className="mb-2 text-sm text-gray-800 font-medium">Assign: {ticket.users_name || "Not Assigned"}</div>
                 <div className="mb-2 text-sm text-gray-800 font-medium">Issue Type: {ticket.issue_type || "N/A"}</div>
+                <div className="mb-2 text-sm text-gray-800 font-medium">Department: {ticket.department || "N/A"}</div>
                 <div className="mb-2 text-sm font-medium">
                   Status: <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>{ticket.status || "N/A"}</span>
                 </div>
@@ -412,6 +415,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                 <div><p className="text-gray-800 break-words truncate">Province: {selectedTicket.province || "N/A"}</p></div>
                 <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Issue Description: {selectedTicket.issue_description || "N/A"}</p></div>
                 <div><p className="text-gray-800 break-words truncate">Issue Type: {selectedTicket.issue_type || "N/A"}</p></div>
+                <div><p className="text-gray-800 break-words truncate">Department: {selectedTicket.department || "N/A"}</p></div>
               </div>
               <div className="space-y-4">
                 <div><p className="text-gray-800 break-words truncate">Status: {selectedTicket.status || "N/A"}</p></div>

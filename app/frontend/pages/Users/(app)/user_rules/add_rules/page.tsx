@@ -19,8 +19,10 @@ export default function AddRules() {
     users: { add: false, edit: false, delete: false, list: false },
     tickets: { add: false, edit: false, delete: false, list: false, listAssign: false },
     stations: { add: false, edit: false, delete: false, list: false },
+    departments: { add: false, edit: false, delete: false, list: false },
     userRules: { add: false, edit: false, delete: false, list: false },
   });
+  const [scopeToDepartment, setScopeToDepartment] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -93,6 +95,13 @@ export default function AddRules() {
         delete: permissions.stations.delete,
         list: permissions.stations.list,
       },
+      departments: {
+        add: permissions.departments.add,
+        edit: permissions.departments.edit,
+        delete: permissions.departments.delete,
+        list: permissions.departments.list,
+      },
+      scopeToDepartment: scopeToDepartment,
       userRules: {
         add: permissions.userRules.add,
         edit: permissions.userRules.edit,
@@ -124,8 +133,10 @@ export default function AddRules() {
         users: { add: false, edit: false, delete: false, list: false },
         tickets: { add: false, edit: false, delete: false, list: false, listAssign: false },
         stations: { add: false, edit: false, delete: false, list: false },
+        departments: { add: false, edit: false, delete: false, list: false },
         userRules: { add: false, edit: false, delete: false, list: false },
       });
+      setScopeToDepartment(false);
       setTimeout(() => router.push("/pages/admin/user_rules"), 2000);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "An error occurred";
@@ -237,7 +248,7 @@ export default function AddRules() {
                 </div>
                 <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-200">
                   <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Permissions</h2>
-                  {["users", "tickets", "stations", "userRules"].map((category) => (
+                  {["users", "tickets", "stations", "departments", "userRules"].map((category) => (
                     <div key={category} className="mb-6">
                       <h3 className="text-lg font-medium text-gray-700 capitalize mb-2">{category}</h3>
                       <label className="flex items-center space-x-2 mb-3">
@@ -289,6 +300,20 @@ export default function AddRules() {
                       </div>
                     </div>
                   ))}
+                  <div className="mb-2">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={scopeToDepartment}
+                        onChange={(e) => setScopeToDepartment(e.target.checked)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        aria-label="Scope to assigned department only"
+                      />
+                      <span className="text-sm text-gray-600 font-medium">
+                        Scope to assigned department only (Department Admin)
+                      </span>
+                    </label>
+                  </div>
                 </div>
                 <div className="flex justify-center space-x-4 mt-4 sm:mt-6">
                   <button

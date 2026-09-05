@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { User } from "./UserDataProvider";
 import { GlobalSearch , Permissions } from "./globalsearch";
+import { DEFAULT_AVATAR_URL } from "@/app/shared/constants";
 interface HeaderProps {
   toggleSidebar: () => void;
   toggleProfile: () => void;
@@ -91,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({
           >
             <div className="w-9 h-9 rounded-full overflow-hidden">
               <Image
-                src={userImage || "/Uploads/user_image/Default-avatar.jpg"}
+                src={userImage || DEFAULT_AVATAR_URL}
                 alt={`${user?.users_name || "Guest"}'s profile`}
                 width={36}
                 height={36}

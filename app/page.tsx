@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import LoadingScreen from './frontend/components/ui/loadingScreen';
+import { DEFAULT_AVATAR_URL } from './shared/constants';
 
 interface LoginResponse {
   token: string;
@@ -89,7 +90,7 @@ export default function LoginPage() {
         // console.log('Image response data:', imageData);
 
         if (imageResponse.ok && imageData.imagePath) {
-          const imagePath = imageData.imagePath.toLowerCase();
+          const imagePath = imageData.imagePath;
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('userImage', imagePath);
             // console.log('Stored userImage in sessionStorage:', imagePath);
@@ -97,15 +98,13 @@ export default function LoginPage() {
         } else {
           console.error('Image fetch failed:', imageData.error || 'No image path returned');
           if (typeof window !== 'undefined') {
-            sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
-            // console.log('Stored default userImage in sessionStorage:', '/Uploads/user_image/Default-avatar.jpg');
+            sessionStorage.setItem('userImage', DEFAULT_AVATAR_URL);
           }
         }
       } catch (imageError) {
         console.error('Failed to fetch user image:', imageError);
         if (typeof window !== 'undefined') {
-          sessionStorage.setItem('userImage', '/Uploads/user_image/Default-avatar.jpg');
-          // console.log('Stored default userImage in sessionStorage due to error:', '/Uploads/user_image/Default-avatar.jpg');
+          sessionStorage.setItem('userImage', DEFAULT_AVATAR_URL);
         }
       }
 

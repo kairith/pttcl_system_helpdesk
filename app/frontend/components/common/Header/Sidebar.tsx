@@ -12,6 +12,7 @@ import { useUserData } from "./UserDataProvider";
 const LayoutDashboard = dynamic(() => import("lucide-react").then(mod => mod.LayoutDashboard), { ssr: false });
 const Ticket = dynamic(() => import("lucide-react").then(mod => mod.Ticket), { ssr: false });
 const MapPin = dynamic(() => import("lucide-react").then(mod => mod.MapPin), { ssr: false });
+const Building2 = dynamic(() => import("lucide-react").then(mod => mod.Building2), { ssr: false });
 const Users = dynamic(() => import("lucide-react").then(mod => mod.Users), { ssr: false });
 const ClipboardList = dynamic(() => import("lucide-react").then(mod => mod.ClipboardList), { ssr: false });
 const LineChart = dynamic(() => import("lucide-react").then(mod => mod.LineChart), { ssr: false });
@@ -54,6 +55,10 @@ interface Permissions {
   edit_station: boolean;
   delete_station: boolean;
   list_station: boolean;
+  add_department: boolean;
+  edit_department: boolean;
+  delete_department: boolean;
+  list_department: boolean;
   list_dashboard: boolean;
   list_track: boolean;
   list_report: boolean;
@@ -102,6 +107,13 @@ const menuItems: MenuItem[] = [
     icon: <MapPin size={20} aria-label="Station" />,
     requiredPermission: "list_station",
     nonAdminOnly: true,
+  },
+  {
+    label: "Department",
+    href: "/pages/admin/department",
+    icon: <Building2 size={20} aria-label="Department" />,
+    requiredPermission: "list_department",
+    adminOnly: true,
   },
   {
     label: "Users",
@@ -204,6 +216,10 @@ const Sidebar: React.FC<SidebarProps> = React.memo(({ isSidebarOpen, toggleSideb
       edit_station: !!rules.edit_station,
       delete_station: !!rules.delete_station,
       list_station: !!rules.list_station,
+      add_department: !!rules.add_department,
+      edit_department: !!rules.edit_department,
+      delete_department: !!rules.delete_department,
+      list_department: !!rules.list_department,
       list_dashboard: rules.list_dashboard !== undefined ? !!rules.list_dashboard : true,
       list_track: rules.list_track !== undefined ? !!rules.list_track : true,
       list_report: rules.list_report !== undefined ? !!rules.list_report : true,
