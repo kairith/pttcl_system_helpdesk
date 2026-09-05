@@ -8,4 +8,5 @@ export interface User {
      rules_id: number;
      company: string;
      user_image?: string | null;
+     department_id?: number | null;
    }

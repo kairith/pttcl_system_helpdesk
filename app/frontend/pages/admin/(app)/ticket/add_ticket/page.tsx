@@ -196,6 +196,8 @@ export default function AddTicketPage() {
   const [issueOn, setIssueOn] = useState<"PTT_Digital" | "Third_Party">("PTT_Digital");
   const [issueType, setIssueType] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
+  const [department, setDepartment] = useState("");
+  const [departmentOptions, setDepartmentOptions] = useState<string[]>([]);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
@@ -320,6 +322,27 @@ export default function AddTicketPage() {
       setProvince("");
     }
   }, [stationId, stationOptions]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await fetchWithTimeout("/api/data/departments", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error(`Failed to fetch departments: ${response.status}`);
+        const data = await response.json();
+        const names = Array.isArray(data.departments)
+          ? data.departments.map((dept: { id: number; department_name: string }) => dept.department_name)
+          : [];
+        setDepartmentOptions(names);
+      } catch (err) {
+        console.error("Fetch Departments Error:", err);
+        setDepartmentOptions([]);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   const issueTypeOptions: Record<"PTT_Digital" | "Third_Party", string[]> = {
     PTT_Digital: ["Software", "Hardware"],
@@ -451,6 +474,12 @@ export default function AddTicketPage() {
         setIsLoading(false);
         return;
       }
+      if (!department) {
+        setErrors(["Department is required."]);
+        toast.error("Department is required.");
+        setIsLoading(false);
+        return;
+      }
       if (!userName) {
         setErrors(["Username is required."]);
         toast.error("Username is required.");
@@ -503,6 +532,7 @@ export default function AddTicketPage() {
       formData.append("issue_on", issueOn);
       formData.append("issue_type", issueTypeName);
       formData.append("issue_description", issueDescription);
+      formData.append("department", department);
       formData.append("ticket_open", ticketOpen);
       if (imagePath) formData.append("image", imagePath);
   
@@ -807,6 +837,28 @@ export default function AddTicketPage() {
                         {issueTypeOptions[issueOn].map((type) => (
                           <option key={type} value={threadIdMap[type].toString()}>
                             {type}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                      <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
+                        Department
+                      </label>
+                      <select
+                        id="department"
+                        value={department}
+                        onChange={(e) => setDepartment(e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                        aria-label="Department"
+                      >
+                        <option value="">Select a department</option>
+                        {departmentOptions.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
                           </option>
                         ))}
                       </select>

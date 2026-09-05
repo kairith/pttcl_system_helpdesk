@@ -5,12 +5,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 import Image from "next/image";
 import Link from "next/link";
+import { DEFAULT_AVATAR_URL } from "@/app/shared/constants";
 
 interface User {
   users_id: number;
   users_name: string;
   email: string;
   company?: string | null;
+  department_name?: string | null;
   user_image?: string | null;
 }
 
@@ -115,7 +117,7 @@ export default function UserProfilePage() {
           {/* Avatar */}
           <div className="w-40 h-40 relative -mt-16">
             <img
-              src={user.user_image || "/Uploads/user_image/Default-avatar.jpg"}
+              src={user.user_image || DEFAULT_AVATAR_URL}
               alt={`Profile of ${user.users_name}`}
               className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
             />
@@ -136,6 +138,9 @@ export default function UserProfilePage() {
             </div>
             {user.email && <p className="text-gray-500">{user.email}</p>}
             {user.company && <p className="text-gray-500">{user.company}</p>}
+            {user.department_name && (
+              <p className="text-gray-500">Department {user.department_name}</p>
+            )}
           </div>
         </div>
 

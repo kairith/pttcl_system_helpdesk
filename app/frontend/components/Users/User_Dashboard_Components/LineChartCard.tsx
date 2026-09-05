@@ -21,13 +21,20 @@ interface ChartData {
 
 interface LineChartCardProps {
   title: string;
-  selectedYear: string;
+  timeFilter: string;
   chartData: ChartData[];
 }
 
+const timeFilterLabels: Record<string, string> = {
+  today: "Today",
+  week: "This Week",
+  month: "This Month",
+  year: "This Year",
+};
+
 const LineChartCard: React.FC<LineChartCardProps> = ({
   title,
-  selectedYear,
+  timeFilter,
   chartData,
 }) => {
   const allMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -44,7 +51,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
       <div className="relative h-80 sm:h-96">
         {chartData.length === 0 ? (
           <p className="text-gray-500 text-center">
-            No tickets found for {selectedYear === "ALL" ? "all years" : selectedYear}
+            No tickets found for {timeFilterLabels[timeFilter] ?? timeFilter}
           </p>
         ) : (
           <Line
@@ -52,7 +59,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
               labels: formattedData.map((item) => item.month),
               datasets: [
                 {
-                  label: `Tickets in ${selectedYear === "ALL" ? "All Years" : selectedYear}`,
+                  label: `Tickets - ${timeFilterLabels[timeFilter] ?? timeFilter}`,
                   data: formattedData.map((item) => item.value),
                   fill: true,
                   borderColor: "rgb(59, 130, 246)",
@@ -73,7 +80,7 @@ const LineChartCard: React.FC<LineChartCardProps> = ({
                 legend: { position: "top" },
                 title: {
                   display: true,
-                  text: `${title} - ${selectedYear === "ALL" ? "All Years" : selectedYear}`,
+                  text: `${title} - ${timeFilterLabels[timeFilter] ?? timeFilter}`,
                   font: { size: 18, family: "'Inter', sans-serif", weight: "bold" },
                   color: "#1F2937",
                   padding: { top: 10, bottom: 20 },

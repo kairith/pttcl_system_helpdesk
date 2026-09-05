@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { usersName, email, password, company, status, rulesId, imagePath } =
+    const { usersName, email, password, company, status, rulesId, imagePath, departmentId } =
       body;
     // Validate inputs
     if (
@@ -104,8 +104,8 @@ export async function POST(request: Request) {
 
     // Insert user into tbl_users
     const userQuery = `
-      INSERT INTO tbl_users (users_name, email, password, code, status, rules_id, company)
-      VALUES (?, ?, ?, 0, ?, ?, ?)
+      INSERT INTO tbl_users (users_name, email, password, code, status, rules_id, company, department_id)
+      VALUES (?, ?, ?, 0, ?, ?, ?, ?)
     `;
     const [userResult] = await connection.execute(userQuery, [
       usersName,
@@ -114,6 +114,7 @@ export async function POST(request: Request) {
       Number(status),
       Number(rulesId),
       company,
+      departmentId !== undefined && departmentId !== null ? Number(departmentId) : null,
     ]);
     const userId = (userResult as any).insertId;
 

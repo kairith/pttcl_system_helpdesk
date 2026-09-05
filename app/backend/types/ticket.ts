@@ -18,7 +18,8 @@ export interface Ticket {
   comment: string | null;
   user_create_ticket: number;
   issue_type_id: number;
-
+  department: string;
+  department_id: number | null;
 
 }
 

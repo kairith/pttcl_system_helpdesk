@@ -16,8 +16,10 @@ model User {
   status     Int
   rules_id   Int?
   company    String
+  department_id Int?
 
   rule            UserRule?    @relation(fields: [rules_id], references: [rules_id])
+  department      Department?  @relation(fields: [department_id], references: [id])
   ticketsCreated  Ticket[]     @relation("TicketCreator")
   ticketsAssigned Ticket[]     @relation("TicketAssignee")
   userImage       UserImage?
@@ -51,6 +53,14 @@ model UserRule {
   delete_station Int @default(0)
   list_station   Int @default(0)
 
+  add_department    Int @default(0)
+  edit_department   Int @default(0)
+  delete_department Int @default(0)
+  list_department   Int @default(0)
+
+  // When set, a user holding this role only sees/manages tickets in their own assigned department (tbl_users.department_id).
+  scope_to_department Int @default(0)
+
   list_dashboard Int @default(1)
   list_track     Int @default(1)
   list_report    Int @default(1)
@@ -71,6 +81,8 @@ model Ticket {
   province              String
   issue_type            String
   issue_type_id         Int?
+  department            String
+  department_id         Int?
   issue_description     String    @db.Text
   status                String    @default("Open")
   comment               String?   @db.Text
@@ -82,12 +94,23 @@ model Ticket {
   ticket_time           DateTime? @updatedAt
   SLA_category          String?
 
-  creator   User        @relation("TicketCreator", fields: [user_create_ticket], references: [users_id])
-  assignee  User?       @relation("TicketAssignee", fields: [users_id], references: [users_id])
-  issueType IssueType?  @relation(fields: [issue_type_id], references: [id])
-  images    TicketImage[]
+  creator      User        @relation("TicketCreator", fields: [user_create_ticket], references: [users_id])
+  assignee     User?       @relation("TicketAssignee", fields: [users_id], references: [users_id])
+  issueType    IssueType?  @relation(fields: [issue_type_id], references: [id])
+  departmentRef Department? @relation(fields: [department_id], references: [id])
+  images       TicketImage[]
 
   @@map("tbl_ticket")
+}
+
+model Department {
+  id              Int    @id @default(autoincrement())
+  department_name String @unique
+
+  users   User[]
+  tickets Ticket[]
+
+  @@map("tbl_departments")
 }
 
 model TicketImage {

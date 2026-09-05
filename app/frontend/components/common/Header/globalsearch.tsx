@@ -22,6 +22,10 @@ export interface Permissions {
   edit_station: boolean;
   delete_station: boolean;
   list_station: boolean;
+  add_department: boolean;
+  edit_department: boolean;
+  delete_department: boolean;
+  list_department: boolean;
   list_dashboard: boolean;
   list_track: boolean;
   list_report: boolean;
@@ -90,6 +94,8 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
       { id: "ticket-create", label: "Create Ticket", href: `${base}/ticket`, hrefCreate: `${base}/ticket/add_ticket`, requiredPermission: "add_ticket_status", keywords: ["new ticket", "open ticket"], kind: "create" },
       { id: "station", label: "Station", href: `${base}/station`, requiredPermission: "list_station", keywords: ["locations", "map"] },
       { id: "station-create", label: "Create Station", href: `${base}/station`, hrefCreate: `${base}/station/add_station`, requiredPermission: "add_station", keywords: ["new station", "add station"], kind: "create" },
+      { id: "department", label: "Department", href: `${base}/department`, requiredPermission: "list_department", keywords: ["departments", "teams"] },
+      { id: "department-create", label: "Create Department", href: `${base}/department`, hrefCreate: `${base}/department/add_department`, requiredPermission: "add_department", keywords: ["new department", "add department"], kind: "create" },
       { id: "user", label: "Users", href: `${base}/user`, requiredPermission: "list_user_status", keywords: ["accounts", "members"] },
       { id: "user-create", label: "Create User", href: `${base}/user`, hrefCreate: `${base}/user/add_user`, requiredPermission: "add_user_status", keywords: ["invite", "add user"], kind: "create" },
       { id: "rules", label: "Users Rules", href: `${base}/user_rules`, requiredPermission: "list_user_rules", keywords: ["permissions", "roles", "rbac"] },

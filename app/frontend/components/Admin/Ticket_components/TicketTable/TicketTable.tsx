@@ -17,8 +17,9 @@ interface TicketTableProps {
   filteredTickets: (Ticket & { users_name: string; creator_name: string; images?: TicketImage[] })[];
   permissions: { add: boolean; edit: boolean; delete: boolean; list: boolean; listAssign: boolean };
   onTicketDeleted?: (ticketId: string) => void; // Optional callback for parent state update
+  rowsPerPage: number;
 }
-export default function TicketTable({ filteredTickets, permissions, onTicketDeleted }: TicketTableProps) {
+export default function TicketTable({ filteredTickets, permissions, onTicketDeleted, rowsPerPage }: TicketTableProps) {
   const router = useRouter();
   const [selectedTicket, setSelectedTicket] = useState<
     (Ticket & { users_name: string; creator_name: string; images?: TicketImage[] }) | null
@@ -27,14 +28,13 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
   const [deleteTicketId, setDeleteTicketId] = useState<string | null>(null);
   const [ticketImages, setTicketImages] = useState<{ [key: string]: TicketImage[] }>({});
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
-  const [rowsPerPage, setRowsPerPage] = useState(10); // Default to 10 rows
   const [currentPage, setCurrentPage] = useState(1); // Default to page 1
   const tableRef = useRef<HTMLDivElement>(null);
 
-  // Reset currentPage to 1 when filteredTickets changes
+  // Reset currentPage to 1 when filteredTickets or rowsPerPage changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [filteredTickets]);
+  }, [filteredTickets, rowsPerPage]);
 
   // Fetch ticket images for all tickets
   useEffect(() => {
@@ -89,11 +89,6 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
   const totalPages = Math.ceil(filteredTickets.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedTickets = filteredTickets.slice(startIndex, startIndex + rowsPerPage);
-
-  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRowsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page
-  };
 
   const handlePrevious = () => {
     if (currentPage > 1) setCurrentPage((prev) => prev - 1);
@@ -266,27 +261,6 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800"></h2>
-        <div className="flex items-center space-x-2">
-          <label htmlFor="rowsPerPage" className="text-gray-600 text-sm">
-            Rows per page:
-          </label>
-          <select
-            id="rowsPerPage"
-            value={rowsPerPage}
-            onChange={handleRowsPerPageChange}
-            className="border border-gray-300 rounded px-2 py-1 text-sm"
-            aria-label="Select rows per page"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-        </div>
-      </div>
       <div className="w-full overflow-x-auto">
         <div ref={tableRef} className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
           <table className="min-w-full divide-y divide-gray-200 hidden md:table">
@@ -299,6 +273,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Station Name</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Assign</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Issue</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Department</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                 {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Images</th> */}
               </tr>
@@ -306,7 +281,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
             <tbody className="divide-y divide-gray-200">
               {paginatedTickets.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-4 text-center text-gray-500">No tickets found.</td>
+                  <td colSpan={10} className="px-4 py-4 text-center text-gray-500">No tickets found.</td>
                 </tr>
               ) : (
                 paginatedTickets.map((ticket, index) => (
@@ -355,6 +330,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                     <td className="px-4 py-3 text-sm text-gray-800">{ticket.station_name || "N/A"}</td>
                     <td className="px-4 py-3 text-sm text-gray-800">{ticket.users_name || "Not Assigned"}</td>
                     <td className="px-4 py-3 text-sm text-gray-800">{ticket.issue_type || "N/A"}</td>
+                    <td className="px-4 py-3 text-sm text-gray-800">{ticket.department || "N/A"}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>
                         {ticket.status || "N/A"}
@@ -386,6 +362,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                   <div className="mb-2 text-sm text-gray-800 font-medium">Station Name: {ticket.station_name || "N/A"}</div>
                   <div className="mb-2 text-sm text-gray-800 font-medium">Assign: {ticket.users_name || "Not Assigned"}</div>
                   <div className="mb-2 text-sm text-gray-800 font-medium">Issue Type: {ticket.issue_type || "N/A"}</div>
+                  <div className="mb-2 text-sm text-gray-800 font-medium">Department: {ticket.department || "N/A"}</div>
                   <div className="mb-2 text-sm font-medium">
                     Status: <span className={`px-2 py-1 text-xs font-medium ${getStatusBadge(ticket.status.toString())}`}>{ticket.status || "N/A"}</span>
                   </div>
@@ -491,6 +468,7 @@ export default function TicketTable({ filteredTickets, permissions, onTicketDele
                 <div><p className="text-gray-800 break-words truncate">Province: {selectedTicket.province || "N/A"}</p></div>
                 <div><p className="text-gray-800 break-words max-h-20 overflow-y-auto">Issue Description: {selectedTicket.issue_description || "N/A"}</p></div>
                 <div><p className="text-gray-800 break-words truncate">Issue Type: {selectedTicket.issue_type || "N/A"}</p></div>
+                <div><p className="text-gray-800 break-words truncate">Department: {selectedTicket.department || "N/A"}</p></div>
               </div>
               <div className="space-y-4">
                 <div><p className="text-gray-800 break-words truncate">Status: {selectedTicket.status || "N/A"}</p></div>

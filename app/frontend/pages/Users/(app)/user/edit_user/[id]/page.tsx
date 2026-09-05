@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 
 export default function EditUser() {
-  const [user, setUser] = useState<{ users_id: number; users_name: string; email: string; status: boolean; rules_id?: number; company?: string } | null>(null);
+  const [user, setUser] = useState<{ users_id: number; users_name: string; email: string; status: boolean; rules_id?: number; company?: string; department_id?: number | null } | null>(null);
+  const [departments, setDepartments] = useState<{ id: number; department_name: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { id } = useParams();
   const router = useRouter();
@@ -25,14 +26,25 @@ export default function EditUser() {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         console.log("Fetched user data:", data);
-        setUser({ 
-          users_id: data.users_id, 
-          users_name: data.users_name, 
-          email: data.email, 
-          status: data.status === 1, 
-          rules_id: data.rules_id, 
-          company: data.company 
+        setUser({
+          users_id: data.users_id,
+          users_name: data.users_name,
+          email: data.email,
+          status: data.status === 1,
+          rules_id: data.rules_id,
+          company: data.company,
+          department_id: data.department_id ?? null,
         });
+
+        const departmentsResponse = await fetch("/api/data/departments", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (departmentsResponse.ok) {
+          const departmentsData = await departmentsResponse.json();
+          setDepartments(Array.isArray(departmentsData.departments) ? departmentsData.departments : []);
+        } else {
+          setDepartments([]);
+        }
       } catch (err) {
         console.error("Fetch error:", err);
         setError("Failed to load user");
@@ -54,11 +66,12 @@ export default function EditUser() {
       const response = await fetch(`/api/data/edit_user/${id}`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          users_name: user.users_name, 
-          email: user.email, 
-          rules_id: user.rules_id, 
-          company: user.company 
+        body: JSON.stringify({
+          users_name: user.users_name,
+          email: user.email,
+          rules_id: user.rules_id,
+          company: user.company,
+          departmentId: user.department_id ?? null,
         }),
       });
       console.log("Update response status:", response.status);
@@ -127,6 +140,27 @@ export default function EditUser() {
                 placeholder="Enter Rules ID"
                 aria-label="Rules ID"
               />
+            </div>
+            <div>
+              <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                Department
+              </label>
+              <select
+                id="department"
+                value={user.department_id ?? ""}
+                onChange={(e) =>
+                  setUser({ ...user, department_id: e.target.value ? parseInt(e.target.value) : null })
+                }
+                className="w-full p-2 bg-gray-100 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Department"
+              >
+                <option value="">None</option>
+                {departments.map((dept) => (
+                  <option key={dept.id} value={dept.id}>
+                    {dept.department_name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label htmlFor="company" className="block text-sm font-medium text-gray-700">

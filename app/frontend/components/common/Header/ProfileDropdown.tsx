@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { User } from "./UserDataProvider";
 import { useRouter } from "next/navigation";
+import { DEFAULT_AVATAR_URL } from "@/app/shared/constants";
 
 interface ProfileDropdownProps {
   isProfileOpen: boolean;
@@ -56,7 +57,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
           <div className="flex flex-col items-center text-center px-6">
             <div className="relative w-20 h-20 mb-2">
               <Image
-                src={userImage || "/Uploads/user_image/Default-avatar.jpg"}
+                src={userImage || DEFAULT_AVATAR_URL}
                 alt="Profile"
                 fill
                 className="rounded-full object-cover"
