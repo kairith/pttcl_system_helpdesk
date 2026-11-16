@@ -265,3 +265,5 @@
 {"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to dora123@gmail.com","messageId":"<fd27cbd4-7a4b-4732-83d5-521bf7187e54@gmail.com>","messageLength":355,"smtpResponse":"250 2.0.0 OK  1788484736 41be03b00d2f7-cc455451b46sm205012a12.18 - gsmtp","timestamp":"2026-09-04T01:18:56.462Z"}
 {"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
 {"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to solin123@gmail.com","messageId":"<5c507305-e025-fe6c-fd23-713217351931@gmail.com>","messageLength":255,"smtpResponse":"250 2.0.0 OK  1788499426 98e67ed59e1d1-39b2612d3f1sm2438674a91.13 - gsmtp","timestamp":"2026-09-04T05:23:46.000Z"}
+{"level":"info","message":"Gmail transporter initialized for pttpos.system@gmail.com"}
+{"level":"info","message":"Sent Gmail alert from pttpos.system@gmail.com to admin@pttcl.local","messageId":"<1e335b10-73fc-788d-06a5-9d6dbd5a977e@gmail.com>","messageLength":357,"smtpResponse":"250 2.0.0 OK  1788568892 5a478bee46e88-3339a534d25sm9916115eec.5 - gsmtp","timestamp":"2026-09-05T00:41:32.138Z"}

@@ -833,3 +833,5 @@
 {"email":"dora123@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<fd27cbd4-7a4b-4732-83d5-521bf7187e54@gmail.com>","platform":"gmail","subject":"Ticket Assignment Update","timestamp":"2026-09-04T01:18:56.464Z"}
 {"email":"solin123@gmail.com","level":"info","message":"Sending alert with: \nNew Ticket Created\nStation ID: STN001\nStation Nam","platform":"gmail","subject":"New Ticket Alert"}
 {"email":"solin123@gmail.com","level":"info","message":"Sent gmail alert","messageId":"<5c507305-e025-fe6c-fd23-713217351931@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2026-09-04T05:23:46.002Z"}
+{"email":"admin@pttcl.local","level":"info","message":"Sending alert with: \n=========================================\n\nNew Ti","platform":"gmail","subject":"New Ticket Alert"}
+{"email":"admin@pttcl.local","level":"info","message":"Sent gmail alert","messageId":"<1e335b10-73fc-788d-06a5-9d6dbd5a977e@gmail.com>","platform":"gmail","subject":"New Ticket Alert","timestamp":"2026-09-05T00:41:32.139Z"}

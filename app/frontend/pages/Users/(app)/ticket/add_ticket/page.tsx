@@ -507,14 +507,13 @@ export default function AddTicketPage() {
           setIsLoading(false);
           return;
         }
-        const fileName = uploadData.imagePath?.split("/")?.pop();
-        if (!fileName) {
+        if (!uploadData.imagePath) {
           setErrors(["Invalid image path returned from server."]);
           toast.error("Invalid image path returned from server.");
           setIsLoading(false);
           return;
         }
-        imagePath = `/uploads/ticket_image/${fileName}`;
+        imagePath = uploadData.imagePath;
       }
 
       const ticketOpen = new Date().toISOString(); // Capture exact submission time in UTC
@@ -700,7 +699,7 @@ export default function AddTicketPage() {
               </svg>
               <p>
                 {errors.map((error, index) => (
-                  <div key={index}>{error}</div>
+                  <span key={index} className="block">{error}</span>
                 ))}
               </p>
             </div>

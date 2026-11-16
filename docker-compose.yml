@@ -27,7 +27,9 @@ services:
         condition: service_healthy
 
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
+    profiles:
+      - minio
     container_name: pttcl_minio
     restart: unless-stopped
     command: server /data --console-address ":9001"

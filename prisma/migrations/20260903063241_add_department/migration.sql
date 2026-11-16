@@ -7,6 +7,15 @@ CREATE TABLE `tbl_departments` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- Normalize legacy zero dates before MySQL rebuilds the ticket table.
+UPDATE `tbl_ticket`
+SET
+    `ticket_on_hold` = NULLIF(CAST(`ticket_on_hold` AS CHAR), '0000-00-00 00:00:00'),
+    `ticket_in_progress` = NULLIF(CAST(`ticket_in_progress` AS CHAR), '0000-00-00 00:00:00'),
+    `ticket_pending_vendor` = NULLIF(CAST(`ticket_pending_vendor` AS CHAR), '0000-00-00 00:00:00'),
+    `ticket_close` = NULLIF(CAST(`ticket_close` AS CHAR), '0000-00-00 00:00:00'),
+    `ticket_time` = NULLIF(CAST(`ticket_time` AS CHAR), '0000-00-00 00:00:00');
+
 -- AlterTable (add nullable first so we can backfill existing rows)
 ALTER TABLE `tbl_ticket` ADD COLUMN `department` VARCHAR(191) NULL,
     ADD COLUMN `department_id` INTEGER NULL;
